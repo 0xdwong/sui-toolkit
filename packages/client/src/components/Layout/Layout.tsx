@@ -1,10 +1,26 @@
 import React from 'react';
-import { Box, Flex, Stack, Heading, Link, Container, Text } from '@chakra-ui/react';
+import { Box, Flex, Stack, Heading, Container, Text, Button } from '@chakra-ui/react';
 import { ConnectButton } from '@mysten/dapp-kit';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
+
+const NavLink = ({ to, children }: { to: string; children: React.ReactNode }) => {
+  const navigate = useNavigate();
+
+  return (
+    <Button
+      variant="ghost"
+      fontWeight="medium"
+      p={2}
+      onClick={() => navigate(to)}
+    >
+      {children}
+    </Button>
+  );
+};
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
@@ -21,11 +37,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Flex justify="space-between" align="center">
             <Stack direction="row" gap={8}>
               <Heading as="h1" size="md">
-                Sui Tookit
+                <RouterLink to="/" style={{ textDecoration: 'none' }}>
+                  Sui Tookit
+                </RouterLink>
               </Heading>
-              <Stack as="nav" direction="row" gap={4}>
-                <Link href="/" fontWeight="medium">SUI transfer</Link>
-                <Link href="#" fontWeight="medium">faucet</Link>
+              <Stack as="nav" direction="row" gap={2}>
+                <NavLink to="/bulk-transfer">批量转账</NavLink>
+                {/* 更多工具导航链接将在实现后添加 */}
               </Stack>
             </Stack>
             <ConnectButton />
