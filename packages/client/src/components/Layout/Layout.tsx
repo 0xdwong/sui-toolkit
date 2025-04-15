@@ -38,7 +38,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <Stack direction="row" gap={8}>
               <Heading as="h1" size="md">
                 <RouterLink to="/" style={{ textDecoration: 'none' }}>
-                  Sui Tookit
+                  Sui Toolkit
                 </RouterLink>
               </Heading>
               <Stack as="nav" direction="row" gap={2}>
@@ -58,7 +58,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <Box as="footer" p={6} bg="white" borderTopWidth="1px" mt="auto">
         <Container maxW="container.xl" textAlign="center">
           <Text color="gray.500">
-            © {new Date().getFullYear()} Sui Tookit
+            © {new Date().getFullYear()} Sui Toolkit
           </Text>
         </Container>
       </Box>
