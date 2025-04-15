@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Flex, Stack, Heading, Container, Text, Button } from '@chakra-ui/react';
-import { ConnectButton } from '@mysten/dapp-kit';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import CustomConnectButton from '../CustomConnectButton';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -46,7 +46,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 {/* 更多工具导航链接将在实现后添加 */}
               </Stack>
             </Stack>
-            <ConnectButton />
+            <CustomConnectButton />
           </Flex>
         </Container>
       </Flex>
