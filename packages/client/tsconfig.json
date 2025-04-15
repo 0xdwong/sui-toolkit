@@ -24,6 +24,6 @@
     }
   },
   "include": [
-    "packages/src"
+    "src"
   ]
 }
