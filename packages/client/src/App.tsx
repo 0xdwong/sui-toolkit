@@ -1,9 +1,11 @@
-import React from 'react';
 import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
 import { SuiClientProvider, WalletProvider } from '@mysten/dapp-kit';
 import { getFullnodeUrl } from '@mysten/sui/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+
+// Import i18n configuration
+import './i18n/i18n';
 
 import Layout from './components/Layout/Layout';
 import BulkTransfer from './components/BulkTransfer/BulkTransfer';
@@ -32,7 +34,6 @@ function App() {
                   <Route path="/" element={<ToolList />} />
                   <Route path="/bulk-transfer" element={<BulkTransfer />} />
                   <Route path="/faucet" element={<Faucet />} />
-                  {/* 其他工具路由将在实现后添加 */}
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Layout>

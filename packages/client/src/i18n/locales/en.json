@@ -1,0 +1,26 @@
+{
+  "common": {
+    "appName": "Sui Toolkit",
+    "footer": "© {{year}} Sui Toolkit"
+  },
+  "navigation": {
+    "home": "Home",
+    "bulkTransfer": "Bulk Transfer",
+    "faucet": "Testnet Faucet"
+  },
+  "language": {
+    "en": "English",
+    "zh": "Chinese"
+  },
+  "tools": {
+    "title": "Toolkits",
+    "bulkTransfer": {
+      "title": "Bulk Transfer",
+      "description": "Transfer SUI tokens to multiple addresses at once"
+    },
+    "faucet": {
+      "title": "Testnet Faucet",
+      "description": "Get SUI tokens on testnet"
+    }
+  }
+} 

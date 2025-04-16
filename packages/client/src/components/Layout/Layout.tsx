@@ -1,7 +1,9 @@
 import React from 'react';
 import { Box, Flex, Stack, Heading, Container, Text, Button } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import CustomConnectButton from '../CustomConnectButton';
+import LanguageSwitcher from '../LanguageSwitcher/LanguageSwitcher';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -23,6 +25,8 @@ const NavLink = ({ to, children }: { to: string; children: React.ReactNode }) =>
 };
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const { t } = useTranslation();
+  
   return (
     <Box minH="100vh" bg="gray.50">
       <Flex 
@@ -38,16 +42,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <Stack direction="row" gap={8}>
               <Heading as="h1" size="md">
                 <RouterLink to="/" style={{ textDecoration: 'none' }}>
-                  Sui Toolkit
+                  {t('common.appName')}
                 </RouterLink>
               </Heading>
               <Stack as="nav" direction="row" gap={2}>
-                <NavLink to="/bulk-transfer">批量转账</NavLink>
-                <NavLink to="/faucet">测试网水龙头</NavLink>
+                <NavLink to="/bulk-transfer">{t('navigation.bulkTransfer')}</NavLink>
+                <NavLink to="/faucet">{t('navigation.faucet')}</NavLink>
                 {/* 更多工具导航链接将在实现后添加 */}
               </Stack>
             </Stack>
-            <CustomConnectButton />
+            <Stack direction="row" gap={4}>
+              <LanguageSwitcher />
+              <CustomConnectButton />
+            </Stack>
           </Flex>
         </Container>
       </Flex>
@@ -59,7 +66,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <Box as="footer" p={6} bg="white" borderTopWidth="1px" mt="auto">
         <Container maxW="container.xl" textAlign="center">
           <Text color="gray.500">
-            © {new Date().getFullYear()} Sui Toolkit
+            {t('common.footer', { year: new Date().getFullYear() })}
           </Text>
         </Container>
       </Box>

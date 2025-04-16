@@ -1,0 +1,26 @@
+{
+  "common": {
+    "appName": "Sui 工具箱",
+    "footer": "© {{year}} Sui 工具箱"
+  },
+  "navigation": {
+    "home": "首页",
+    "bulkTransfer": "批量转账",
+    "faucet": "测试网水龙头"
+  },
+  "language": {
+    "en": "英文",
+    "zh": "中文"
+  },
+  "tools": {
+    "title": "工具箱",
+    "bulkTransfer": {
+      "title": "批量转账",
+      "description": "批量向多个地址转账 SUI 代币"
+    },
+    "faucet": {
+      "title": "测试网水龙头",
+      "description": "获取测试网 SUI 代币"
+    }
+  }
+} 
