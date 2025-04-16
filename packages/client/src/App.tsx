@@ -8,6 +8,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Layout from './components/Layout/Layout';
 import BulkTransfer from './components/BulkTransfer/BulkTransfer';
 import ToolList from './components/ToolList/ToolList';
+import Faucet from './components/Faucet/Faucet';
 
 // Create React Query client
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ function App() {
                 <Routes>
                   <Route path="/" element={<ToolList />} />
                   <Route path="/bulk-transfer" element={<BulkTransfer />} />
+                  <Route path="/faucet" element={<Faucet />} />
                   {/* 其他工具路由将在实现后添加 */}
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

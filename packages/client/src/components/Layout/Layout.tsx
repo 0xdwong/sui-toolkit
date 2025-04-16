@@ -43,6 +43,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </Heading>
               <Stack as="nav" direction="row" gap={2}>
                 <NavLink to="/bulk-transfer">批量转账</NavLink>
+                <NavLink to="/faucet">测试网水龙头</NavLink>
                 {/* 更多工具导航链接将在实现后添加 */}
               </Stack>
             </Stack>
