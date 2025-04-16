@@ -12,23 +12,24 @@ import {
 } from '@chakra-ui/react';
 import { useCurrentAccount, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
 import { Transaction } from '@mysten/sui/transactions';
+import { useTranslation } from 'react-i18next';
 
 interface TransferItem {
   address: string;
   amount: string;
 }
 
-// 简易的toast提示实现
+// Simple toast implementation
 const useSimpleToast = () => {
   return {
-    // 简单实现toast功能
+    // Simple toast implementation
     success: (options: { title: string; description: string }) => {
-      console.log('成功:', options.title, options.description);
-      alert(`成功: ${options.title} - ${options.description}`);
+      console.log('Success:', options.title, options.description);
+      alert(`Success: ${options.title} - ${options.description}`);
     },
     error: (options: { title: string; description: string }) => {
-      console.error('错误:', options.title, options.description);
-      alert(`错误: ${options.title} - ${options.description}`);
+      console.error('Error:', options.title, options.description);
+      alert(`Error: ${options.title} - ${options.description}`);
     }
   };
 };
@@ -40,6 +41,7 @@ const BulkTransfer: React.FC = () => {
   const toast = useSimpleToast();
   const currentAccount = useCurrentAccount();
   const { mutate: signAndExecute } = useSignAndExecuteTransaction();
+  const { t } = useTranslation();
 
   const addNewRow = () => {
     setTransferItems([...transferItems, { address: '', amount: '' }]);
@@ -62,21 +64,21 @@ const BulkTransfer: React.FC = () => {
   const executeTransfer = async () => {
     if (!currentAccount) {
       toast.error({
-        title: '错误',
-        description: '请先连接您的钱包'
+        title: t('bulkTransfer.error.title'),
+        description: t('bulkTransfer.error.connectWallet')
       });
       return;
     }
 
-    // 验证输入
+    // Validate input
     const validTransfers = transferItems.filter(
       item => item.address && item.amount && !isNaN(Number(item.amount))
     );
 
     if (validTransfers.length === 0) {
       toast.error({
-        title: '错误',
-        description: '没有有效的转账信息'
+        title: t('bulkTransfer.error.title'),
+        description: t('bulkTransfer.error.noValidTransfers')
       });
       return;
     }
@@ -84,19 +86,19 @@ const BulkTransfer: React.FC = () => {
     try {
       const tx = new Transaction();
       
-      // 添加所有转账到交易中
+      // Add all transfers to transaction
       for (const item of validTransfers) {
-        // 转换金额到 MIST (1 SUI = 10^9 MIST)
+        // Convert amount to MIST (1 SUI = 10^9 MIST)
         const amountInMist = Math.floor(Number(item.amount) * 10**9);
         
-        // 从gas币中分割出一部分
+        // Split a portion from gas coin
         const [coin] = tx.splitCoins(tx.gas, [tx.pure.u64(BigInt(amountInMist))]);
         
-        // 转账到目标地址
+        // Transfer to target address
         tx.transferObjects([coin], tx.pure.address(item.address));
       }
       
-      // 执行交易
+      // Execute transaction
       signAndExecute(
         {
           transaction: tx,
@@ -104,44 +106,44 @@ const BulkTransfer: React.FC = () => {
         {
           onSuccess: (result) => {
             toast.success({
-              title: '转账成功',
-              description: `交易摘要: ${result.digest}`
+              title: t('bulkTransfer.success.title'),
+              description: t('bulkTransfer.success.description', { digest: result.digest })
             });
           },
           onError: (error) => {
             toast.error({
-              title: '转账失败',
-              description: error instanceof Error ? error.message : '发生未知错误'
+              title: t('bulkTransfer.error.transferFailed'),
+              description: error instanceof Error ? error.message : t('bulkTransfer.error.unknownError')
             });
           }
         }
       );
     } catch (error) {
       toast.error({
-        title: '转账失败',
-        description: error instanceof Error ? error.message : '发生未知错误'
+        title: t('bulkTransfer.error.transferFailed'),
+        description: error instanceof Error ? error.message : t('bulkTransfer.error.unknownError')
       });
     }
   };
 
   return (
     <Container maxW="container.xl" py={8}>
-      <Heading as="h1" mb={6}>批量转账工具</Heading>
+      <Heading as="h1" mb={6}>{t('bulkTransfer.title')}</Heading>
       
       <Stack display="flex" gap={8}>
         <Box p={5} borderWidth="1px" borderRadius="md" bg="white">
           <HStack justifyContent="space-between" mb={4}>
-            <Heading as="h2" size="md">转账列表</Heading>
-            <Button onClick={addNewRow} colorScheme="green" size="sm">添加一行</Button>
+            <Heading as="h2" size="md">{t('bulkTransfer.transferList')}</Heading>
+            <Button onClick={addNewRow} colorScheme="green" size="sm">{t('bulkTransfer.addRow')}</Button>
           </HStack>
           
           <Box overflowX="auto">
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  <th style={{ padding: '10px', textAlign: 'left' }}>接收地址</th>
-                  <th style={{ padding: '10px', textAlign: 'left' }}>金额 (SUI)</th>
-                  <th style={{ padding: '10px', textAlign: 'left', width: '100px' }}>操作</th>
+                  <th style={{ padding: '10px', textAlign: 'left' }}>{t('bulkTransfer.receivingAddress')}</th>
+                  <th style={{ padding: '10px', textAlign: 'left' }}>{t('bulkTransfer.amount')}</th>
+                  <th style={{ padding: '10px', textAlign: 'left', width: '100px' }}>{t('bulkTransfer.action')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -169,7 +171,7 @@ const BulkTransfer: React.FC = () => {
                         colorScheme="red"
                         onClick={() => handleRemoveRow(index)}
                       >
-                        删除
+                        {t('bulkTransfer.delete')}
                       </Button>
                     </td>
                   </tr>
@@ -180,7 +182,7 @@ const BulkTransfer: React.FC = () => {
           
           <VStack display="flex" gap={4} mt={6}>
             <Text>
-              总计: {transferItems.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)} SUI
+              {t('bulkTransfer.total')}: {transferItems.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)} SUI
             </Text>
             <Button 
               colorScheme="blue" 
@@ -189,7 +191,7 @@ const BulkTransfer: React.FC = () => {
               disabled={!currentAccount}
               width="full"
             >
-              执行批量转账
+              {t('bulkTransfer.execute')}
             </Button>
           </VStack>
         </Box>

@@ -22,5 +22,49 @@
       "title": "Testnet Faucet",
       "description": "Get SUI tokens on testnet"
     }
+  },
+  "bulkTransfer": {
+    "title": "Bulk Transfer Tool",
+    "transferList": "Transfer List",
+    "addRow": "Add Row",
+    "receivingAddress": "Receiving Address",
+    "amount": "Amount (SUI)",
+    "action": "Action",
+    "delete": "Delete",
+    "total": "Total",
+    "execute": "Execute Bulk Transfer",
+    "error": {
+      "title": "Error",
+      "connectWallet": "Please connect your wallet first",
+      "noValidTransfers": "No valid transfer information",
+      "transferFailed": "Transfer Failed",
+      "unknownError": "An unknown error occurred"
+    },
+    "success": {
+      "title": "Transfer Success",
+      "description": "Transaction Digest: {{digest}}"
+    }
+  },
+  "faucet": {
+    "title": "Testnet Faucet",
+    "description": "Get SUI tokens on testnet. Enter your address below to receive tokens.",
+    "network": "Network",
+    "addresses": "Address(es)",
+    "addressPlaceholder": "Enter one or more addresses (separate multiple addresses with commas or newlines)",
+    "getTokens": "Get Tokens",
+    "submitting": "Submitting...",
+    "requestSuccess": "Request Successful",
+    "requestFailed": "Request Failed",
+    "successAddresses": "Successful Addresses",
+    "failedAddresses": "Failed Addresses",
+    "viewInExplorer": "View in Explorer {{address}}...",
+    "error": {
+      "title": "Error",
+      "description": "An unknown error occurred"
+    },
+    "success": {
+      "title": "Success",
+      "description": "Tokens sent to {{count}} address(es)"
+    }
   }
 } 

@@ -11,6 +11,7 @@ import {
   Textarea
 } from '@chakra-ui/react';
 import { getFaucetHost, requestSuiFromFaucetV1 } from '@mysten/sui/faucet';
+import { useTranslation } from 'react-i18next';
 
 type SuiFaucetNetwork = 'testnet' | 'devnet' | 'localnet';
 
@@ -42,6 +43,7 @@ const Faucet: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [result, setResult] = useState<FaucetResult | null>(null);
   const toast = useSimpleToast();
+  const { t } = useTranslation();
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setAddresses(e.target.value);
@@ -97,8 +99,8 @@ const Faucet: React.FC = () => {
         });
         
         toast.success({
-          title: '成功',
-          description: `代币已发送到 ${succeeds.length} 个地址`
+          title: t('faucet.success.title'),
+          description: t('faucet.success.description', { count: succeeds.length })
         });
       } else {
         throw new Error('No addresses were successfully funded');
@@ -107,12 +109,12 @@ const Faucet: React.FC = () => {
       console.error('Error getting faucet tokens:', error);
       setResult({
         success: false,
-        message: error instanceof Error ? error.message : 'Unknown error occurred'
+        message: error instanceof Error ? error.message : t('faucet.error.description')
       });
       
       toast.error({
-        title: '错误',
-        description: error instanceof Error ? error.message : '发生未知错误'
+        title: t('faucet.error.title'),
+        description: error instanceof Error ? error.message : t('faucet.error.description')
       });
     } finally {
       setIsSubmitting(false);
@@ -154,17 +156,17 @@ const Faucet: React.FC = () => {
 
   return (
     <Container maxW="container.xl" py={8}>
-      <Heading as="h1" mb={6}>测试网水龙头</Heading>
+      <Heading as="h1" mb={6}>{t('faucet.title')}</Heading>
       
       <Stack display="flex" gap={8}>
         <Box p={5} borderWidth="1px" borderRadius="md" bg="white">
           <VStack display="flex" gap={6} align="stretch">
             <Text>
-              获取测试网 SUI 代币。在下方输入您的地址以接收代币。
+              {t('faucet.description')}
             </Text>
             
             <Box>
-              <Text mb={2} fontWeight="bold">Network</Text>
+              <Text mb={2} fontWeight="bold">{t('faucet.network')}</Text>
               <select 
                 value={network} 
                 onChange={handleNetworkChange}
@@ -181,11 +183,11 @@ const Faucet: React.FC = () => {
             </Box>
             
             <Box>
-              <Text mb={2} fontWeight="bold">Address(es)</Text>
+              <Text mb={2} fontWeight="bold">{t('faucet.addresses')}</Text>
               <Textarea
                 value={addresses}
                 onChange={handleAddressChange}
-                placeholder="输入一个或多个地址（用逗号或换行符分隔多个地址）"
+                placeholder={t('faucet.addressPlaceholder')}
                 rows={5}
               />
             </Box>
@@ -197,7 +199,7 @@ const Faucet: React.FC = () => {
               disabled={isSubmitting}
               width="full"
             >
-              {isSubmitting ? '提交中...' : '获取代币'}
+              {isSubmitting ? t('faucet.submitting') : t('faucet.getTokens')}
             </Button>
 
             {result && (
@@ -214,13 +216,13 @@ const Faucet: React.FC = () => {
                   color={result.success ? 'green.500' : 'red.500'} 
                   mb={2}
                 >
-                  {result.success ? '请求成功' : '请求失败'}
+                  {result.success ? t('faucet.requestSuccess') : t('faucet.requestFailed')}
                 </Text>
                 <Text mb={4}>{result.message}</Text>
                 
                 {result.success && result.succeeded && result.succeeded.length > 0 && (
                   <VStack display="flex" gap={2} align="stretch" mt={4}>
-                    <Text fontWeight="bold">成功的地址:</Text>
+                    <Text fontWeight="bold">{t('faucet.successAddresses')}:</Text>
                     {result.succeeded.map((address, index) => (
                       <Link 
                         key={index}
@@ -229,7 +231,7 @@ const Faucet: React.FC = () => {
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        在浏览器中查看 {address.slice(0, 10)}...
+                        {t('faucet.viewInExplorer', { address: address.slice(0, 10) })}
                       </Link>
                     ))}
                   </VStack>
@@ -238,7 +240,7 @@ const Faucet: React.FC = () => {
                 {result.failed && result.failed.length > 0 && (
                   <Box mt={4}>
                     <Text fontWeight="bold" color="red.500">
-                      失败的地址:
+                      {t('faucet.failedAddresses')}:
                     </Text>
                     {result.failed.map((address, index) => (
                       <Text key={index}>{address}</Text>

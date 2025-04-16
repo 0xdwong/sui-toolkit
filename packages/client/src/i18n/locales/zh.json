@@ -22,5 +22,49 @@
       "title": "测试网水龙头",
       "description": "获取测试网 SUI 代币"
     }
+  },
+  "bulkTransfer": {
+    "title": "批量转账工具",
+    "transferList": "转账列表",
+    "addRow": "添加一行",
+    "receivingAddress": "接收地址",
+    "amount": "金额 (SUI)",
+    "action": "操作",
+    "delete": "删除",
+    "total": "总计",
+    "execute": "执行批量转账",
+    "error": {
+      "title": "错误",
+      "connectWallet": "请先连接您的钱包",
+      "noValidTransfers": "没有有效的转账信息",
+      "transferFailed": "转账失败",
+      "unknownError": "发生未知错误"
+    },
+    "success": {
+      "title": "转账成功",
+      "description": "交易摘要: {{digest}}"
+    }
+  },
+  "faucet": {
+    "title": "测试网水龙头",
+    "description": "获取测试网 SUI 代币。在下方输入您的地址以接收代币。",
+    "network": "网络",
+    "addresses": "地址",
+    "addressPlaceholder": "输入一个或多个地址（用逗号或换行符分隔多个地址）",
+    "getTokens": "获取代币",
+    "submitting": "提交中...",
+    "requestSuccess": "请求成功",
+    "requestFailed": "请求失败",
+    "successAddresses": "成功的地址",
+    "failedAddresses": "失败的地址",
+    "viewInExplorer": "在浏览器中查看 {{address}}...",
+    "error": {
+      "title": "错误",
+      "description": "发生未知错误"
+    },
+    "success": {
+      "title": "成功",
+      "description": "代币已发送到 {{count}} 个地址"
+    }
   }
 } 
