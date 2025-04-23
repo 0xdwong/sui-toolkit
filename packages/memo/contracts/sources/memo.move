@@ -1,10 +1,10 @@
 module memo::memo;
 
 use std::string::{Self, String};
+use sui::clock::Clock;
 use sui::event;
 use sui::package;
 use sui::table::{Self, Table};
-
 
 /// one-time witness
 public struct MEMO has drop {}
@@ -69,7 +69,12 @@ fun init(witness: MEMO, ctx: &mut TxContext) {
 
 /// Post a new message to the memo board
 /// If content is empty, "hello" will be used as default content
-public entry fun post_message(board: &mut MemoBoard, content: vector<u8>, ctx: &mut TxContext) {
+public entry fun post_message(
+    board: &mut MemoBoard,
+    content: vector<u8>,
+    clock: &Clock,
+    ctx: &mut TxContext,
+) {
     let content_string;
 
     // Check if content is empty, use "hello" as default if it is
