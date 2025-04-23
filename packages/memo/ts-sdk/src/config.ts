@@ -1,0 +1,16 @@
+const MAINNET = {
+  MEMO_PACKAGE_ID: '',
+  MEMO_BOARD_OBJECT_ID: '',
+
+}
+
+const TESTNET = {
+  MEMO_PACKAGE_ID: '0x7100dee3eb86da53ec2ef84b69fa28da885b1ff508b2ad9b5b820f0454a830b7',
+  MEMO_BOARD_OBJECT_ID: '0xd2dc287cb5b962578727ff2454d3bb7ebc242c7de240f3d9129f08b0cd8e271d',
+}
+
+
+export default {
+  MAINNET,
+  TESTNET,
+}

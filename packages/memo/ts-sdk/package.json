@@ -1,0 +1,16 @@
+{
+  "name": "sui-memo-ts-scripts",
+  "version": "0.1.0",
+  "license": "MIT",
+  "scripts": {
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
+  },
+  "dependencies": {
+    "@mysten/sui": "^1.26.1"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3",
+    "@types/node": "^22.14.1"
+  }
+}
