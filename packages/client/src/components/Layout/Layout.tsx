@@ -28,7 +28,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { t } = useTranslation();
   
   return (
-    <Box minH="100vh" bg="gray.50">
+    <Flex 
+      minH="100vh" 
+      bg="gray.50"
+      direction="column"
+    >
       <Flex 
         as="header" 
         bg="white" 
@@ -48,7 +52,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <Stack as="nav" direction="row" gap={2}>
                 <NavLink to="/bulk-transfer">{t('navigation.bulkTransfer')}</NavLink>
                 <NavLink to="/faucet">{t('navigation.faucet')}</NavLink>
-                {/* 更多工具导航链接将在实现后添加 */}
+                {/* More tool navigation links will be added after implementation */}
               </Stack>
             </Stack>
             <Stack direction="row" gap={4}>
@@ -59,18 +63,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </Container>
       </Flex>
       
-      <Box as="main">
+      <Box as="main" flex="1">
         {children}
       </Box>
       
-      <Box as="footer" p={6} bg="white" borderTopWidth="1px" mt="auto">
+      <Box as="footer" p={6} bg="white" borderTopWidth="1px">
         <Container maxW="container.xl" textAlign="center">
           <Text color="gray.500">
             {t('common.footer', { year: new Date().getFullYear() })}
           </Text>
         </Container>
       </Box>
-    </Box>
+    </Flex>
   );
 };
 
