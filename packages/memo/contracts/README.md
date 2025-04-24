@@ -53,10 +53,10 @@ Below are the key object addresses for the deployed contract:
 
 ### testnet
 
-- **Package ID**: `0x2617fa6e8a41f9932541b6e42f0fc02431ec070714cb732535c3ae218c554a80`
-- **MemoBoard ID**: `0xa626aafd38578f1db622e8fa92e1e5c3b2ae8aaa364f54bfa7120a1974332509`
-- **AdminCap ID**: `0xa9ad71fc21bf050eaeae2a76450b8a4dea8daf51e3572d91ed21a92f846b73f1`
-- **UpgradeCap ID**: `0x0fb38c69785c7aee91d94f81f1ea8fc45561dd927d2fc099c72eed4b6cf6185b`
+- **Package ID**: `0x247410b4f7861651cd9af1487c93b67790b4fc94bd44c85c635a976381f167ce`
+- **MemoBoard ID**: `0xc98f2a6b0cbd1b64a741afc38a8c212ef55efe6c230c8e989a96e0c54caaf393`
+- **AdminCap ID**: `0xb5340ab36702d74285d218698df2918a804705617aa31de7d7f1358f0264c9fc`
+- **UpgradeCap ID**: `0xce1169c4cd8e2fecdba4677604b4f2ddd6b4ba60d535e73024860f2980788507`
 
 ### Publish a Message
 
@@ -69,11 +69,11 @@ Example using the deployed contract address on testnet:
 
 ```
 sui client call \
---package 0x2617fa6e8a41f9932541b6e42f0fc02431ec070714cb732535c3ae218c554a80 \
+--package 0x247410b4f7861651cd9af1487c93b67790b4fc94bd44c85c635a976381f167ce \
 --module memo \
 --function post_message \
 --args \
-  0xa626aafd38578f1db622e8fa92e1e5c3b2ae8aaa364f54bfa7120a1974332509 \
+  0xc98f2a6b0cbd1b64a741afc38a8c212ef55efe6c230c8e989a96e0c54caaf393 \
   "Hello World" \
   0x6
 ```
@@ -89,12 +89,12 @@ Example using the deployed contract address on testnet:
 
 ```
 sui client call \
---package 0x2617fa6e8a41f9932541b6e42f0fc02431ec070714cb732535c3ae218c554a80 \
+--package 0x247410b4f7861651cd9af1487c93b67790b4fc94bd44c85c635a976381f167ce \
 --module memo \
 --function update_max_message_length \
 --args \
-  0xa9ad71fc21bf050eaeae2a76450b8a4dea8daf51e3572d91ed21a92f846b73f1 \
-  0xa626aafd38578f1db622e8fa92e1e5c3b2ae8aaa364f54bfa7120a1974332509 \
+  0xb5340ab36702d74285d218698df2918a804705617aa31de7d7f1358f0264c9fc \
+  0xc98f2a6b0cbd1b64a741afc38a8c212ef55efe6c230c8e989a96e0c54caaf393 \
   2048
 ```
 
