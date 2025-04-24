@@ -53,10 +53,10 @@ Memo 是一个基于 Sui Move 构建的链上留言板智能合约。它允许�
 
 ### testnet
 
-- **Package ID**: `0x7100dee3eb86da53ec2ef84b69fa28da885b1ff508b2ad9b5b820f0454a830b7`
-- **MemoBoard ID**: `0xd2dc287cb5b962578727ff2454d3bb7ebc242c7de240f3d9129f08b0cd8e271d`
-- **AdminCap ID**: `0x5bad2c30775cec79e788762d0e92ce233c67e254ac9aad898a644da349d21337`
-- **UpgradeCap ID**: `0x87b37d79533beae40f8f7ac4e9514a3f230f3de2065ba42e4c5a6995652787f5`
+- **Package ID**: `0x2617fa6e8a41f9932541b6e42f0fc02431ec070714cb732535c3ae218c554a80`
+- **MemoBoard ID**: `0xa626aafd38578f1db622e8fa92e1e5c3b2ae8aaa364f54bfa7120a1974332509`
+- **AdminCap ID**: `0xa9ad71fc21bf050eaeae2a76450b8a4dea8daf51e3572d91ed21a92f846b73f1`
+- **UpgradeCap ID**: `0x0fb38c69785c7aee91d94f81f1ea8fc45561dd927d2fc099c72eed4b6cf6185b`
 
 ### 发布消息
 
@@ -68,8 +68,9 @@ sui client call --package <PACKAGE_ID> --module memo --function post_message \
 使用 testnet 已部署合约的地址示例：
 
 ```
-sui client call --package 0x7100dee3eb86da53ec2ef84b69fa28da885b1ff508b2ad9b5b820f0454a830b7 --module memo --function post_message \
-  --args 0xd2dc287cb5b962578727ff2454d3bb7ebc242c7de240f3d9129f08b0cd8e271d "Hello World"
+sui client call --package 0x2617fa6e8a41f9932541b6e42f0fc02431ec070714cb732535c3ae218c554a80 --module memo --function post_message \
+  --args 0xa626aafd38578f1db622e8fa92e1e5c3b2ae8aaa364f54bfa7120a1974332509 "Hello World" \
+  0x6
 ```
 
 ### 更新消息长度限制(管理员)
@@ -82,8 +83,8 @@ sui client call --package <PACKAGE_ID> --module memo --function update_max_messa
 使用 testnet 已部署合约的地址示例：
 
 ```
-sui client call --package 0x7100dee3eb86da53ec2ef84b69fa28da885b1ff508b2ad9b5b820f0454a830b7 --module memo --function update_max_message_length \
-  --args 0x5bad2c30775cec79e788762d0e92ce233c67e254ac9aad898a644da349d21337 0xd2dc287cb5b962578727ff2454d3bb7ebc242c7de240f3d9129f08b0cd8e271d 2048
+sui client call --package 0x2617fa6e8a41f9932541b6e42f0fc02431ec070714cb732535c3ae218c554a80 --module memo --function update_max_message_length \
+  --args 0xa9ad71fc21bf050eaeae2a76450b8a4dea8daf51e3572d91ed21a92f846b73f1 0xa626aafd38578f1db622e8fa92e1e5c3b2ae8aaa364f54bfa7120a1974332509 2048
 ```
 
 ## 测试
