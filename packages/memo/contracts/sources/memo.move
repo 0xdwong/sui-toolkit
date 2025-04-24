@@ -1,7 +1,7 @@
 module memo::memo;
 
 use std::string::{Self, String};
-use sui::clock::Clock;
+use sui::clock::{Clock};
 use sui::event;
 use sui::package;
 use sui::table::{Self, Table};
