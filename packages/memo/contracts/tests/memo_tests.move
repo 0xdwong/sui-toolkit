@@ -4,6 +4,7 @@ module memo::memo_tests;
 use memo::memo::{Self, MemoBoard, AdminCap, EInvalidMessageLength};
 use std::string;
 use sui::test_scenario as ts;
+use sui::clock::{Self};
 
 const USER1: address = @0x1;
 const USER2: address = @0x2;
@@ -23,7 +24,9 @@ fun test_memo() {
     ts::next_tx(scenario, USER1);
     {
         let mut board = ts::take_shared<MemoBoard>(scenario);
-        memo::post_message(&mut board, b"Hello Sui", ts::ctx(scenario));
+        let clock = clock::create_for_testing(ts::ctx(scenario));
+        
+        memo::post_message(&mut board, b"Hello Sui", &clock, ts::ctx(scenario));
 
         // Verify message count increased
         assert!(memo::message_count(&board) == 1, 0);
@@ -34,13 +37,16 @@ fun test_memo() {
         assert!(author == USER1, 0);
 
         ts::return_shared(board);
+        clock::destroy_for_testing(clock);
     };
 
     // Test posting a second message
     ts::next_tx(scenario, USER2);
     {
         let mut board = ts::take_shared<MemoBoard>(scenario);
-        memo::post_message(&mut board, b"Second message", ts::ctx(scenario));
+        let clock = clock::create_for_testing(ts::ctx(scenario));
+        
+        memo::post_message(&mut board, b"Second message", &clock, ts::ctx(scenario));
 
         // Verify message count increased
         assert!(memo::message_count(&board) == 2, 0);
@@ -56,13 +62,16 @@ fun test_memo() {
         assert!(author2 == USER2, 0);
 
         ts::return_shared(board);
+        clock::destroy_for_testing(clock);
     };
 
     // Test posting with empty content (should use default "hello")
     ts::next_tx(scenario, USER1);
     {
         let mut board = ts::take_shared<MemoBoard>(scenario);
-        memo::post_message(&mut board, b"", ts::ctx(scenario));
+        let clock = clock::create_for_testing(ts::ctx(scenario));
+        
+        memo::post_message(&mut board, b"", &clock, ts::ctx(scenario));
 
         // Verify message count increased
         assert!(memo::message_count(&board) == 3, 0);
@@ -73,6 +82,7 @@ fun test_memo() {
         assert!(author == USER1, 0);
 
         ts::return_shared(board);
+        clock::destroy_for_testing(clock);
     };
 
     // Test updating max message length as admin
@@ -114,6 +124,7 @@ fun test_message_too_long() {
     ts::next_tx(scenario, USER1);
     {
         let mut board = ts::take_shared<MemoBoard>(scenario);
+        let clock = clock::create_for_testing(ts::ctx(scenario));
 
         // Create a message that's too long (> 1024 characters)
         let mut long_message = vector::empty<u8>();
@@ -124,9 +135,10 @@ fun test_message_too_long() {
         };
 
         // This should fail with EInvalidMessageLength
-        memo::post_message(&mut board, long_message, ts::ctx(scenario));
+        memo::post_message(&mut board, long_message, &clock, ts::ctx(scenario));
 
         ts::return_shared(board);
+        clock::destroy_for_testing(clock);
     };
 
     ts::end(scenario_val);
