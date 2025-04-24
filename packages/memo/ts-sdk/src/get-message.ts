@@ -88,7 +88,7 @@ async function main() {
     console.log(`消息 #${messageId}:`);
     console.log(`内容: ${message.content.trim()}`);
     console.log(`作者: ${message.author}`);
-    console.log(`创建于纪元: ${message.createdAt}`);
+    console.log(`时间戳: ${new Date(Number(message.createdAt)).toLocaleString()}`);
   } catch (error) {
     console.error('执行失败:', error);
   }
