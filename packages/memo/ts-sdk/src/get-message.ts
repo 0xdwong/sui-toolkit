@@ -73,24 +73,24 @@ async function main() {
   const messageId = BigInt(process.argv[3] || '0');
   
   if (process.argv.length <= 3) {
-    console.error('请提供消息ID');
+    console.error('Please provide a message ID');
     process.exit(1);
   }
   
   if (network !== 'mainnet' && network !== 'testnet') {
-    console.error('无效的网络参数');
+    console.error('Invalid network parameter');
     process.exit(1);
   }
 
   try {
     // Get the specific message
     const message = await getMessage(messageId, network as 'mainnet' | 'testnet');
-    console.log(`消息 #${messageId}:`);
-    console.log(`内容: ${message.content.trim()}`);
-    console.log(`作者: ${message.author}`);
-    console.log(`时间戳: ${new Date(Number(message.createdAt)).toLocaleString()}`);
+    console.log(`Message #${messageId}:`);
+    console.log(`Content: ${message.content.trim()}`);
+    console.log(`Author: ${message.author}`);
+    console.log(`Timestamp: ${new Date(Number(message.createdAt)).toLocaleString()}`);
   } catch (error) {
-    console.error('执行失败:', error);
+    console.error('Execution failed:', error);
   }
 }
 
