@@ -134,7 +134,7 @@ const BulkTransfer: React.FC = () => {
         <Box p={5} borderWidth="1px" borderRadius="md" bg="white">
           <HStack justifyContent="space-between" mb={4}>
             <Heading as="h2" size="md">{t('bulkTransfer.transferList')}</Heading>
-            <Button onClick={addNewRow} colorScheme="green" size="sm">{t('bulkTransfer.addRow')}</Button>
+            <Button onClick={addNewRow} colorPalette="green" size="sm">{t('bulkTransfer.addRow')}</Button>
           </HStack>
           
           <Box overflowX="auto">
@@ -168,7 +168,7 @@ const BulkTransfer: React.FC = () => {
                     <td style={{ padding: '10px' }}>
                       <Button
                         size="sm"
-                        colorScheme="red"
+                        colorPalette="red"
                         onClick={() => handleRemoveRow(index)}
                       >
                         {t('bulkTransfer.delete')}
@@ -185,7 +185,7 @@ const BulkTransfer: React.FC = () => {
               {t('bulkTransfer.total')}: {transferItems.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)} SUI
             </Text>
             <Button 
-              colorScheme="blue" 
+              colorPalette="blue" 
               size="lg" 
               onClick={executeTransfer}
               disabled={!currentAccount}
