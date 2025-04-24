@@ -68,8 +68,13 @@ sui client call --package <PACKAGE_ID> --module memo --function post_message \
 Example using the deployed contract address on testnet:
 
 ```
-sui client call --package 0x2617fa6e8a41f9932541b6e42f0fc02431ec070714cb732535c3ae218c554a80 --module memo --function post_message \
-  --args 0xa626aafd38578f1db622e8fa92e1e5c3b2ae8aaa364f54bfa7120a1974332509 "Hello World" \
+sui client call \
+--package 0x2617fa6e8a41f9932541b6e42f0fc02431ec070714cb732535c3ae218c554a80 \
+--module memo \
+--function post_message \
+--args \
+  0xa626aafd38578f1db622e8fa92e1e5c3b2ae8aaa364f54bfa7120a1974332509 \
+  "Hello World" \
   0x6
 ```
 
@@ -83,8 +88,14 @@ sui client call --package <PACKAGE_ID> --module memo --function update_max_messa
 Example using the deployed contract address on testnet:
 
 ```
-sui client call --package 0x2617fa6e8a41f9932541b6e42f0fc02431ec070714cb732535c3ae218c554a80 --module memo --function update_max_message_length \
-  --args 0xa9ad71fc21bf050eaeae2a76450b8a4dea8daf51e3572d91ed21a92f846b73f1 0xa626aafd38578f1db622e8fa92e1e5c3b2ae8aaa364f54bfa7120a1974332509 2048
+sui client call \
+--package 0x2617fa6e8a41f9932541b6e42f0fc02431ec070714cb732535c3ae218c554a80 \
+--module memo \
+--function update_max_message_length \
+--args \
+  0xa9ad71fc21bf050eaeae2a76450b8a4dea8daf51e3572d91ed21a92f846b73f1 \
+  0xa626aafd38578f1db622e8fa92e1e5c3b2ae8aaa364f54bfa7120a1974332509 \
+  2048
 ```
 
 ## Testing
