@@ -52,6 +52,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <Stack as="nav" direction="row" gap={2}>
                 <NavLink to="/bulk-transfer">{t('navigation.bulkTransfer')}</NavLink>
                 <NavLink to="/faucet">{t('navigation.faucet')}</NavLink>
+                <NavLink to="/walrus">{t('navigation.walrus')}</NavLink>
                 {/* More tool navigation links will be added after implementation */}
               </Stack>
             </Stack>

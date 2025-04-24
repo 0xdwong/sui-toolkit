@@ -6,7 +6,8 @@
   "navigation": {
     "home": "Home",
     "bulkTransfer": "Bulk Transfer",
-    "faucet": "Testnet Faucet"
+    "faucet": "Faucet",
+    "walrus": "Walrus"
   },
   "language": {
     "en": "English",
@@ -16,11 +17,15 @@
     "title": "Toolkits",
     "bulkTransfer": {
       "title": "Bulk Transfer",
-      "description": "Transfer SUI tokens to multiple addresses at once"
+      "description": "Transfer SUI tokens to multiple addresses in one transaction"
     },
     "faucet": {
       "title": "Testnet Faucet",
-      "description": "Get SUI tokens on testnet"
+      "description": "Get testnet SUI tokens"
+    },
+    "walrus": {
+      "title": "Walrus",
+      "description": "Upload, query and manage files in decentralized storage"
     }
   },
   "bulkTransfer": {
@@ -36,20 +41,20 @@
     "error": {
       "title": "Error",
       "connectWallet": "Please connect your wallet first",
-      "noValidTransfers": "No valid transfer information",
-      "transferFailed": "Transfer Failed",
-      "unknownError": "An unknown error occurred"
+      "noValidTransfers": "No valid transfers",
+      "transferFailed": "Transfer failed",
+      "unknownError": "Unknown error occurred"
     },
     "success": {
-      "title": "Transfer Success",
+      "title": "Transfer Successful",
       "description": "Transaction Digest: {{digest}}"
     }
   },
   "faucet": {
     "title": "Testnet Faucet",
-    "description": "Get SUI tokens on testnet. Enter your address below to receive tokens.",
+    "description": "Get testnet SUI tokens. Enter your address below to receive tokens.",
     "network": "Network",
-    "addresses": "Address(es)",
+    "addresses": "Addresses",
     "addressPlaceholder": "Enter one or more addresses (separate multiple addresses with commas or newlines)",
     "getTokens": "Get Tokens",
     "submitting": "Submitting...",
@@ -57,14 +62,89 @@
     "requestFailed": "Request Failed",
     "successAddresses": "Successful Addresses",
     "failedAddresses": "Failed Addresses",
-    "viewInExplorer": "View in Explorer {{address}}...",
+    "viewInExplorer": "View {{address}}... in Explorer",
     "error": {
       "title": "Error",
       "description": "An unknown error occurred"
     },
     "success": {
       "title": "Success",
-      "description": "Tokens sent to {{count}} address(es)"
+      "description": "Tokens sent to {{count}} addresses"
+    }
+  },
+  "walrus": {
+    "title": "Walrus",
+    "tabs": {
+      "upload": "Upload File",
+      "myFiles": "My Files",
+      "query": "Query File"
+    },
+    "upload": {
+      "dragAndDrop": "Drag and drop a file here or click to select a file",
+      "selectFile": "Select File",
+      "encryption": "File Encryption",
+      "enableEncryption": "Enable end-to-end encryption",
+      "accessControl": "Access Control",
+      "public": "Public",
+      "private": "Private",
+      "custom": "Custom",
+      "uploadButton": "Upload File",
+      "uploading": "Uploading...",
+      "progress": "Upload Progress",
+      "noFileSelected": "Please select a file"
+    },
+    "myFiles": {
+      "refresh": "Refresh",
+      "sort": "Sort",
+      "filter": "Filter",
+      "search": "Search",
+      "preview": "Preview",
+      "filename": "Filename",
+      "size": "Size",
+      "uploadDate": "Upload Date",
+      "selected": "Selected",
+      "files": "files",
+      "download": "Download",
+      "share": "Share",
+      "delete": "Delete",
+      "objectId": "ObjectID",
+      "noFiles": "No files found",
+      "loadingFiles": "Loading files..."
+    },
+    "query": {
+      "title": "Query File by ObjectID",
+      "placeholder": "Enter the file's ObjectID",
+      "queryButton": "Query",
+      "fileInfo": "File Information",
+      "filename": "Filename",
+      "size": "Size",
+      "uploadDate": "Upload Date",
+      "fileType": "Type",
+      "preview": "Preview",
+      "download": "Download"
+    },
+    "preview": {
+      "title": "File Preview",
+      "fileInfo": "File Information",
+      "objectId": "ObjectID",
+      "fileType": "File Type",
+      "download": "Download",
+      "share": "Share Link",
+      "close": "Close"
+    },
+    "messages": {
+      "uploadSuccess": "File uploaded successfully",
+      "uploadError": "File upload failed",
+      "querySuccess": "File query successful",
+      "queryError": "File query failed",
+      "fileNotFound": "File not found",
+      "downloadStarted": "Download started",
+      "connectWallet": "Please connect your wallet first",
+      "fileTooLarge": "File is too large",
+      "invalidObjectId": "Invalid ObjectID",
+      "deleteSuccess": "File deleted successfully",
+      "deleteError": "File deletion failed",
+      "shareSuccess": "File link copied to clipboard"
     }
   }
 } 

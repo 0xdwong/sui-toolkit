@@ -11,6 +11,7 @@ import Layout from './components/Layout/Layout';
 import BulkTransfer from './components/BulkTransfer/BulkTransfer';
 import ToolList from './components/ToolList/ToolList';
 import Faucet from './components/Faucet/Faucet';
+import Walrus from './components/Walrus/Walrus';
 
 // Create React Query client
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ function App() {
                   <Route path="/" element={<ToolList />} />
                   <Route path="/bulk-transfer" element={<BulkTransfer />} />
                   <Route path="/faucet" element={<Faucet />} />
+                  <Route path="/walrus" element={<Walrus />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Layout>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container, SimpleGrid, Heading } from '@chakra-ui/react';
-import { FiSend, FiDroplet, FiInfo, FiKey, FiEdit } from 'react-icons/fi';
+import { FiSend, FiDroplet, FiHardDrive } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 import ToolCard from '../ToolCard/ToolCard';
 
@@ -28,6 +28,13 @@ const tools: Tool[] = [
     descriptionKey: 'tools.faucet.description',
     icon: FiDroplet,
     href: '/faucet'
+  },
+  {
+    id: 'walrus',
+    titleKey: 'tools.walrus.title',
+    descriptionKey: 'tools.walrus.description',
+    icon: FiHardDrive,
+    href: '/walrus'
   },
 ];
 

@@ -1169,10 +1169,10 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@chakra-ui/react@^3.15.1":
-  version "3.15.1"
-  resolved "https://registry.yarnpkg.com/@chakra-ui/react/-/react-3.15.1.tgz#34b33765e6700ce6a98adacd8d056b2b05771929"
-  integrity sha512-BZPKvGoiWn1OTkXn4M9XJvXVES6urlCxARsT2XZhFaV41/tkYvuBMSVQ8fbZdCeY7YfnxCbiLLth46tDeEZEyQ==
+"@chakra-ui/react@^3.16.1":
+  version "3.16.1"
+  resolved "https://registry.yarnpkg.com/@chakra-ui/react/-/react-3.16.1.tgz#881a04994e27d8b1aecc4453a49ba5a0b70f20de"
+  integrity sha512-LOfPrI2L2JdFo1tt/7C+WLJj8NCyZMviWhaRPIY5/oirmvhMuGF+xUTtR+6iKUBk0QcH2ZRsDHbuhtAxCoco0w==
   dependencies:
     "@ark-ui/react" "5.5.0"
     "@emotion/is-prop-valid" "1.3.1"
@@ -6126,13 +6126,13 @@ fraction.js@^4.3.7:
   resolved "https://registry.yarnpkg.com/fraction.js/-/fraction.js-4.3.7.tgz#06ca0085157e42fda7f9e726e79fefc4068840f7"
   integrity sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==
 
-framer-motion@^12.6.5:
-  version "12.6.5"
-  resolved "https://registry.yarnpkg.com/framer-motion/-/framer-motion-12.6.5.tgz#5777760290f2011ec71afe1bdd7053e91459bc47"
-  integrity sha512-MKvnWov0paNjvRJuIy6x418w23tFqRfS6CXHhZrCiSEpXVlo/F+usr8v4/3G6O0u7CpsaO1qop+v4Ip7PRCBqQ==
+framer-motion@^12.7.5:
+  version "12.7.5"
+  resolved "https://registry.yarnpkg.com/framer-motion/-/framer-motion-12.7.5.tgz#a6aeac5318a5d30011a80e0d83f3fc6a7d57d2f1"
+  integrity sha512-iD+vBOLn8E8bwBAFUQ1DYXjivm+cGGPgQUQ4Doleq7YP/zHdozUVwAMBJwOOfCTbtM8uOooMi77noD261Kxiyw==
   dependencies:
-    motion-dom "^12.6.5"
-    motion-utils "^12.6.5"
+    motion-dom "^12.7.5"
+    motion-utils "^12.7.5"
     tslib "^2.4.0"
 
 fresh@0.5.2:
@@ -8058,17 +8058,17 @@ modern-ahocorasick@^1.0.0:
   resolved "https://registry.yarnpkg.com/modern-ahocorasick/-/modern-ahocorasick-1.1.0.tgz#9b1fa15d4f654be20a2ad7ecc44ec9d7645bb420"
   integrity sha512-sEKPVl2rM+MNVkGQt3ChdmD8YsigmXdn5NifZn6jiwn9LRJpWm8F3guhaqrJT/JOat6pwpbXEk6kv+b9DMIjsQ==
 
-motion-dom@^12.6.5:
-  version "12.6.5"
-  resolved "https://registry.yarnpkg.com/motion-dom/-/motion-dom-12.6.5.tgz#e8507496f45905f50b0b978ad9b6bedb4f3ba065"
-  integrity sha512-jpM9TQLXzYMWMJ7Ec7sAj0iis8oIuu6WvjI3yNKJLdrZyrsI/b2cRInDVL8dCl683zQQq19DpL9cSMP+k8T1NA==
+motion-dom@^12.7.5:
+  version "12.7.5"
+  resolved "https://registry.yarnpkg.com/motion-dom/-/motion-dom-12.7.5.tgz#c24206a05e266cc592789eb463aa717bf02a0d0f"
+  integrity sha512-0YjhPfv9n5O8DqCrSp8ny+JrsHqYu957oqlNKkrUrAvYpDKYWfp/7uM9Pu26DinbMn+H0p72rdUL8P8RzhSo1Q==
   dependencies:
-    motion-utils "^12.6.5"
+    motion-utils "^12.7.5"
 
-motion-utils@^12.6.5:
-  version "12.6.5"
-  resolved "https://registry.yarnpkg.com/motion-utils/-/motion-utils-12.6.5.tgz#c147d0d6cca727c91e626a5c3ca5d31ca75a2960"
-  integrity sha512-IsOeKsOF+FWBhxQEDFBO6ZYC8/jlidmVbbLpe9/lXSA9j9kzGIMUuIBx2SZY+0reAS0DjZZ1i7dJp4NHrjocPw==
+motion-utils@^12.7.5:
+  version "12.7.5"
+  resolved "https://registry.yarnpkg.com/motion-utils/-/motion-utils-12.7.5.tgz#d77df2c6e336540766d9927498e62571b81b66bd"
+  integrity sha512-JIgrmEq7Vw1x0AUrjvkRp7oMMQkGqSUMT50O/Ag6RRCQWG3gRRTkOI+BirBAJT6m+GIPoiyxkJ1u98GgF/a6TQ==
 
 ms@2.0.0:
   version "2.0.0"
