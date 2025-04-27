@@ -1,5 +1,5 @@
 import { getFullnodeUrl, SuiClient } from '@mysten/sui/client';
-import { Transaction } from '@mysten/sui/transactions';
+import { Transaction, namedPackagesPlugin } from '@mysten/sui/transactions';
 import { bcs } from '@mysten/sui/bcs';
 import config from './config';
 
@@ -16,17 +16,20 @@ type NetworkKey = keyof NetworkConfig;
 async function getMessage(messageId: bigint, network: ChainNetwork = 'mainnet') {
   // Convert network to uppercase as a valid config key
   const networkKey = network.toUpperCase() as NetworkKey;
-  const MEMO_PACKAGE_ID = config[networkKey].MEMO_PACKAGE_ID;
+  const MEMO_PACKAGE = config[networkKey].MEMO_PACKAGE_ID || config[networkKey].MEMO_MVR;
   const MEMO_BOARD_OBJECT_ID = config[networkKey].MEMO_BOARD_OBJECT_ID;
-  if (!MEMO_PACKAGE_ID || !MEMO_BOARD_OBJECT_ID) {
+  if (!MEMO_PACKAGE || !MEMO_BOARD_OBJECT_ID) {
     throw new Error('Memo package ID or board object ID is not set');
   }
 
   try {
     // Create a transaction block to call the get_message function
     const tx = new Transaction();
+    const plugin = namedPackagesPlugin({ url: config[networkKey].MVR_ENDPOINT });
+    tx.addSerializationPlugin(plugin);
+
     tx.moveCall({
-      target: `${MEMO_PACKAGE_ID}::memo::get_message`,
+      target: `${MEMO_PACKAGE}::memo::get_message`,
       arguments: [
         tx.object(MEMO_BOARD_OBJECT_ID),
         tx.pure.u64(messageId)
