@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
-import { 
-  Box, 
-  Button, 
-  Container, 
-  Heading, 
-  Input, 
+import React, { useState } from "react";
+import {
+  Box,
+  Button,
+  Container,
+  Heading,
+  Input,
   Stack,
   Text,
   HStack,
   VStack,
-} from '@chakra-ui/react';
-import { useCurrentAccount, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
-import { Transaction } from '@mysten/sui/transactions';
-import { useTranslation } from 'react-i18next';
+} from "@chakra-ui/react";
+import {
+  useCurrentAccount,
+  useSignAndExecuteTransaction,
+} from "@mysten/dapp-kit";
+import { Transaction } from "@mysten/sui/transactions";
+import { useTranslation } from "react-i18next";
 
 interface TransferItem {
   address: string;
@@ -24,19 +27,19 @@ const useSimpleToast = () => {
   return {
     // Simple toast implementation
     success: (options: { title: string; description: string }) => {
-      console.log('Success:', options.title, options.description);
+      console.log("Success:", options.title, options.description);
       alert(`Success: ${options.title} - ${options.description}`);
     },
     error: (options: { title: string; description: string }) => {
-      console.error('Error:', options.title, options.description);
+      console.error("Error:", options.title, options.description);
       alert(`Error: ${options.title} - ${options.description}`);
-    }
+    },
   };
 };
 
 const BulkTransfer: React.FC = () => {
   const [transferItems, setTransferItems] = useState<TransferItem[]>([
-    { address: '', amount: '' }
+    { address: "", amount: "" },
   ]);
   const toast = useSimpleToast();
   const currentAccount = useCurrentAccount();
@@ -44,10 +47,14 @@ const BulkTransfer: React.FC = () => {
   const { t } = useTranslation();
 
   const addNewRow = () => {
-    setTransferItems([...transferItems, { address: '', amount: '' }]);
+    setTransferItems([...transferItems, { address: "", amount: "" }]);
   };
 
-  const handleChange = (index: number, field: keyof TransferItem, value: string) => {
+  const handleChange = (
+    index: number,
+    field: keyof TransferItem,
+    value: string,
+  ) => {
     const newItems = [...transferItems];
     newItems[index][field] = value;
     setTransferItems(newItems);
@@ -64,40 +71,42 @@ const BulkTransfer: React.FC = () => {
   const executeTransfer = async () => {
     if (!currentAccount) {
       toast.error({
-        title: t('bulkTransfer.error.title'),
-        description: t('bulkTransfer.error.connectWallet')
+        title: t("bulkTransfer.error.title"),
+        description: t("bulkTransfer.error.connectWallet"),
       });
       return;
     }
 
     // Validate input
     const validTransfers = transferItems.filter(
-      item => item.address && item.amount && !isNaN(Number(item.amount))
+      (item) => item.address && item.amount && !isNaN(Number(item.amount)),
     );
 
     if (validTransfers.length === 0) {
       toast.error({
-        title: t('bulkTransfer.error.title'),
-        description: t('bulkTransfer.error.noValidTransfers')
+        title: t("bulkTransfer.error.title"),
+        description: t("bulkTransfer.error.noValidTransfers"),
       });
       return;
     }
 
     try {
       const tx = new Transaction();
-      
+
       // Add all transfers to transaction
       for (const item of validTransfers) {
         // Convert amount to MIST (1 SUI = 10^9 MIST)
-        const amountInMist = Math.floor(Number(item.amount) * 10**9);
-        
+        const amountInMist = Math.floor(Number(item.amount) * 10 ** 9);
+
         // Split a portion from gas coin
-        const [coin] = tx.splitCoins(tx.gas, [tx.pure.u64(BigInt(amountInMist))]);
-        
+        const [coin] = tx.splitCoins(tx.gas, [
+          tx.pure.u64(BigInt(amountInMist)),
+        ]);
+
         // Transfer to target address
         tx.transferObjects([coin], tx.pure.address(item.address));
       }
-      
+
       // Execute transaction
       signAndExecute(
         {
@@ -106,72 +115,102 @@ const BulkTransfer: React.FC = () => {
         {
           onSuccess: (result) => {
             toast.success({
-              title: t('bulkTransfer.success.title'),
-              description: t('bulkTransfer.success.description', { digest: result.digest })
+              title: t("bulkTransfer.success.title"),
+              description: t("bulkTransfer.success.description", {
+                digest: result.digest,
+              }),
             });
           },
           onError: (error) => {
             toast.error({
-              title: t('bulkTransfer.error.transferFailed'),
-              description: error instanceof Error ? error.message : t('bulkTransfer.error.unknownError')
+              title: t("bulkTransfer.error.transferFailed"),
+              description:
+                error instanceof Error
+                  ? error.message
+                  : t("bulkTransfer.error.unknownError"),
             });
-          }
-        }
+          },
+        },
       );
     } catch (error) {
       toast.error({
-        title: t('bulkTransfer.error.transferFailed'),
-        description: error instanceof Error ? error.message : t('bulkTransfer.error.unknownError')
+        title: t("bulkTransfer.error.transferFailed"),
+        description:
+          error instanceof Error
+            ? error.message
+            : t("bulkTransfer.error.unknownError"),
       });
     }
   };
 
   return (
     <Container maxW="container.xl" py={8}>
-      <Heading as="h1" mb={6}>{t('bulkTransfer.title')}</Heading>
-      
+      <Heading as="h1" mb={6}>
+        {t("bulkTransfer.title")}
+      </Heading>
+
       <Stack display="flex" gap={8}>
         <Box p={5} borderWidth="1px" borderRadius="md" bg="white">
           <HStack justifyContent="space-between" mb={4}>
-            <Heading as="h2" size="md">{t('bulkTransfer.transferList')}</Heading>
-            <Button onClick={addNewRow} colorScheme="green" size="sm">{t('bulkTransfer.addRow')}</Button>
+            <Heading as="h2" size="md">
+              {t("bulkTransfer.transferList")}
+            </Heading>
+            <Button onClick={addNewRow} colorScheme="green" size="sm">
+              {t("bulkTransfer.addRow")}
+            </Button>
           </HStack>
-          
+
           <Box overflowX="auto">
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr>
-                  <th style={{ padding: '10px', textAlign: 'left' }}>{t('bulkTransfer.receivingAddress')}</th>
-                  <th style={{ padding: '10px', textAlign: 'left' }}>{t('bulkTransfer.amount')}</th>
-                  <th style={{ padding: '10px', textAlign: 'left', width: '100px' }}>{t('bulkTransfer.action')}</th>
+                  <th style={{ padding: "10px", textAlign: "left" }}>
+                    {t("bulkTransfer.receivingAddress")}
+                  </th>
+                  <th style={{ padding: "10px", textAlign: "left" }}>
+                    {t("bulkTransfer.amount")}
+                  </th>
+                  <th
+                    style={{
+                      padding: "10px",
+                      textAlign: "left",
+                      width: "100px",
+                    }}
+                  >
+                    {t("bulkTransfer.action")}
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {transferItems.map((item, index) => (
                   <tr key={index}>
-                    <td style={{ padding: '10px' }}>
+                    <td style={{ padding: "10px" }}>
                       <Input
                         value={item.address}
-                        onChange={(e) => handleChange(index, 'address', e.target.value)}
+                        onChange={(e) =>
+                          handleChange(index, "address", e.target.value)
+                        }
                         placeholder="0x..."
                       />
                     </td>
-                    <td style={{ padding: '10px' }}>
+                    <td style={{ padding: "10px" }}>
                       <Input
                         value={item.amount}
-                        onChange={(e) => handleChange(index, 'amount', e.target.value)}
+                        onChange={(e) =>
+                          handleChange(index, "amount", e.target.value)
+                        }
                         placeholder="0.0"
                         type="number"
                         step="0.000000001"
                       />
                     </td>
-                    <td style={{ padding: '10px' }}>
+                    <td style={{ padding: "10px" }}>
                       <Button
                         size="sm"
                         colorScheme="red"
                         onClick={() => handleRemoveRow(index)}
                       >
-                        {t('bulkTransfer.delete')}
+                        {t("bulkTransfer.delete")}
                       </Button>
                     </td>
                   </tr>
@@ -179,19 +218,24 @@ const BulkTransfer: React.FC = () => {
               </tbody>
             </table>
           </Box>
-          
+
           <VStack display="flex" gap={4} mt={6}>
             <Text>
-              {t('bulkTransfer.total')}: {transferItems.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)} SUI
+              {t("bulkTransfer.total")}:{" "}
+              {transferItems.reduce(
+                (sum, item) => sum + (Number(item.amount) || 0),
+                0,
+              )}{" "}
+              SUI
             </Text>
-            <Button 
-              colorScheme="blue" 
-              size="lg" 
+            <Button
+              colorScheme="blue"
+              size="lg"
               onClick={executeTransfer}
               disabled={!currentAccount}
               width="full"
             >
-              {t('bulkTransfer.execute')}
+              {t("bulkTransfer.execute")}
             </Button>
           </VStack>
         </Box>
@@ -200,4 +244,4 @@ const BulkTransfer: React.FC = () => {
   );
 };
 
-export default BulkTransfer; 
+export default BulkTransfer;

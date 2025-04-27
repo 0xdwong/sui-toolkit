@@ -1,25 +1,30 @@
-import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
-import { SuiClientProvider, WalletProvider } from '@mysten/dapp-kit';
-import { getFullnodeUrl } from '@mysten/sui/client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ChakraProvider, defaultSystem } from "@chakra-ui/react";
+import { SuiClientProvider, WalletProvider } from "@mysten/dapp-kit";
+import { getFullnodeUrl } from "@mysten/sui/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
 // Import i18n configuration
-import './i18n/i18n';
+import "./i18n/i18n";
 
-import Layout from './components/Layout/Layout';
-import BulkTransfer from './components/BulkTransfer/BulkTransfer';
-import ToolList from './components/ToolList/ToolList';
-import Faucet from './components/Faucet/Faucet';
+import Layout from "./components/Layout/Layout";
+import BulkTransfer from "./components/BulkTransfer/BulkTransfer";
+import ToolList from "./components/ToolList/ToolList";
+import Faucet from "./components/Faucet/Faucet";
 
 // Create React Query client
 const queryClient = new QueryClient();
 
 // Network configuration
 const networks = {
-  mainnet: { url: getFullnodeUrl('mainnet') },
-  testnet: { url: getFullnodeUrl('testnet') },
-  devnet: { url: getFullnodeUrl('devnet') },
+  mainnet: { url: getFullnodeUrl("mainnet") },
+  testnet: { url: getFullnodeUrl("testnet") },
+  devnet: { url: getFullnodeUrl("devnet") },
 };
 
 function App() {

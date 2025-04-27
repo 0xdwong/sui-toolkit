@@ -2,44 +2,58 @@
   "name": "sui-toolkit-client",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "dependencies": {
-    "@chakra-ui/react": "^3.15.1",
+    "@chakra-ui/react": "^3.16.1",
     "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
-    "@mysten/dapp-kit": "^0.15.3",
-    "@mysten/sui": "^1.27.0",
-    "@mysten/wallet-standard": "^0.14.3",
-    "@tanstack/react-query": "^5.74.0",
-    "@testing-library/dom": "^10.4.0",
+    "@mysten/dapp-kit": "^0.16.0",
+    "@mysten/sui": "^1.28.2",
+    "@tanstack/react-query": "^5.74.4",
+    "@testing-library/dom": "10.0.0",
     "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.1.0",
-    "@testing-library/user-event": "^13.2.1",
-    "@types/jest": "^27.0.1",
-    "@types/node": "^16.7.13",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "framer-motion": "^12.6.5",
-    "i18next": "^25.0.0",
-    "i18next-browser-languagedetector": "^8.0.4",
+    "@testing-library/react": "^16.3.0",
+    "@types/jest": "^29.5.14",
+    "@typescript-eslint/eslint-plugin": "^8.27.0",
+    "@typescript-eslint/parser": "^8.27.0",
+    "eslint": "^9.22.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-prettier": "^5.2.3",
+    "i18next": "^25.0.1",
+    "i18next-browser-languagedetector": "^8.0.5",
+    "prettier": "^3.5.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-i18next": "^15.4.1",
+    "react-i18next": "^15.5.1",
     "react-icons": "^5.5.0",
-    "react-router-dom": "^7.5.0",
-    "react-scripts": "5.0.1",
-    "typescript": "^4.4.2",
-    "web-vitals": "^2.1.0"
+    "react-router-dom": "^7.5.2",
+    "react-scripts": "^5.0.1",
+    "web-vitals": "2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "ecmaVersion": 2020,
+      "sourceType": "module",
+      "ecmaFeatures": {
+        "jsx": true
+      }
+    },
+    "plugins": [
+      "@typescript-eslint"
     ]
   },
   "browserslist": {
@@ -53,5 +67,12 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "eslint-config-react-app": "^7.0.1",
+    "eslint-plugin-react": "^7.37.5",
+    "typescript": "^5.8.3"
   }
 }

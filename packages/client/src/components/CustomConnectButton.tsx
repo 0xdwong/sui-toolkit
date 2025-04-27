@@ -1,16 +1,13 @@
-import React from 'react';
-import { ConnectButton } from '@mysten/dapp-kit';
-import { Box } from '@chakra-ui/react';
-import { useCurrentAccount } from '@mysten/dapp-kit';
+import React from "react";
+import { ConnectButton } from "@mysten/dapp-kit";
+import { Box } from "@chakra-ui/react";
 
 // Custom ConnectButton component that uses direct styling
 const CustomConnectButton = () => {
-  const currentAccount = useCurrentAccount();
-
   // Define custom button styles to apply via CSS
   React.useEffect(() => {
     // Create a style element
-    const styleEl = document.createElement('style');
+    const styleEl = document.createElement("style");
     styleEl.innerHTML = `
       .dapp-kit-connect-button button {
         background-color: #3182CE !important;
@@ -55,20 +52,20 @@ const CustomConnectButton = () => {
       }
     `;
     document.head.appendChild(styleEl);
-    
+
     return () => {
       document.head.removeChild(styleEl);
     };
   }, []);
-  
+
   return (
-    <Box 
-      className="dapp-kit-connect-button" 
+    <Box
+      className="dapp-kit-connect-button"
       position="relative"
       zIndex={10}
       display="inline-block"
       onClick={() => {
-        console.log('Wallet button clicked');
+        console.log("Wallet button clicked");
       }}
     >
       <ConnectButton connectText="Connect Wallet" />
@@ -76,4 +73,4 @@ const CustomConnectButton = () => {
   );
 };
 
-export default CustomConnectButton; 
+export default CustomConnectButton;

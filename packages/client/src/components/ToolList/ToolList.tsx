@@ -1,41 +1,41 @@
-import React from 'react';
-import { Container, SimpleGrid, Heading } from '@chakra-ui/react';
-import { FiSend, FiDroplet, FiInfo, FiKey, FiEdit } from 'react-icons/fi';
-import { useTranslation } from 'react-i18next';
-import ToolCard from '../ToolCard/ToolCard';
+import React from "react";
+import { Container, SimpleGrid, Heading } from "@chakra-ui/react";
+import { FiSend, FiDroplet, FiKey } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
+import ToolCard from "../ToolCard/ToolCard";
 
 // Tool definition interface
-interface Tool {
+type Tool = {
   id: string;
   titleKey: string;
   descriptionKey: string;
   icon: any;
   href: string;
-}
+};
 
 // Available tools
 const tools: Tool[] = [
   {
-    id: 'bulk-transfer',
-    titleKey: 'tools.bulkTransfer.title',
-    descriptionKey: 'tools.bulkTransfer.description',
+    id: "bulk-transfer",
+    titleKey: "tools.bulkTransfer.title",
+    descriptionKey: "tools.bulkTransfer.description",
     icon: FiSend,
-    href: '/bulk-transfer'
+    href: "/bulk-transfer",
   },
   {
-    id: 'faucet',
-    titleKey: 'tools.faucet.title',
-    descriptionKey: 'tools.faucet.description',
+    id: "faucet",
+    titleKey: "tools.faucet.title",
+    descriptionKey: "tools.faucet.description",
     icon: FiDroplet,
-    href: '/faucet'
+    href: "/faucet",
   },
   {
-    id: 'mcp',
-    titleKey: 'tools.mcp.title',
-    descriptionKey: 'tools.mcp.description',
+    id: "mcp",
+    titleKey: "tools.mcp.title",
+    descriptionKey: "tools.mcp.description",
     icon: FiKey,
-    href: 'https://github.com/0xdwong/sui-mcp'
-  }
+    href: "https://github.com/0xdwong/sui-mcp",
+  },
 ];
 
 const ToolList: React.FC = () => {
@@ -43,7 +43,9 @@ const ToolList: React.FC = () => {
 
   return (
     <Container maxW="container.xl" py={8}>
-      <Heading as="h1" mb={6}>{t('tools.title')}</Heading>
+      <Heading as="h1" mb={6}>
+        {t("tools.title")}
+      </Heading>
 
       <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={6}>
         {tools.map((tool) => (
@@ -60,4 +62,4 @@ const ToolList: React.FC = () => {
   );
 };
 
-export default ToolList; 
+export default ToolList;

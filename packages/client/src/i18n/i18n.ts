@@ -1,9 +1,9 @@
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
+import LanguageDetector from "i18next-browser-languagedetector";
 
-import enTranslation from './locales/en.json';
-import zhTranslation from './locales/zh.json';
+import enTranslation from "./locales/en.json";
+import zhTranslation from "./locales/zh.json";
 
 // Configure i18next
 i18n
@@ -12,21 +12,21 @@ i18n
   .init({
     resources: {
       en: {
-        translation: enTranslation
+        translation: enTranslation,
       },
       zh: {
-        translation: zhTranslation
-      }
+        translation: zhTranslation,
+      },
     },
-    fallbackLng: 'en', // Default language
-    debug: process.env.NODE_ENV === 'development',
+    fallbackLng: "en", // Default language
+    debug: process.env.NODE_ENV === "development",
     interpolation: {
-      escapeValue: false // React already escapes by default
+      escapeValue: false, // React already escapes by default
     },
     detection: {
-      order: ['localStorage', 'navigator'],
-      caches: ['localStorage']
-    }
+      order: ["localStorage", "navigator"],
+      caches: ["localStorage"],
+    },
   });
 
-export default i18n; 
+export default i18n;
