@@ -1821,7 +1821,7 @@
     clsx "^2.1.1"
     zustand "^4.5.4"
 
-"@mysten/sui@1.27.0", "@mysten/sui@^1.27.0":
+"@mysten/sui@1.27.0":
   version "1.27.0"
   resolved "https://registry.yarnpkg.com/@mysten/sui/-/sui-1.27.0.tgz#abda66dfbe482d356e6b880c5caad89692d5c24d"
   integrity sha512-sTzqzgM/d1XkRPh/ylDlWqm1NZOWvlvurRkkUBBgLmI0ezf54ScaYLQD3ZtcQpVxmE4WK5tVCrHtAfY/QpThXA==
@@ -1838,6 +1838,31 @@
     poseidon-lite "^0.2.0"
     valibot "^0.36.0"
 
+"@mysten/sui@1.28.2", "@mysten/sui@^1.28.2":
+  version "1.28.2"
+  resolved "https://registry.yarnpkg.com/@mysten/sui/-/sui-1.28.2.tgz#ded2ae122c53ac3bb6f05d731b5847e447512eb2"
+  integrity sha512-d+lSp3rAtuOX0taIiIv0KNILDsbmAB9koNGHBinfREraGnE9tUFW315UByuyvuZ9K53ji4i2risdtwxCQ1a8Zw==
+  dependencies:
+    "@graphql-typed-document-node/core" "^3.2.0"
+    "@mysten/bcs" "1.6.0"
+    "@mysten/utils" "0.0.0"
+    "@noble/curves" "^1.8.1"
+    "@noble/hashes" "^1.7.1"
+    "@scure/base" "^1.2.4"
+    "@scure/bip32" "^1.6.2"
+    "@scure/bip39" "^1.5.4"
+    gql.tada "^1.8.2"
+    graphql "^16.9.0"
+    poseidon-lite "^0.2.0"
+    valibot "^0.36.0"
+
+"@mysten/utils@0.0.0":
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/@mysten/utils/-/utils-0.0.0.tgz#e088ddd10d2e99c9cecbf2bc93f999d299cc1b06"
+  integrity sha512-KRI57Qow3E7TGqczimazwGf7+fwukdOi+6a31igSCzz0kPjAXbyK1a1gXaxeLMF8xEZ07ouW3RnsWt+EaUuHUw==
+  dependencies:
+    "@scure/base" "^1.2.4"
+
 "@mysten/wallet-standard@0.14.3", "@mysten/wallet-standard@^0.14.3":
   version "0.14.3"
   resolved "https://registry.yarnpkg.com/@mysten/wallet-standard/-/wallet-standard-0.14.3.tgz#8443b0e9f15383feb0db75f9bbc3144a98edf40e"
@@ -1845,6 +1870,22 @@
   dependencies:
     "@mysten/sui" "1.27.0"
     "@wallet-standard/core" "1.1.0"
+
+"@mysten/walrus-wasm@0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@mysten/walrus-wasm/-/walrus-wasm-0.0.6.tgz#f0c3cf3fdcc0aaaa433f3639a628cd462b64e063"
+  integrity sha512-rqXopgWqALp8jdVaHeW64P5I7MmzEGy8gCFbfzK8xGgWGpSjKtvVeHJ9EguRVOxALaYtDBVlmMPnoySJi+bLjA==
+
+"@mysten/walrus@^0.0.19":
+  version "0.0.19"
+  resolved "https://registry.yarnpkg.com/@mysten/walrus/-/walrus-0.0.19.tgz#7311d47251f7e5e145494b91373e81c3ead9268c"
+  integrity sha512-xcN7tgz9fUdbjxz5e3/TIz9eZxJLfJxjZlQejYP5MdiD6jqM5Gr0nM6af1IF9gBRpx6N3IHmw0U29M+11oMm8Q==
+  dependencies:
+    "@mysten/bcs" "1.6.0"
+    "@mysten/sui" "1.28.2"
+    "@mysten/utils" "0.0.0"
+    "@mysten/walrus-wasm" "0.0.6"
+    dataloader "^2.2.3"
 
 "@mysten/zksend@0.12.23":
   version "0.12.23"
@@ -5019,6 +5060,11 @@ data-view-byte-offset@^1.0.1:
     call-bound "^1.0.2"
     es-errors "^1.3.0"
     is-data-view "^1.0.1"
+
+dataloader@^2.2.3:
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/dataloader/-/dataloader-2.2.3.tgz#42d10b4913515f5b37c6acedcb4960d6ae1b1517"
+  integrity sha512-y2krtASINtPFS1rSDjacrFgn1dcUuoREVabwlOGOe4SdxenREqwjwjElAdwvbGM7kgZz9a3KVicWR7vcz8rnzA==
 
 debug@2.6.9, debug@^2.6.0:
   version "2.6.9"
