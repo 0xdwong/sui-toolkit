@@ -29,18 +29,25 @@ const tools: Tool[] = [
     icon: FiDroplet,
     href: '/faucet'
   },
+  {
+    id: 'mcp',
+    titleKey: 'tools.mcp.title',
+    descriptionKey: 'tools.mcp.description',
+    icon: FiKey,
+    href: 'https://github.com/0xdwong/sui-mcp'
+  }
 ];
 
 const ToolList: React.FC = () => {
   const { t } = useTranslation();
-  
+
   return (
     <Container maxW="container.xl" py={8}>
       <Heading as="h1" mb={6}>{t('tools.title')}</Heading>
-      
+
       <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={6}>
         {tools.map((tool) => (
-          <ToolCard 
+          <ToolCard
             key={tool.id}
             title={t(tool.titleKey)}
             description={t(tool.descriptionKey)}

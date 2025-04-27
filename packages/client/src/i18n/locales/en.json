@@ -21,7 +21,11 @@
     "faucet": {
       "title": "Testnet Faucet",
       "description": "Get SUI tokens on testnet"
-    }
+    },
+  "mcp": {
+    "title": "MCP",
+    "description": "MCP Tool"
+  }
   },
   "bulkTransfer": {
     "title": "Bulk Transfer Tool",

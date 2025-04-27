@@ -6,7 +6,8 @@
   "navigation": {
     "home": "首页",
     "bulkTransfer": "批量转账",
-    "faucet": "测试网水龙头"
+    "faucet": "测试网水龙头",
+    "mcp": "MCP"
   },
   "language": {
     "en": "英文",
@@ -21,6 +22,10 @@
     "faucet": {
       "title": "测试网水龙头",
       "description": "获取测试网 SUI 代币"
+    },
+    "mcp": {
+      "title": "MCP",
+      "description": "MCP 工具"
     }
   },
   "bulkTransfer": {

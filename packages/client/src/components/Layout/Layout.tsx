@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Flex, Stack, Heading, Container, Text, Button } from '@chakra-ui/react';
+import { Box, Flex, Stack, Heading, Container, Text, Button, Link } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import CustomConnectButton from '../CustomConnectButton';
@@ -52,6 +52,23 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <Stack as="nav" direction="row" gap={2}>
                 <NavLink to="/bulk-transfer">{t('navigation.bulkTransfer')}</NavLink>
                 <NavLink to="/faucet">{t('navigation.faucet')}</NavLink>
+                <Link 
+                  href="https://github.com/0xdwong/sui-mcp" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  px={2}
+                  py={1}
+                  borderRadius="md"
+                  _hover={{ 
+                    textDecoration: 'none',
+                    bg: 'gray.100'
+                  }}
+                  fontWeight="medium"
+                  fontSize="md"
+                  _focus={{ boxShadow: 'outline' }}
+                >
+                  {t('navigation.mcp')}
+                </Link>
                 {/* More tool navigation links will be added after implementation */}
               </Stack>
             </Stack>

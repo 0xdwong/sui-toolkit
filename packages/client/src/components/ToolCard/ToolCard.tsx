@@ -13,26 +13,36 @@ export interface ToolCardProps {
 const ToolCard: React.FC<ToolCardProps> = ({ title, description, icon, href }) => {
   const navigate = useNavigate();
 
+  const handleClick = () => {
+    // Check if the href is an external link
+    if (href.startsWith('http://') || href.startsWith('https://')) {
+      window.open(href, '_blank', 'noopener,noreferrer');
+    } else {
+      // Internal navigation using react-router
+      navigate(href);
+    }
+  };
+
   return (
     <LinkBox as="article" role="group">
-      <Box 
-        p={5} 
-        borderWidth="1px" 
-        borderRadius="lg" 
-        bg="white" 
+      <Box
+        p={5}
+        borderWidth="1px"
+        borderRadius="lg"
+        bg="white"
         transition="all 0.2s"
-        _hover={{ 
-          transform: 'translateY(-4px)', 
+        _hover={{
+          transform: 'translateY(-4px)',
           shadow: 'md',
           borderColor: 'blue.300'
         }}
         height="100%"
         display="flex"
         flexDirection="column"
-        onClick={() => navigate(href)}
+        onClick={handleClick}
         cursor="pointer"
       >
-        <Box 
+        <Box
           display="flex"
           alignItems="center"
           mb={3}
