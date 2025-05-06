@@ -26,7 +26,12 @@ i18n
     detection: {
       order: ["localStorage", "navigator"],
       caches: ["localStorage"],
+      lookupLocalStorage: "i18nextLng",
     },
+    react: {
+      useSuspense: true, // Enable suspense for async loading
+    },
+    load: "languageOnly", // Only load language without region (en instead of en-US)
   });
 
 export default i18n;
