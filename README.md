@@ -21,6 +21,8 @@ We plan to continuously expand the functionality of Sui Toolkit by adding more p
 
 You can access Sui Toolkit via the following link:
 [https://toolkit.wal.app/](https://toolkit.wal.app/)
+or
+[https://suitoolkit.pages.dev/](https://suitoolkit.pages.dev/)
 
 ## Technical Support
 

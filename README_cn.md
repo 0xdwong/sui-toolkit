@@ -21,6 +21,8 @@ Sui Toolkit 前端代码已经部署在 Walrus 平台上。Walrus 采用去中�
 
 可以通过以下链接访问 Sui Toolkit：
 [https://toolkit.wal.app/](https://toolkit.wal.app/)
+或者
+[https://suitoolkit.pages.dev/](https://suitoolkit.pages.dev/)
 
 ## 技术支持
 
