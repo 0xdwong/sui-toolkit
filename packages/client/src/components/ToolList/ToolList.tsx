@@ -1,6 +1,6 @@
 import React from "react";
 import { Container, SimpleGrid, Heading } from "@chakra-ui/react";
-import { FiSend, FiDroplet, FiKey } from "react-icons/fi";
+import { FiSend, FiDroplet, FiKey, FiCodesandbox } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
 import ToolCard from "../ToolCard/ToolCard";
 
@@ -21,6 +21,13 @@ const tools: Tool[] = [
     descriptionKey: "tools.bulkTransfer.description",
     icon: FiSend,
     href: "/bulk-transfer",
+  },
+  {
+    id: "coin-manager",
+    titleKey: "tools.coinManager.title",
+    descriptionKey: "tools.coinManager.description",
+    icon: FiCodesandbox,
+    href: "/coin-manager",
   },
   {
     id: "faucet",

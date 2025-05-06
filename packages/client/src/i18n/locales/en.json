@@ -7,17 +7,22 @@
     "home": "Home",
     "bulkTransfer": "Bulk Transfer",
     "faucet": "Testnet Faucet",
-    "mcp": "MCP"
+    "mcp": "MCP",
+    "coinManager": "Coin Manager"
   },
   "language": {
     "en": "English",
     "zh": "Chinese"
   },
   "tools": {
-    "title": "Toolkits",
+    "title": "Toolkit",
     "bulkTransfer": {
       "title": "Bulk Transfer",
-      "description": "Transfer SUI tokens to multiple addresses at once"
+      "description": "Transfer SUI tokens to multiple addresses in batch"
+    },
+    "coinManager": {
+      "title": "Coin Manager",
+      "description": "Merge same type coins and clean zero balance coins"
     },
     "faucet": {
       "title": "Testnet Faucet",
@@ -25,7 +30,31 @@
     },
     "mcp": {
       "title": "MCP",
-      "description": "MCP Tool"
+      "description": "MCP Tools"
+    }
+  },
+  "coinManager": {
+    "title": "Coin Manager",
+    "description": "Manage your coin objects, merge same type coins and clean zero balance coins",
+    "coinType": "Coin Type",
+    "coinList": "Coin Objects List",
+    "coinId": "Coin ID",
+    "balance": "Balance",
+    "type": "Type",
+    "select": "Select",
+    "actions": "Actions",
+    "mergeCoin": "Merge Selected Coins",
+    "cleanZeroCoins": "Clean Zero Balance Coins",
+    "noCoins": "No coin objects found",
+    "loading": "Loading...",
+    "selectSome": "Please select at least two coin objects to merge",
+    "mergeSuccess": "Coins merged successfully",
+    "cleanSuccess": "Zero balance coins cleaned successfully",
+    "error": {
+      "title": "Error",
+      "connectWallet": "Please connect your wallet first",
+      "operationFailed": "Operation failed",
+      "unknownError": "Unknown error occurred"
     }
   },
   "bulkTransfer": {
@@ -41,35 +70,35 @@
     "error": {
       "title": "Error",
       "connectWallet": "Please connect your wallet first",
-      "noValidTransfers": "No valid transfer information",
-      "transferFailed": "Transfer Failed",
-      "unknownError": "An unknown error occurred"
+      "noValidTransfers": "No valid transfers provided",
+      "transferFailed": "Transfer failed",
+      "unknownError": "Unknown error occurred"
     },
     "success": {
-      "title": "Transfer Success",
-      "description": "Transaction Digest: {{digest}}"
+      "title": "Transfer Successful",
+      "description": "Transaction digest: {{digest}}"
     }
   },
   "faucet": {
     "title": "Testnet Faucet",
     "description": "Get SUI tokens on testnet. Enter your address below to receive tokens.",
     "network": "Network",
-    "addresses": "Address(es)",
-    "addressPlaceholder": "Enter one or more addresses (separate multiple addresses with commas or newlines)",
+    "addresses": "Addresses",
+    "addressPlaceholder": "Enter one or more addresses (separate multiple with commas or newlines)",
     "getTokens": "Get Tokens",
     "submitting": "Submitting...",
     "requestSuccess": "Request Successful",
     "requestFailed": "Request Failed",
     "successAddresses": "Successful Addresses",
     "failedAddresses": "Failed Addresses",
-    "viewInExplorer": "View in Explorer {{address}}...",
+    "viewInExplorer": "View {{address}}... in Explorer",
     "error": {
       "title": "Error",
-      "description": "An unknown error occurred"
+      "description": "Unknown error occurred"
     },
     "success": {
       "title": "Success",
-      "description": "Tokens sent to {{count}} address(es)"
+      "description": "Tokens sent to {{count}} addresses"
     }
   }
 }

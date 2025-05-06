@@ -7,7 +7,8 @@
     "home": "首页",
     "bulkTransfer": "批量转账",
     "faucet": "测试网水龙头",
-    "mcp": "MCP"
+    "mcp": "MCP",
+    "coinManager": "币管理"
   },
   "language": {
     "en": "英文",
@@ -19,6 +20,10 @@
       "title": "批量转账",
       "description": "批量向多个地址转账 SUI 代币"
     },
+    "coinManager": {
+      "title": "币管理",
+      "description": "合并相同类型币对象和清理零余额币对象"
+    },
     "faucet": {
       "title": "测试网水龙头",
       "description": "获取测试网 SUI 代币"
@@ -26,6 +31,30 @@
     "mcp": {
       "title": "MCP",
       "description": "MCP 工具"
+    }
+  },
+  "coinManager": {
+    "title": "币管理工具",
+    "description": "管理你的币对象，合并相同类型币和清理零余额币对象",
+    "coinType": "币种类型",
+    "coinList": "币对象列表",
+    "coinId": "币ID",
+    "balance": "余额",
+    "type": "类型",
+    "select": "选择",
+    "actions": "操作",
+    "mergeCoin": "合并选中的币",
+    "cleanZeroCoins": "清理零余额币",
+    "noCoins": "没有找到币对象",
+    "loading": "加载中...",
+    "selectSome": "请选择至少两个币对象进行合并",
+    "mergeSuccess": "币对象合并成功",
+    "cleanSuccess": "零余额币清理成功",
+    "error": {
+      "title": "错误",
+      "connectWallet": "请先连接你的钱包",
+      "operationFailed": "操作失败",
+      "unknownError": "发生未知错误"
     }
   },
   "bulkTransfer": {
@@ -40,7 +69,7 @@
     "execute": "执行批量转账",
     "error": {
       "title": "错误",
-      "connectWallet": "请先连接您的钱包",
+      "connectWallet": "请先连接你的钱包",
       "noValidTransfers": "没有有效的转账信息",
       "transferFailed": "转账失败",
       "unknownError": "发生未知错误"
@@ -52,7 +81,7 @@
   },
   "faucet": {
     "title": "测试网水龙头",
-    "description": "获取测试网 SUI 代币。在下方输入您的地址以接收代币。",
+    "description": "获取测试网 SUI 代币。在下方输入你的地址以接收代币。",
     "network": "网络",
     "addresses": "地址",
     "addressPlaceholder": "输入一个或多个地址（用逗号或换行符分隔多个地址）",
