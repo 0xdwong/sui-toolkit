@@ -6,7 +6,8 @@
   "navigation": {
     "home": "Home",
     "bulkTransfer": "Bulk Transfer",
-    "faucet": "Testnet Faucet"
+    "faucet": "Testnet Faucet",
+    "mcp": "MCP"
   },
   "language": {
     "en": "English",
