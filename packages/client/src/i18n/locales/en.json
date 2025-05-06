@@ -40,7 +40,7 @@
     "coinList": "Coin Objects List",
     "coinId": "Coin ID",
     "balance": "Balance",
-    "type": "Type",
+    "name": "Name",
     "select": "Select",
     "actions": "Actions",
     "mergeCoin": "Merge Selected Coins",
