@@ -76,6 +76,7 @@
     "title": "Walrus",
     "tabs": {
       "upload": "上传文件",
+      "download": "下载文件",
       "myFiles": "我的文件",
       "query": "文件查询"
     },
@@ -91,7 +92,27 @@
       "uploadButton": "上传文件",
       "uploading": "上传中...",
       "progress": "上传进度",
-      "noFileSelected": "请选择文件"
+      "noFileSelected": "请选择文件",
+      "selectedFile": "已选文件",
+      "epochs": "保存周期",
+      "epochsHelp": "文件将存储的epoch数量（区块链时期）",
+      "deletable": "允许删除",
+      "success": "上传成功",
+      "blobId": "文件ID",
+      "progress": {
+        "encoding": "正在编码文件...",
+        "registering": "正在注册文件...",
+        "writing": "正在写入存储节点...",
+        "certifying": "正在认证文件..."
+      }
+    },
+    "download": {
+      "blobId": "文件ID",
+      "blobIdHelp": "输入要下载的文件ID",
+      "downloading": "下载中...",
+      "downloadButton": "下载文件",
+      "success": "下载成功",
+      "fileSize": "文件大小"
     },
     "myFiles": {
       "refresh": "刷新",
@@ -131,6 +152,18 @@
       "download": "下载",
       "share": "分享链接",
       "close": "关闭"
+    },
+    "error": {
+      "noFile": "请选择一个文件",
+      "notConnected": "请先连接钱包",
+      "upload": "上传失败",
+      "noBlobId": "请输入文件ID",
+      "download": "下载失败"
+    },
+    "success": {
+      "upload": "文件上传成功",
+      "uploadDescription": "文件ID: {{blobId}}",
+      "download": "文件下载成功"
     },
     "messages": {
       "uploadSuccess": "文件上传成功",

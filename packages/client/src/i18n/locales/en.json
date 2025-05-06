@@ -76,12 +76,17 @@
     "title": "Walrus",
     "tabs": {
       "upload": "Upload File",
+      "download": "Download File",
       "myFiles": "My Files",
       "query": "Query File"
     },
     "upload": {
       "dragAndDrop": "Drag and drop a file here or click to select a file",
       "selectFile": "Select File",
+      "selectedFile": "Selected file",
+      "epochs": "Storage Epochs",
+      "epochsHelp": "Number of epochs this file will be stored",
+      "deletable": "Allow deletion",
       "encryption": "File Encryption",
       "enableEncryption": "Enable end-to-end encryption",
       "accessControl": "Access Control",
@@ -91,7 +96,23 @@
       "uploadButton": "Upload File",
       "uploading": "Uploading...",
       "progress": "Upload Progress",
-      "noFileSelected": "Please select a file"
+      "noFileSelected": "Please select a file",      
+      "success": "Upload Successful",
+      "blobId": "Blob ID",
+      "progress": {
+        "encoding": "Encoding file...",
+        "registering": "Registering file...",
+        "writing": "Writing to storage nodes...",
+        "certifying": "Certifying file..."
+      }
+    },
+    "download": {
+      "blobId": "Blob ID",
+      "blobIdHelp": "Enter the Blob ID of the file to download",
+      "downloading": "Downloading...",
+      "downloadButton": "Download File",
+      "success": "Download Successful",
+      "fileSize": "File Size"
     },
     "myFiles": {
       "refresh": "Refresh",
@@ -131,6 +152,18 @@
       "download": "Download",
       "share": "Share Link",
       "close": "Close"
+    },
+    "error": {
+      "noFile": "Please select a file",
+      "notConnected": "Please connect your wallet first",
+      "upload": "Upload failed",
+      "noBlobId": "Please enter a Blob ID",
+      "download": "Download failed"
+    },
+    "success": {
+      "upload": "File uploaded successfully",
+      "uploadDescription": "Blob ID: {{blobId}}",
+      "download": "File downloaded successfully"
     },
     "messages": {
       "uploadSuccess": "File uploaded successfully",

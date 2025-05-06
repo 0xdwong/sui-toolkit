@@ -1804,14 +1804,15 @@
   dependencies:
     "@scure/base" "^1.2.4"
 
-"@mysten/dapp-kit@^0.15.3":
-  version "0.15.3"
-  resolved "https://registry.yarnpkg.com/@mysten/dapp-kit/-/dapp-kit-0.15.3.tgz#e898fbe091b3c95fccd92864f7c96bab504ea9b0"
-  integrity sha512-aT/3xGmkKJDlZI+KQXdxbu1ArdpI17+14Td4jJgsQhGRHcJ8vanf2QoGkfwrRuogf0cyCoZFRB8obzKrJFPJkw==
+"@mysten/dapp-kit@^0.16.1":
+  version "0.16.1"
+  resolved "https://registry.yarnpkg.com/@mysten/dapp-kit/-/dapp-kit-0.16.1.tgz#c73b9dc5318df48ab4bb07cfc8fb50c83fd78cfa"
+  integrity sha512-I2Wa4dHMFyzxdrosKdZfsbB3FvPnIYvui+WWaqeBNKrVLgWiO+TFvP+dhii1JOxH0E0EltXNpuBHZxG45uqHBg==
   dependencies:
-    "@mysten/sui" "1.27.0"
-    "@mysten/wallet-standard" "0.14.3"
-    "@mysten/zksend" "0.12.23"
+    "@mysten/slush-wallet" "0.1.1"
+    "@mysten/sui" "1.29.0"
+    "@mysten/utils" "0.0.0"
+    "@mysten/wallet-standard" "0.14.8"
     "@radix-ui/react-dialog" "^1.1.6"
     "@radix-ui/react-dropdown-menu" "^2.1.6"
     "@radix-ui/react-slot" "^1.1.2"
@@ -1821,27 +1822,22 @@
     clsx "^2.1.1"
     zustand "^4.5.4"
 
-"@mysten/sui@1.27.0":
-  version "1.27.0"
-  resolved "https://registry.yarnpkg.com/@mysten/sui/-/sui-1.27.0.tgz#abda66dfbe482d356e6b880c5caad89692d5c24d"
-  integrity sha512-sTzqzgM/d1XkRPh/ylDlWqm1NZOWvlvurRkkUBBgLmI0ezf54ScaYLQD3ZtcQpVxmE4WK5tVCrHtAfY/QpThXA==
+"@mysten/slush-wallet@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@mysten/slush-wallet/-/slush-wallet-0.1.1.tgz#2645f7f290a91f388dd2dbdfd838f1fbac1259cb"
+  integrity sha512-xYmgX3jQFXVS1QbucZ2YpybQBn+b59YDdm2fIr91KOgWYhzlhuDuI7103Oa90AAJ1WQj9AgzjlDOmiPybQQ/uw==
   dependencies:
-    "@graphql-typed-document-node/core" "^3.2.0"
-    "@mysten/bcs" "1.6.0"
-    "@noble/curves" "^1.8.1"
-    "@noble/hashes" "^1.7.1"
-    "@scure/base" "^1.2.4"
-    "@scure/bip32" "^1.6.2"
-    "@scure/bip39" "^1.5.4"
-    gql.tada "^1.8.2"
-    graphql "^16.9.0"
-    poseidon-lite "^0.2.0"
+    "@mysten/sui" "1.29.0"
+    "@mysten/utils" "0.0.0"
+    "@mysten/wallet-standard" "0.14.8"
+    "@mysten/window-wallet-core" "0.0.2"
+    mitt "^3.0.1"
     valibot "^0.36.0"
 
-"@mysten/sui@1.28.2", "@mysten/sui@^1.28.2":
-  version "1.28.2"
-  resolved "https://registry.yarnpkg.com/@mysten/sui/-/sui-1.28.2.tgz#ded2ae122c53ac3bb6f05d731b5847e447512eb2"
-  integrity sha512-d+lSp3rAtuOX0taIiIv0KNILDsbmAB9koNGHBinfREraGnE9tUFW315UByuyvuZ9K53ji4i2risdtwxCQ1a8Zw==
+"@mysten/sui@1.29.0", "@mysten/sui@^1.29.0":
+  version "1.29.0"
+  resolved "https://registry.yarnpkg.com/@mysten/sui/-/sui-1.29.0.tgz#cd277e8299cf4cdafad4e9dcff4e0d44af96cd9a"
+  integrity sha512-0rOGYy97DZaD+TocjKOgqPalPh/IZnbMYVI1ncAKYGR59SMeunuk7RCWL6rGA8hN//JBor4nVkXpId6FlbhEeA==
   dependencies:
     "@graphql-typed-document-node/core" "^3.2.0"
     "@mysten/bcs" "1.6.0"
@@ -1863,12 +1859,12 @@
   dependencies:
     "@scure/base" "^1.2.4"
 
-"@mysten/wallet-standard@0.14.3", "@mysten/wallet-standard@^0.14.3":
-  version "0.14.3"
-  resolved "https://registry.yarnpkg.com/@mysten/wallet-standard/-/wallet-standard-0.14.3.tgz#8443b0e9f15383feb0db75f9bbc3144a98edf40e"
-  integrity sha512-NMMOIDvKoT4vo9y0szXLMUmG3n0oRkaZzMx/CbVy3jYndjzUo5dJWhXKbYZwB7Vm5KAIZ91FVcRMiNALEUOFgw==
+"@mysten/wallet-standard@0.14.8":
+  version "0.14.8"
+  resolved "https://registry.yarnpkg.com/@mysten/wallet-standard/-/wallet-standard-0.14.8.tgz#c914b4deb71e17cb485f190e3dc74b0b7c7bd023"
+  integrity sha512-4rKwEF81GqPADboqT18zdKu1tCn02pUJO2yaJme/xWo1Ry4U6xdh2zEe3WxLJjmd7o3yJ7auqKmNTjr0ts69rg==
   dependencies:
-    "@mysten/sui" "1.27.0"
+    "@mysten/sui" "1.29.0"
     "@wallet-standard/core" "1.1.0"
 
 "@mysten/walrus-wasm@0.0.6":
@@ -1876,26 +1872,24 @@
   resolved "https://registry.yarnpkg.com/@mysten/walrus-wasm/-/walrus-wasm-0.0.6.tgz#f0c3cf3fdcc0aaaa433f3639a628cd462b64e063"
   integrity sha512-rqXopgWqALp8jdVaHeW64P5I7MmzEGy8gCFbfzK8xGgWGpSjKtvVeHJ9EguRVOxALaYtDBVlmMPnoySJi+bLjA==
 
-"@mysten/walrus@^0.0.19":
-  version "0.0.19"
-  resolved "https://registry.yarnpkg.com/@mysten/walrus/-/walrus-0.0.19.tgz#7311d47251f7e5e145494b91373e81c3ead9268c"
-  integrity sha512-xcN7tgz9fUdbjxz5e3/TIz9eZxJLfJxjZlQejYP5MdiD6jqM5Gr0nM6af1IF9gBRpx6N3IHmw0U29M+11oMm8Q==
+"@mysten/walrus@^0.0.20":
+  version "0.0.20"
+  resolved "https://registry.yarnpkg.com/@mysten/walrus/-/walrus-0.0.20.tgz#f1f401f22a9550b0c4151e20f0ef27241dba36d8"
+  integrity sha512-DSyVruibXhWSntU90VzJ0q1jEbuhgkRwEOrwwd4tGQ36vEDWbskzuCPIbaYHmJA7N9rcK9P0mqte3+wlTQINew==
   dependencies:
     "@mysten/bcs" "1.6.0"
-    "@mysten/sui" "1.28.2"
+    "@mysten/sui" "1.29.0"
     "@mysten/utils" "0.0.0"
     "@mysten/walrus-wasm" "0.0.6"
     dataloader "^2.2.3"
 
-"@mysten/zksend@0.12.23":
-  version "0.12.23"
-  resolved "https://registry.yarnpkg.com/@mysten/zksend/-/zksend-0.12.23.tgz#6b311e1b7984ad6b4a69c886d708c743511ccc36"
-  integrity sha512-qshCqjvkxgJeSbp5ojscrwsjZYj0eyzq+Myi7AZ+twm4oRJA/rEgfVkDyIWJYu5Itr1oKyZj4A69bES6eP7oeA==
+"@mysten/window-wallet-core@0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@mysten/window-wallet-core/-/window-wallet-core-0.0.2.tgz#c444362634dcd56fd78e00e336f69da5637866ac"
+  integrity sha512-u57gHFlLYPDTK5bDeabRjkIdyLaiFVwL3bVbnBtu5WJpfFOv/KMOpIQt4820ICBG843jN35tzlulQ0nlbWCYeA==
   dependencies:
-    "@mysten/sui" "1.27.0"
-    "@mysten/wallet-standard" "0.14.3"
-    mitt "^3.0.1"
-    nanostores "^0.10.3"
+    "@mysten/utils" "0.0.0"
+    jose "^6.0.10"
     valibot "^0.36.0"
 
 "@nicolo-ribaudo/eslint-scope-5-internals@5.1.1-v1":
@@ -1983,6 +1977,16 @@
     "@radix-ui/react-primitive" "2.0.3"
     "@radix-ui/react-slot" "1.2.0"
 
+"@radix-ui/react-collection@1.1.4":
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-collection/-/react-collection-1.1.4.tgz#45fb4215ca26a84bd61b9b1337105e4d4e01b686"
+  integrity sha512-cv4vSf7HttqXilDnAnvINd53OTl1/bjUYVZrkFnA7nwmY9Ob2POUy0WY0sfqBAe1s5FyKsyceQlqiEGPYNTadg==
+  dependencies:
+    "@radix-ui/react-compose-refs" "1.1.2"
+    "@radix-ui/react-context" "1.1.2"
+    "@radix-ui/react-primitive" "2.1.0"
+    "@radix-ui/react-slot" "1.2.0"
+
 "@radix-ui/react-compose-refs@1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@radix-ui/react-compose-refs/-/react-compose-refs-1.1.2.tgz#a2c4c47af6337048ee78ff6dc0d090b390d2bb30"
@@ -2026,6 +2030,17 @@
     "@radix-ui/primitive" "1.1.2"
     "@radix-ui/react-compose-refs" "1.1.2"
     "@radix-ui/react-primitive" "2.0.3"
+    "@radix-ui/react-use-callback-ref" "1.1.1"
+    "@radix-ui/react-use-escape-keydown" "1.1.1"
+
+"@radix-ui/react-dismissable-layer@1.1.7":
+  version "1.1.7"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-dismissable-layer/-/react-dismissable-layer-1.1.7.tgz#80b5c23a0d29cfe56850399210c603376c27091f"
+  integrity sha512-j5+WBUdhccJsmH5/H0K6RncjDtoALSEr6jbkaZu+bjw6hOPOhHycr6vEUujl+HBK8kjUfWcoCJXxP6e4lUlMZw==
+  dependencies:
+    "@radix-ui/primitive" "1.1.2"
+    "@radix-ui/react-compose-refs" "1.1.2"
+    "@radix-ui/react-primitive" "2.1.0"
     "@radix-ui/react-use-callback-ref" "1.1.1"
     "@radix-ui/react-use-escape-keydown" "1.1.1"
 
@@ -2111,6 +2126,14 @@
     "@radix-ui/react-primitive" "2.0.3"
     "@radix-ui/react-use-layout-effect" "1.1.1"
 
+"@radix-ui/react-portal@1.1.6":
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-portal/-/react-portal-1.1.6.tgz#4202e1bb34afdac612e4e982eca8efd36cbc611f"
+  integrity sha512-XmsIl2z1n/TsYFLIdYam2rmFwf9OC/Sh2avkbmVMDuBZIe7hSpM0cYnWPAo7nHOVx8zTuwDZGByfcqLdnzp3Vw==
+  dependencies:
+    "@radix-ui/react-primitive" "2.1.0"
+    "@radix-ui/react-use-layout-effect" "1.1.1"
+
 "@radix-ui/react-presence@1.1.3":
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/@radix-ui/react-presence/-/react-presence-1.1.3.tgz#ce3400caec9892ceb862f96ddaa2add080c09b90"
@@ -2119,10 +2142,25 @@
     "@radix-ui/react-compose-refs" "1.1.2"
     "@radix-ui/react-use-layout-effect" "1.1.1"
 
+"@radix-ui/react-presence@1.1.4":
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-presence/-/react-presence-1.1.4.tgz#253ac0ad4946c5b4a9c66878335f5cf07c967ced"
+  integrity sha512-ueDqRbdc4/bkaQT3GIpLQssRlFgWaL/U2z/S31qRwwLWoxHLgry3SIfCwhxeQNbirEUXFa+lq3RL3oBYXtcmIA==
+  dependencies:
+    "@radix-ui/react-compose-refs" "1.1.2"
+    "@radix-ui/react-use-layout-effect" "1.1.1"
+
 "@radix-ui/react-primitive@2.0.3":
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/@radix-ui/react-primitive/-/react-primitive-2.0.3.tgz#13c654dc4754558870a9c769f6febe5980a1bad8"
   integrity sha512-Pf/t/GkndH7CQ8wE2hbkXA+WyZ83fhQQn5DDmwDiDo6AwN/fhaH8oqZ0jRjMrO2iaMhDi6P1HRx6AZwyMinY1g==
+  dependencies:
+    "@radix-ui/react-slot" "1.2.0"
+
+"@radix-ui/react-primitive@2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-primitive/-/react-primitive-2.1.0.tgz#9233e17a22d0010195086f8b5eb1808ebbca8437"
+  integrity sha512-/J/FhLdK0zVcILOwt5g+dH4KnkonCtkVJsa2G6JmvbbtZfBEI1gMsO3QMjseL4F/SwfAMt1Vc/0XKYKq+xJ1sw==
   dependencies:
     "@radix-ui/react-slot" "1.2.0"
 
@@ -2148,6 +2186,24 @@
   dependencies:
     "@radix-ui/react-compose-refs" "1.1.2"
 
+"@radix-ui/react-toast@^1.2.11":
+  version "1.2.11"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-toast/-/react-toast-1.2.11.tgz#24b54f11a149e2bfa96c91490ea417671e5194f2"
+  integrity sha512-Ed2mlOmT+tktOsu2NZBK1bCSHh/uqULu1vWOkpQTVq53EoOuZUZw7FInQoDB3uil5wZc2oe0XN9a7uVZB7/6AQ==
+  dependencies:
+    "@radix-ui/primitive" "1.1.2"
+    "@radix-ui/react-collection" "1.1.4"
+    "@radix-ui/react-compose-refs" "1.1.2"
+    "@radix-ui/react-context" "1.1.2"
+    "@radix-ui/react-dismissable-layer" "1.1.7"
+    "@radix-ui/react-portal" "1.1.6"
+    "@radix-ui/react-presence" "1.1.4"
+    "@radix-ui/react-primitive" "2.1.0"
+    "@radix-ui/react-use-callback-ref" "1.1.1"
+    "@radix-ui/react-use-controllable-state" "1.2.2"
+    "@radix-ui/react-use-layout-effect" "1.1.1"
+    "@radix-ui/react-visually-hidden" "1.2.0"
+
 "@radix-ui/react-use-callback-ref@1.1.1":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@radix-ui/react-use-callback-ref/-/react-use-callback-ref-1.1.1.tgz#62a4dba8b3255fdc5cc7787faeac1c6e4cc58d40"
@@ -2159,6 +2215,21 @@
   integrity sha512-YnEXIy8/ga01Y1PN0VfaNH//MhA91JlEGVBDxDzROqwrAtG5Yr2QGEPz8A/rJA3C7ZAHryOYGaUv8fLSW2H/mg==
   dependencies:
     "@radix-ui/react-use-callback-ref" "1.1.1"
+
+"@radix-ui/react-use-controllable-state@1.2.2":
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-use-controllable-state/-/react-use-controllable-state-1.2.2.tgz#905793405de57d61a439f4afebbb17d0645f3190"
+  integrity sha512-BjasUjixPFdS+NKkypcyyN5Pmg83Olst0+c6vGov0diwTEo6mgdqVR6hxcEgFuh4QrAs7Rc+9KuGJ9TVCj0Zzg==
+  dependencies:
+    "@radix-ui/react-use-effect-event" "0.0.2"
+    "@radix-ui/react-use-layout-effect" "1.1.1"
+
+"@radix-ui/react-use-effect-event@0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-use-effect-event/-/react-use-effect-event-0.0.2.tgz#090cf30d00a4c7632a15548512e9152217593907"
+  integrity sha512-Qp8WbZOBe+blgpuUT+lw2xheLP8q0oatc9UpmiemEICxGvFLYmHm9QowVZGHtJlGbS6A6yJ3iViad/2cVjnOiA==
+  dependencies:
+    "@radix-ui/react-use-layout-effect" "1.1.1"
 
 "@radix-ui/react-use-escape-keydown@1.1.1":
   version "1.1.1"
@@ -2185,6 +2256,13 @@
   integrity sha512-ewrXRDTAqAXlkl6t/fkXWNAhFX9I+CkKlw6zjEwk86RSPKwZr3xpBRso655aqYafwtnbpHLj6toFzmd6xdVptQ==
   dependencies:
     "@radix-ui/react-use-layout-effect" "1.1.1"
+
+"@radix-ui/react-visually-hidden@1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-visually-hidden/-/react-visually-hidden-1.2.0.tgz#7692a590b4789bebf7e02d73e6d1390704a97920"
+  integrity sha512-rQj0aAWOpCdCMRbI6pLQm8r7S2BM3YhTa0SzOYD55k+hJA8oo9J+H+9wLM9oMlZWOX/wJWPTzfDfmZkf7LvCfg==
+  dependencies:
+    "@radix-ui/react-primitive" "2.1.0"
 
 "@radix-ui/rect@1.1.1":
   version "1.1.1"
@@ -7603,6 +7681,11 @@ jiti@^1.21.6:
   resolved "https://registry.yarnpkg.com/jiti/-/jiti-1.21.7.tgz#9dd81043424a3d28458b193d965f0d18a2300ba9"
   integrity sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==
 
+jose@^6.0.10:
+  version "6.0.10"
+  resolved "https://registry.yarnpkg.com/jose/-/jose-6.0.10.tgz#52d96e1a671b4c02e13b71e0d35abea2e774712b"
+  integrity sha512-skIAxZqcMkOrSwjJvplIPYrlXGpxTPnro2/QWTDCxAdWQrSTV5/KqspMWmi5WAx5+ULswASJiZ0a+1B/Lxt9cw==
+
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
@@ -8147,11 +8230,6 @@ nanoid@^3.3.8:
   version "3.3.11"
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.3.11.tgz#4f4f112cefbe303202f2199838128936266d185b"
   integrity sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==
-
-nanostores@^0.10.3:
-  version "0.10.3"
-  resolved "https://registry.yarnpkg.com/nanostores/-/nanostores-0.10.3.tgz#960b508dd465286a9bd8747ba0596fb679004c57"
-  integrity sha512-Nii8O1XqmawqSCf9o2aWqVxhKRN01+iue9/VEd1TiJCr9VT5XxgPFbF1Edl1XN6pwJcZRsl8Ki+z01yb/T/C2g==
 
 natural-compare-lite@^1.4.0:
   version "1.4.0"
