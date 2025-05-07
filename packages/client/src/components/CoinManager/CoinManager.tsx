@@ -19,7 +19,7 @@ import { Transaction } from "@mysten/sui/transactions";
 import { SUI_TYPE_ARG } from "@mysten/sui/utils";
 import toast from "react-hot-toast";
 
-// 引入类型和子组件
+// Import types and subcomponents
 import { CoinTypeSummary, LoadingState } from "./types";
 import { formatCoinType } from "./utils";
 import CoinTypesList from "./CoinTypesList";
@@ -30,7 +30,7 @@ const CoinManager: React.FC = () => {
   const suiClient = useSuiClient();
   const { mutate: signAndExecute } = useSignAndExecuteTransaction();
 
-  // 统一的加载状态管理
+  // Unified loading state management
   const [loadingState, setLoadingState] = useState<LoadingState>({
     fetchCoins: false,
     batchMerge: false,
@@ -175,7 +175,7 @@ const CoinManager: React.FC = () => {
     summary.objects.some(coin => parseInt(coin.balance, 10) === 0)
   );
 
-  // 通用事务执行函数 - 减少代码重复
+  // Generic transaction execution function to reduce code duplication
   const executeTransaction = async (
     tx: Transaction, 
     successMessage: string, 
@@ -210,7 +210,7 @@ const CoinManager: React.FC = () => {
     }
   };
 
-  // 优化批量合并函数
+  // Optimized batch merge function
   const handleBatchMerge = async () => {
     if (!currentAccount) {
       toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.connectWallet"));
@@ -226,7 +226,7 @@ const CoinManager: React.FC = () => {
     try {
       setLoadingState(prev => ({ ...prev, batchMerge: true }));
       
-      // 为 Promise 返回值定义类型
+      // Define type for Promise return value
       interface MergeResult {
         coinType: string;
         success: boolean;
@@ -234,7 +234,7 @@ const CoinManager: React.FC = () => {
         error?: Error;
       }
       
-      // 创建合并事务
+      // Create merge transactions
       const mergePromises = mergeableCoinTypes.map(async (summary) => {
         const coinIds = summary.objects.map(coin => coin.id);
         const tx = new Transaction();
@@ -245,7 +245,7 @@ const CoinManager: React.FC = () => {
         try {
           const result = await executeTransaction(
             tx, 
-            `成功合并 ${formatCoinType(summary.type)} 币种`, 
+            `${t("coinManager.mergeSuccess")}: ${formatCoinType(summary.type)}`, 
             'batchMerge'
           );
           return {
@@ -264,19 +264,19 @@ const CoinManager: React.FC = () => {
       
       const results = await Promise.all(mergePromises);
       
-      // 统计结果
+      // Count results
       const successCount = results.filter(r => r.success).length;
       const failureCount = results.length - successCount;
       
       if (successCount > 0) {
-        toast.success(t("coinManager.batchMergeSuccess") + `: 成功合并 ${successCount} 种币种${failureCount > 0 ? `，${failureCount} 种失败` : ''}`);
+        toast.success(`${t("coinManager.batchMergeSuccess")}: ${successCount} ${failureCount > 0 ? `, ${failureCount} failed` : ''}`);
       }
       
       if (failureCount > 0 && successCount === 0) {
-        toast.error(t("coinManager.error.batchMergeFailed") + ": 所有币种合并都失败了");
+        toast.error(t("coinManager.error.batchMergeFailed"));
       }
       
-      // 刷新币列表
+      // Refresh coin list
       fetchAllCoins();
     } catch (error) {
       console.error("Error batch merging coins:", error);
@@ -286,7 +286,7 @@ const CoinManager: React.FC = () => {
     }
   };
 
-  // 优化批量清理零余额币函数
+  // Optimized batch clean zero balance coins function
   const handleBatchCleanZero = async () => {
     if (!currentAccount) {
       toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.connectWallet"));
@@ -298,7 +298,7 @@ const CoinManager: React.FC = () => {
     );
 
     if (coinTypesWithZeroBalance.length === 0) {
-      toast.error(t("coinManager.error.title") + ": 没有找到零余额币对象");
+      toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.noZeroCoins"));
       return;
     }
 
@@ -314,7 +314,7 @@ const CoinManager: React.FC = () => {
       }
       
       const cleanPromises = coinTypesWithZeroBalance.map(async (summary) => {
-        // 过滤零余额币
+        // Filter zero balance coins
         const zeroBalanceCoins = summary.objects.filter(coin =>
           parseInt(coin.balance, 10) === 0
         );
@@ -324,7 +324,7 @@ const CoinManager: React.FC = () => {
         const tx = new Transaction();
         
         if (summary.type === SUI_TYPE_ARG) {
-          // SUI 币处理
+          // Handle SUI coins
           const zeroIds = zeroBalanceCoins.map(coin => coin.id);
           
           const nonZeroCoins = summary.objects.filter(coin =>
@@ -335,7 +335,7 @@ const CoinManager: React.FC = () => {
             return {
               coinType: summary.type,
               success: false,
-              error: new Error("需要至少一个有余额的 SUI 币作为 Gas")
+              error: new Error("Need at least one coin with balance for gas")
             };
           }
           
@@ -347,7 +347,7 @@ const CoinManager: React.FC = () => {
             });
           }
         } else {
-          // 其他币种处理
+          // Handle other coin types
           for (const zeroCoin of zeroBalanceCoins) {
             tx.moveCall({
               target: "0x2::coin::destroy_zero",
@@ -360,7 +360,7 @@ const CoinManager: React.FC = () => {
         try {
           const result = await executeTransaction(
             tx,
-            `成功清理 ${formatCoinType(summary.type)} 的零余额币`,
+            `${t("coinManager.cleanSuccess")}: ${formatCoinType(summary.type)}`,
             'batchCleanZero'
           );
           return {
@@ -381,21 +381,21 @@ const CoinManager: React.FC = () => {
       const results = await Promise.all(cleanPromises);
       const validResults = results.filter((r): r is CleanResult => r !== null);
       
-      // 统计结果
+      // Count results
       const successResults = validResults.filter(r => r.success);
       const successCount = successResults.length;
       const totalCleanedCoins = successResults.reduce((sum, r) => sum + (r.coinCount || 0), 0);
       const failureCount = validResults.length - successCount;
       
       if (successCount > 0) {
-        toast.success(t("coinManager.batchCleanSuccess") + `: 成功清理 ${successCount} 种币种的零余额币，共 ${totalCleanedCoins} 个对象${failureCount > 0 ? `，${failureCount} 种失败` : ''}`);
+        toast.success(`${t("coinManager.batchCleanSuccess")}: ${successCount} types, ${totalCleanedCoins} objects ${failureCount > 0 ? `, ${failureCount} failed` : ''}`);
       }
       
       if (failureCount > 0 && successCount === 0) {
-        toast.error(t("coinManager.error.batchCleanFailed") + ": 所有币种清理都失败了");
+        toast.error(t("coinManager.error.batchCleanFailed"));
       }
       
-      // 刷新币列表
+      // Refresh coin list
       fetchAllCoins();
       
     } catch (error) {
@@ -406,7 +406,7 @@ const CoinManager: React.FC = () => {
     }
   };
 
-  // 优化单个币种的清零函数
+  // Optimized clean zero balance coins for single coin type
   const handleCleanZeroCoins = async (coinType: string) => {
     if (!currentAccount) {
       toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.connectWallet"));
@@ -419,29 +419,29 @@ const CoinManager: React.FC = () => {
     try {
       setLoadingState(prev => ({ ...prev, singleOperation: true }));
 
-      // 过滤零余额币
+      // Filter zero balance coins
       const zeroBalanceCoins = summary.objects.filter(coin =>
         parseInt(coin.balance, 10) === 0
       );
 
       if (zeroBalanceCoins.length === 0) {
-        toast.error(t("coinManager.error.title") + ": 没有找到零余额币对象");
+        toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.noZeroCoins"));
         setLoadingState(prev => ({ ...prev, singleOperation: false }));
         return;
       }
 
-      // 创建事务
+      // Create transaction
       const tx = new Transaction();
 
       if (coinType === SUI_TYPE_ARG) {
-        // SUI 币处理
+        // Handle SUI coins
         const zeroIds = zeroBalanceCoins.map(coin => coin.id);
         const nonZeroCoins = summary.objects.filter(coin =>
           parseInt(coin.balance, 10) > 0
         );
 
         if (nonZeroCoins.length === 0) {
-          toast.error(t("coinManager.error.operationFailed") + ": 需要至少一个有余额的 SUI 币作为 Gas");
+          toast.error(t("coinManager.error.operationFailed") + ": " + "Need at least one coin with balance for gas");
           setLoadingState(prev => ({ ...prev, singleOperation: false }));
           return;
         }
@@ -454,7 +454,7 @@ const CoinManager: React.FC = () => {
           });
         }
       } else {
-        // 其他币种处理
+        // Handle other coin types
         for (const zeroCoin of zeroBalanceCoins) {
           tx.moveCall({
             target: "0x2::coin::destroy_zero",
@@ -464,14 +464,14 @@ const CoinManager: React.FC = () => {
         }
       }
 
-      // 执行事务
+      // Execute transaction
       await executeTransaction(
         tx,
-        t("coinManager.cleanSuccess") + `: 已清理 ${zeroBalanceCoins.length} 个零余额币对象`,
+        `${t("coinManager.cleanSuccess")}: ${zeroBalanceCoins.length} objects`,
         'singleOperation'
       );
 
-      // 刷新币列表
+      // Refresh coin list
       fetchAllCoins();
     } catch (error) {
       console.error("Error preparing clean transaction:", error);
@@ -480,7 +480,7 @@ const CoinManager: React.FC = () => {
     }
   };
 
-  // 优化单个币种合并函数
+  // Optimized merge function for single coin type
   const autoMergeCoins = async (coinType: string) => {
     if (!currentAccount) {
       toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.connectWallet"));
@@ -498,25 +498,25 @@ const CoinManager: React.FC = () => {
     try {
       setLoadingState(prev => ({ ...prev, singleOperation: true }));
       
-      // 自动选择该类型的所有币
+      // Auto select all coins of this type
       const coinIds = summary.objects.map(coin => coin.id);
       const newSelection = new Set(coinIds);
       setSelectedCoins(newSelection);
 
-      // 创建新事务
+      // Create new transaction
       const tx = new Transaction();
       const primaryCoin = coinIds[0];
       const otherCoins = coinIds.slice(1);
       tx.mergeCoins(primaryCoin, otherCoins);
 
-      // 执行事务
+      // Execute transaction
       await executeTransaction(
         tx,
         t("coinManager.mergeSuccess"),
         'singleOperation'
       );
 
-      // 重置选择并刷新币列表
+      // Reset selection and refresh coin list
       setSelectedCoins(new Set());
       fetchAllCoins();
     } catch (error) {
@@ -557,24 +557,24 @@ const CoinManager: React.FC = () => {
                   <Button
                     size="sm"
                     colorScheme="blue"
-                    loadingText="合并中..."
+                    loadingText={t("coinManager.loading")}
                     disabled={!hasMergeableCoins || loadingState.fetchCoins || loadingState.batchMerge || loadingState.batchCleanZero || loadingState.singleOperation}
                     onClick={handleBatchMerge}
-                    title={!hasMergeableCoins ? "没有可合并的币种" : "合并所有可合并的币种"}
+                    title={!hasMergeableCoins ? t("coinManager.error.notEnoughCoins") : t("coinManager.batchMerge")}
                     loading={loadingState.batchMerge}
                   >
-                    一键合并
+                    {t("coinManager.batchMerge")}
                   </Button>
                   <Button
                     size="sm"
                     colorScheme="red"
-                    loadingText="清理中..."
+                    loadingText={t("coinManager.loading")}
                     disabled={!hasZeroBalanceCoins || loadingState.fetchCoins || loadingState.batchMerge || loadingState.batchCleanZero || loadingState.singleOperation}
                     onClick={handleBatchCleanZero}
-                    title={!hasZeroBalanceCoins ? "没有零余额币对象" : "清理所有零余额币对象"}
+                    title={!hasZeroBalanceCoins ? t("coinManager.error.noZeroCoins") : t("coinManager.batchClean")}
                     loading={loadingState.batchCleanZero}
                   >
-                    一键清零
+                    {t("coinManager.batchClean")}
                   </Button>
                 </Flex>
               </Flex>

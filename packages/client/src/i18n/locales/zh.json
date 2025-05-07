@@ -38,6 +38,7 @@
     "description": "管理你的币对象，合并相同类型币和清理零余额币对象",
     "coinType": "币种类型",
     "coinList": "币对象列表",
+    "coinId": "币 ID",
     "objectId": "对象 ID",
     "balance": "余额",
     "name": "名称",
@@ -47,17 +48,24 @@
     "objectCount": "对象数量",
     "mergeCoin": "合并",
     "cleanZeroCoins": "清零",
+    "batchMerge": "一键合并",
+    "batchClean": "一键清零",
     "noCoins": "没有找到币对象",
     "loading": "加载中...",
     "selectSome": "请选择至少两个币对象进行合并",
     "mergeSuccess": "币对象合并成功",
+    "batchMergeSuccess": "多种币种合并成功", 
     "cleanSuccess": "零余额币清理成功",
+    "batchCleanSuccess": "多种币种零余额清理成功",
     "error": {
       "title": "错误",
       "connectWallet": "请先连接你的钱包",
       "operationFailed": "操作失败",
       "unknownError": "发生未知错误",
-      "batchCleanFailed": "批量清零失败"
+      "batchMergeFailed": "批量合并失败",
+      "batchCleanFailed": "批量清零失败",
+      "notEnoughCoins": "没有可合并的币对象",
+      "noZeroCoins": "没有找到零余额币对象"
     }
   },
   "bulkTransfer": {
