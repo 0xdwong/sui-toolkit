@@ -12,8 +12,8 @@ import {
   useClipboard,
 } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
-import { 
-  useCurrentAccount, 
+import {
+  useCurrentAccount,
   useSuiClient,
   useSignAndExecuteTransaction
 } from "@mysten/dapp-kit";
@@ -58,24 +58,24 @@ const useSimpleToast = () => {
 // Helper to format coin type for display
 const formatCoinType = (coinType: string): string => {
   if (coinType === SUI_TYPE_ARG) return "SUI";
-  
+
   // Handle structured coin types (0x...::module::NAME)
   const parts = coinType.split("::");
   if (parts.length >= 2) {
     const address = parts[0];
     const name = parts[parts.length - 1];
-    
+
     // Format: 0xABC...XYZ::NAME
     if (address.startsWith("0x") && address.length > 8) {
       return `${address.substring(0, 4)}...${address.substring(address.length - 4)}::${name}`;
     }
   }
-  
+
   // If not a structured coin type or SUI, truncate if too long
   if (coinType.length > 20) {
     return `${coinType.substring(0, 10)}...${coinType.substring(coinType.length - 10)}`;
   }
-  
+
   return coinType;
 };
 
@@ -85,13 +85,13 @@ const CoinManager: React.FC = () => {
   const currentAccount = useCurrentAccount();
   const suiClient = useSuiClient();
   const { mutate: signAndExecute } = useSignAndExecuteTransaction();
-  
+
   // State variables
   const [selectedCoinType, setSelectedCoinType] = useState<string | null>(null);
   const [coinTypeSummaries, setCoinTypeSummaries] = useState<CoinTypeSummary[]>([]);
   const [selectedCoins, setSelectedCoins] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState<boolean>(false);
-  
+
   // Helper for toggling coin selection
   const toggleCoinSelection = (coinId: string) => {
     const newSelection = new Set(selectedCoins);
@@ -102,26 +102,26 @@ const CoinManager: React.FC = () => {
     }
     setSelectedCoins(newSelection);
   };
-  
+
   // Helper to format balance for display
   const formatBalance = (balance: string): string => {
     const num = parseInt(balance, 10);
     return (num / 1_000_000_000).toFixed(9);
   };
-  
+
   // Helper to toggle expansion of a coin type
   const toggleCoinTypeExpansion = (coinType: string) => {
-    setCoinTypeSummaries(prevSummaries => 
-      prevSummaries.map(summary => 
-        summary.type === coinType 
-          ? { ...summary, expanded: !summary.expanded } 
+    setCoinTypeSummaries(prevSummaries =>
+      prevSummaries.map(summary =>
+        summary.type === coinType
+          ? { ...summary, expanded: !summary.expanded }
           : summary
       )
     );
-    
+
     // Set the selected coin type
     setSelectedCoinType(prevType => prevType === coinType ? null : coinType);
-    
+
     // Reset selection when changing coin type
     setSelectedCoins(new Set());
   };
@@ -129,43 +129,43 @@ const CoinManager: React.FC = () => {
   // Fetch all coins for the connected wallet
   const fetchAllCoins = async () => {
     if (!currentAccount) return;
-    
+
     try {
       setLoading(true);
-      
+
       // Get all coins for the account
       const { data: allCoins } = await suiClient.getAllCoins({
         owner: currentAccount.address,
       });
-      
+
       // Group coins by type
       const coinsByType = new Map<string, CoinObject[]>();
-      
+
       allCoins.forEach(coin => {
         if (!coin.coinType) return;
-        
+
         const formattedCoin: CoinObject = {
           id: coin.coinObjectId,
           balance: coin.balance.toString(),
           type: coin.coinType,
         };
-        
+
         if (!coinsByType.has(coin.coinType)) {
           coinsByType.set(coin.coinType, []);
         }
-        
+
         coinsByType.get(coin.coinType)?.push(formattedCoin);
       });
-      
+
       // Create summaries
       const summaries: CoinTypeSummary[] = [];
-      
+
       for (const [type, coins] of coinsByType.entries()) {
         const totalBalance = coins.reduce(
-          (sum, coin) => sum + BigInt(coin.balance), 
+          (sum, coin) => sum + BigInt(coin.balance),
           BigInt(0)
         ).toString();
-        
+
         summaries.push({
           type,
           totalBalance,
@@ -174,14 +174,14 @@ const CoinManager: React.FC = () => {
           expanded: false
         });
       }
-      
+
       // Sort by type (SUI first, then others alphabetically)
       summaries.sort((a, b) => {
         if (a.type === SUI_TYPE_ARG) return -1;
         if (b.type === SUI_TYPE_ARG) return 1;
         return a.type.localeCompare(b.type);
       });
-      
+
       setCoinTypeSummaries(summaries);
     } catch (error) {
       console.error("Error fetching coins:", error);
@@ -193,9 +193,9 @@ const CoinManager: React.FC = () => {
       setLoading(false);
     }
   };
-  
-  // Handle merge coins action
-  const handleMergeCoins = async (coinType: string) => {
+
+  // Handle auto merge coins action (selects all coins and merges them)
+  const autoMergeCoins = async (coinType: string) => {
     if (!currentAccount) {
       toast.error({
         title: t("coinManager.error.title"),
@@ -203,48 +203,35 @@ const CoinManager: React.FC = () => {
       });
       return;
     }
-    
-    if (selectedCoins.size < 2) {
+
+    const summary = coinTypeSummaries.find(s => s.type === coinType);
+    if (!summary) return;
+
+    if (summary.objects.length < 2) {
       toast.warning({
         title: t("coinManager.error.title"),
-        description: t("coinManager.selectSome"),
+        description: t("coinManager.error.notEnoughCoins"),
       });
       return;
     }
-    
+
     try {
       setLoading(true);
-      
+
+      // Auto-select all coins of this type
+      const coinIds = summary.objects.map(coin => coin.id);
+      const newSelection = new Set(coinIds);
+      setSelectedCoins(newSelection);
+
       // Create a new transaction
       const tx = new Transaction();
-      
-      // Get the selected coin IDs
-      const coinIds = Array.from(selectedCoins);
-      
-      // For SUI coins use Pay module, for other coins use different approach
-      if (coinType === SUI_TYPE_ARG) {
-        // Get the primary coin (first one will be destination, others merged into it)
-        const primaryCoin = coinIds[0];
-        const otherCoins = coinIds.slice(1);
-        
-        // Merge all other coins into the primary coin
-        tx.mergeCoins(primaryCoin, otherCoins);
-      } else {
-        // For non-SUI coins we use different approach
-        // Create a vector of coins to merge
-        tx.moveCall({
-          target: "0x2::coin::join_vec",
-          arguments: [
-            tx.object(coinIds[0]), // Primary coin
-            tx.makeMoveVec({
-              elements: coinIds.slice(1).map(id => tx.object(id)),
-              type: "object"
-            })
-          ],
-          typeArguments: [coinType],
-        });
-      }
-      
+
+      const primaryCoin = coinIds[0];
+      const otherCoins = coinIds.slice(1);
+
+      // Merge all other coins into the primary coin
+      tx.mergeCoins(primaryCoin, otherCoins);
+
       // Execute transaction
       signAndExecute(
         {
@@ -255,7 +242,7 @@ const CoinManager: React.FC = () => {
             toast.success({
               title: t("coinManager.mergeSuccess"),
             });
-            
+
             // Reset selection and refresh coin list
             setSelectedCoins(new Set());
             fetchAllCoins();
@@ -279,7 +266,7 @@ const CoinManager: React.FC = () => {
       setLoading(false);
     }
   };
-  
+
   // Handle clean zero balance coins action
   const handleCleanZeroCoins = async (coinType: string) => {
     if (!currentAccount) {
@@ -289,18 +276,18 @@ const CoinManager: React.FC = () => {
       });
       return;
     }
-    
+
     const summary = coinTypeSummaries.find(s => s.type === coinType);
     if (!summary) return;
-    
+
     try {
       setLoading(true);
-      
+
       // Filter zero balance coins
-      const zeroBalanceCoins = summary.objects.filter(coin => 
+      const zeroBalanceCoins = summary.objects.filter(coin =>
         parseInt(coin.balance, 10) === 0
       );
-      
+
       if (zeroBalanceCoins.length === 0) {
         toast.warning({
           title: t("coinManager.error.title"),
@@ -309,20 +296,20 @@ const CoinManager: React.FC = () => {
         setLoading(false);
         return;
       }
-      
+
       // Create transaction
       const tx = new Transaction();
-      
+
       // For each zero balance coin, destroy it
       if (coinType === SUI_TYPE_ARG) {
         // For SUI coins
         const zeroIds = zeroBalanceCoins.map(coin => coin.id);
-        
+
         // We need a non-zero balance coin as the gas coin
-        const nonZeroCoins = summary.objects.filter(coin => 
+        const nonZeroCoins = summary.objects.filter(coin =>
           parseInt(coin.balance, 10) > 0
         );
-        
+
         if (nonZeroCoins.length === 0) {
           toast.error({
             title: t("coinManager.error.operationFailed"),
@@ -331,7 +318,7 @@ const CoinManager: React.FC = () => {
           setLoading(false);
           return;
         }
-        
+
         // Use destroyZeroBalanceCoin on each zero balance coin
         for (const zeroId of zeroIds) {
           tx.moveCall({
@@ -350,7 +337,7 @@ const CoinManager: React.FC = () => {
           });
         }
       }
-      
+
       // Execute transaction
       signAndExecute(
         {
@@ -362,7 +349,7 @@ const CoinManager: React.FC = () => {
               title: t("coinManager.cleanSuccess"),
               description: `已清理 ${zeroBalanceCoins.length} 个零余额币对象`,
             });
-            
+
             // Refresh coin list
             fetchAllCoins();
           },
@@ -406,7 +393,7 @@ const CoinManager: React.FC = () => {
             {t("coinManager.description")}
           </Text>
         </Box>
-        
+
         <Box p={5} borderWidth="1px" borderRadius="md" bg="white">
           <Stack direction="column" gap={4}>
             {/* Coin Type Summary */}
@@ -453,11 +440,11 @@ const CoinManager: React.FC = () => {
                     <tbody>
                       {coinTypeSummaries.map((summary) => (
                         <React.Fragment key={summary.type}>
-                          <tr 
+                          <tr
                             style={{ backgroundColor: selectedCoinType === summary.type ? "rgba(66, 153, 225, 0.1)" : "white" }}
                           >
                             <td style={{ padding: "10px", textAlign: "center" }}>
-                              <Box 
+                              <Box
                                 as="button"
                                 onClick={() => toggleCoinTypeExpansion(summary.type)}
                                 p={1}
@@ -465,17 +452,17 @@ const CoinManager: React.FC = () => {
                                 color="gray.600"
                                 _hover={{ color: "blue.500", bg: "gray.100" }}
                               >
-                                <svg 
-                                  xmlns="http://www.w3.org/2000/svg" 
-                                  width="16" 
-                                  height="16" 
-                                  viewBox="0 0 24 24" 
-                                  fill="none" 
-                                  stroke="currentColor" 
-                                  strokeWidth="2" 
-                                  strokeLinecap="round" 
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
                                   strokeLinejoin="round"
-                                  style={{ 
+                                  style={{
                                     transform: summary.expanded ? 'rotate(180deg)' : 'rotate(0deg)',
                                     transition: 'transform 0.2s'
                                   }}
@@ -499,22 +486,36 @@ const CoinManager: React.FC = () => {
                             </td>
                             <td style={{ padding: "10px" }}>
                               <Flex gap={2}>
-                                <Button 
-                                  size="sm" 
-                                  colorScheme="red" 
+                                <Button
+                                  size="sm"
+                                  colorScheme="blue"
                                   variant="outline"
-                                  disabled={loading}
+                                  disabled={loading || summary.objectCount < 2}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleCleanZeroCoins(summary.type);
+                                    autoMergeCoins(summary.type);
                                   }}
                                 >
-                                  {t("coinManager.cleanZeroCoins")}
+                                  {t("coinManager.mergeCoin")}
                                 </Button>
+                                {summary.objects.some(coin => parseInt(coin.balance, 10) === 0) && (
+                                  <Button
+                                    size="sm"
+                                    colorScheme="red"
+                                    variant="outline"
+                                    disabled={loading}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleCleanZeroCoins(summary.type);
+                                    }}
+                                  >
+                                    {t("coinManager.cleanZeroCoins")}
+                                  </Button>
+                                )}
                               </Flex>
                             </td>
                           </tr>
-                          
+
                           {/* Expanded coin details */}
                           {summary.expanded && (
                             <tr>
@@ -541,10 +542,10 @@ const CoinManager: React.FC = () => {
                                     </thead>
                                     <tbody>
                                       {summary.objects.map((coin) => (
-                                        <tr 
+                                        <tr
                                           key={coin.id}
                                           onClick={() => toggleCoinSelection(coin.id)}
-                                          style={{ 
+                                          style={{
                                             cursor: 'pointer',
                                             backgroundColor: selectedCoins.has(coin.id) ? "rgba(66, 153, 225, 0.1)" : ""
                                           }}
@@ -567,16 +568,6 @@ const CoinManager: React.FC = () => {
                                       ))}
                                     </tbody>
                                   </table>
-                                  
-                                  <Flex justifyContent="flex-end" mt={4}>
-                                    <Button 
-                                      colorScheme="blue" 
-                                      disabled={selectedCoins.size < 2 || loading}
-                                      onClick={() => handleMergeCoins(summary.type)}
-                                    >
-                                      {t("coinManager.mergeCoin")}
-                                    </Button>
-                                  </Flex>
                                 </Box>
                               </td>
                             </tr>
@@ -598,7 +589,7 @@ const CoinManager: React.FC = () => {
 // CoinType display component with copy button
 const CoinTypeDisplay: React.FC<{ coinType: string }> = ({ coinType }) => {
   const { onCopy, hasCopied } = useClipboard(coinType);
-  
+
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (typeof onCopy === 'function') {
@@ -613,13 +604,13 @@ const CoinTypeDisplay: React.FC<{ coinType: string }> = ({ coinType }) => {
       }
     }
   };
-  
+
   return (
     <Flex alignItems="center">
       <Text fontFamily="monospace" fontSize="0.9em" mr={2}>
         {formatCoinType(coinType)}
       </Text>
-      <Box 
+      <Box
         as="button"
         aria-label="复制币种类型"
         title={hasCopied ? "已复制!" : "复制完整类型"}
@@ -642,7 +633,7 @@ const CoinTypeDisplay: React.FC<{ coinType: string }> = ({ coinType }) => {
 // ObjectId display component with copy button
 const ObjectIdDisplay: React.FC<{ objectId: string }> = ({ objectId }) => {
   const { onCopy, hasCopied } = useClipboard(objectId);
-  
+
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (typeof onCopy === 'function') {
@@ -657,13 +648,13 @@ const ObjectIdDisplay: React.FC<{ objectId: string }> = ({ objectId }) => {
       }
     }
   };
-  
+
   return (
     <Flex alignItems="center">
       <Text fontFamily="monospace" fontSize="0.9em" mr={2}>
         {objectId.slice(0, 4)}...{objectId.slice(-4)}
       </Text>
-      <Box 
+      <Box
         as="button"
         aria-label="复制对象ID"
         title={hasCopied ? "已复制!" : "复制完整ID"}
