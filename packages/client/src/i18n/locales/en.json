@@ -49,7 +49,7 @@
     "mergeCoin": "Merge",
     "cleanZeroCoins": "Clean Zero",
     "batchMerge": "Batch Merge",
-    "batchClean": "Batch Clean",
+    "batchClean": "Batch Clean Zero",
     "noCoins": "No coin objects found",
     "loading": "Loading...",
     "selectSome": "Please select at least two coin objects to merge",
