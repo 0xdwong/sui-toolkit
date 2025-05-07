@@ -21,7 +21,6 @@ import toast from "react-hot-toast";
 
 // Import types and subcomponents
 import { CoinTypeSummary, LoadingState } from "./types";
-import { formatCoinType } from "./utils";
 import CoinTypesList from "./CoinTypesList";
 
 const CoinManager: React.FC = () => {
@@ -186,11 +185,15 @@ const CoinManager: React.FC = () => {
       
       return new Promise((resolve, reject) => {
         signAndExecute(
-          { transaction: tx },
+          { transaction: tx,
+           },
           {
             onSuccess: (result) => {
               toast.success(successMessage);
-              resolve({ success: true, result });
+              // Add a delay before resolving to allow blockchain state to update
+              setTimeout(() => {
+                resolve({ success: true, result });
+              }, 2000); // 2 seconds delay
             },
             onError: (error) => {
               const errorMsg = error instanceof Error ? error.message : t("coinManager.error.unknownError");
@@ -226,57 +229,25 @@ const CoinManager: React.FC = () => {
     try {
       setLoadingState(prev => ({ ...prev, batchMerge: true }));
       
-      // Define type for Promise return value
-      interface MergeResult {
-        coinType: string;
-        success: boolean;
-        result?: any;
-        error?: Error;
-      }
+      // Create a single transaction for all coin types
+      const tx = new Transaction();
       
-      // Create merge transactions
-      const mergePromises = mergeableCoinTypes.map(async (summary) => {
+      // Add merge operations for each coin type
+      mergeableCoinTypes.forEach(summary => {
         const coinIds = summary.objects.map(coin => coin.id);
-        const tx = new Transaction();
         const primaryCoin = coinIds[0];
         const otherCoins = coinIds.slice(1);
         tx.mergeCoins(primaryCoin, otherCoins);
-        
-        try {
-          const result = await executeTransaction(
-            tx, 
-            `${t("coinManager.mergeSuccess")}: ${formatCoinType(summary.type)}`, 
-            'batchMerge'
-          );
-          return {
-            coinType: summary.type,
-            success: true,
-            result
-          } as MergeResult;
-        } catch (error) {
-          return {
-            coinType: summary.type,
-            success: false,
-            error: error instanceof Error ? error : new Error(String(error))
-          } as MergeResult;
-        }
       });
       
-      const results = await Promise.all(mergePromises);
-      
-      // Count results
-      const successCount = results.filter(r => r.success).length;
-      const failureCount = results.length - successCount;
-      
-      if (successCount > 0) {
-        toast.success(`${t("coinManager.batchMergeSuccess")}: ${successCount} ${failureCount > 0 ? `, ${failureCount} failed` : ''}`);
-      }
-      
-      if (failureCount > 0 && successCount === 0) {
-        toast.error(t("coinManager.error.batchMergeFailed"));
-      }
-      
-      // Refresh coin list
+      // Execute the transaction
+      await executeTransaction(
+        tx, 
+        t("coinManager.batchMergeSuccess"), 
+        'batchMerge'
+      );
+
+      // Refresh coin list after transaction is complete
       fetchAllCoins();
     } catch (error) {
       console.error("Error batch merging coins:", error);
@@ -305,44 +276,26 @@ const CoinManager: React.FC = () => {
     try {
       setLoadingState(prev => ({ ...prev, batchCleanZero: true }));
       
-      interface CleanResult {
-        coinType: string;
-        coinCount?: number;
-        success: boolean;
-        result?: any;
-        error?: Error;
-      }
+      // Create a single transaction for all zero-balance coins
+      const tx = new Transaction();
+      let totalCleanedCoins = 0;
       
-      const cleanPromises = coinTypesWithZeroBalance.map(async (summary) => {
+      // Add clean operations for each coin type
+      coinTypesWithZeroBalance.forEach(summary => {
         // Filter zero balance coins
         const zeroBalanceCoins = summary.objects.filter(coin =>
           parseInt(coin.balance, 10) === 0
         );
         
-        if (zeroBalanceCoins.length === 0) return null;
-        
-        const tx = new Transaction();
+        if (zeroBalanceCoins.length === 0) return;
+        totalCleanedCoins += zeroBalanceCoins.length;
         
         if (summary.type === SUI_TYPE_ARG) {
           // Handle SUI coins
-          const zeroIds = zeroBalanceCoins.map(coin => coin.id);
-          
-          const nonZeroCoins = summary.objects.filter(coin =>
-            parseInt(coin.balance, 10) > 0
-          );
-          
-          if (nonZeroCoins.length === 0) {
-            return {
-              coinType: summary.type,
-              success: false,
-              error: new Error("Need at least one coin with balance for gas")
-            };
-          }
-          
-          for (const zeroId of zeroIds) {
+          for (const zeroCoin of zeroBalanceCoins) {
             tx.moveCall({
               target: "0x2::sui::destroy_zero_value_coin",
-              arguments: [tx.object(zeroId)],
+              arguments: [tx.object(zeroCoin.id)],
               typeArguments: [],
             });
           }
@@ -356,44 +309,20 @@ const CoinManager: React.FC = () => {
             });
           }
         }
-        
-        try {
-          const result = await executeTransaction(
-            tx,
-            `${t("coinManager.cleanSuccess")}: ${formatCoinType(summary.type)}`,
-            'batchCleanZero'
-          );
-          return {
-            coinType: summary.type,
-            coinCount: zeroBalanceCoins.length,
-            success: true,
-            result
-          } as CleanResult;
-        } catch (error) {
-          return {
-            coinType: summary.type,
-            success: false,
-            error: error instanceof Error ? error : new Error(String(error))
-          } as CleanResult;
-        }
       });
       
-      const results = await Promise.all(cleanPromises);
-      const validResults = results.filter((r): r is CleanResult => r !== null);
-      
-      // Count results
-      const successResults = validResults.filter(r => r.success);
-      const successCount = successResults.length;
-      const totalCleanedCoins = successResults.reduce((sum, r) => sum + (r.coinCount || 0), 0);
-      const failureCount = validResults.length - successCount;
-      
-      if (successCount > 0) {
-        toast.success(`${t("coinManager.batchCleanSuccess")}: ${successCount} types, ${totalCleanedCoins} objects ${failureCount > 0 ? `, ${failureCount} failed` : ''}`);
+      if (totalCleanedCoins === 0) {
+        toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.noZeroCoins"));
+        setLoadingState(prev => ({ ...prev, batchCleanZero: false }));
+        return;
       }
       
-      if (failureCount > 0 && successCount === 0) {
-        toast.error(t("coinManager.error.batchCleanFailed"));
-      }
+      // Execute transaction
+      await executeTransaction(
+        tx,
+        `${t("coinManager.batchCleanSuccess")}: ${totalCleanedCoins} objects`,
+        'batchCleanZero'
+      );
       
       // Refresh coin list
       fetchAllCoins();
