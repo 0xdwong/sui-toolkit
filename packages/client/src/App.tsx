@@ -8,6 +8,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 
 // Import i18n configuration
 import "./i18n/i18n";
@@ -34,6 +35,16 @@ function App() {
       <SuiClientProvider networks={networks} defaultNetwork="mainnet">
         <WalletProvider>
           <ChakraProvider value={defaultSystem}>
+            <Toaster 
+              position="top-right"
+              toastOptions={{
+                duration: 3000,
+                style: {
+                  background: "#363636",
+                  color: "#fff",
+                }
+              }} 
+            />
             <Router>
               <Layout>
                 <Routes>

@@ -56,7 +56,8 @@
       "title": "错误",
       "connectWallet": "请先连接你的钱包",
       "operationFailed": "操作失败",
-      "unknownError": "发生未知错误"
+      "unknownError": "发生未知错误",
+      "batchCleanFailed": "批量清零失败"
     }
   },
   "bulkTransfer": {
