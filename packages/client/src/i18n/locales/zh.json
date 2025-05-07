@@ -57,6 +57,10 @@
     "batchMergeSuccess": "多种币种合并成功", 
     "cleanSuccess": "零余额币清理成功",
     "batchCleanSuccess": "多种币种零余额清理成功",
+    "copy": {
+      "coinType": "复制币种类型",
+      "objectId": "复制对象 ID"
+    },
     "error": {
       "title": "错误",
       "connectWallet": "请先连接你的钱包",

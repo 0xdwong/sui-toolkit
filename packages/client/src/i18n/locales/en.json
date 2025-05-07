@@ -57,6 +57,10 @@
     "batchMergeSuccess": "Multiple coin types merged successfully",
     "cleanSuccess": "Zero balance coins cleaned successfully",
     "batchCleanSuccess": "Multiple coin types' zero balance coins cleaned successfully",
+    "copy": {
+      "coinType": "Copy Coin Type",
+      "objectId": "Copy Object ID"
+    },
     "error": {
       "title": "Error",
       "connectWallet": "Please connect your wallet first",
