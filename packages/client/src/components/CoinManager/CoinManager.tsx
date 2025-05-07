@@ -26,6 +26,7 @@ interface CoinObject {
   id: string;
   balance: string;
   type: string;
+  decimals?: number;
 }
 
 // Interface for coin type summary
@@ -35,6 +36,7 @@ interface CoinTypeSummary {
   objectCount: number;
   objects: CoinObject[];
   expanded: boolean;
+  decimals: number;
 }
 
 // Simple toast implementation
@@ -79,6 +81,37 @@ const formatCoinType = (coinType: string): string => {
   return coinType;
 };
 
+// Helper to format balance for display
+const formatBalance = (balance: string, decimals: number = 9): string => {
+  try {
+    const balanceBigInt = BigInt(balance);
+    const divisor = BigInt(10 ** decimals);
+    
+    if (balanceBigInt === BigInt(0)) return "0";
+    
+    // Calculate the integer and decimal parts
+    const integerPart = (balanceBigInt / divisor).toString();
+    const remainder = balanceBigInt % divisor;
+    
+    if (remainder === BigInt(0)) return integerPart;
+    
+    // Format the decimal part with proper padding
+    let decimalPart = remainder.toString().padStart(decimals, '0');
+    
+    // Remove trailing zeros
+    decimalPart = decimalPart.replace(/0+$/, '');
+    
+    if (decimalPart.length > 0) {
+      return `${integerPart}.${decimalPart}`;
+    }
+    
+    return integerPart;
+  } catch (error) {
+    console.error("Error formatting balance:", error);
+    return "0";
+  }
+};
+
 const CoinManager: React.FC = () => {
   const { t } = useTranslation();
   const toast = useSimpleToast();
@@ -101,12 +134,6 @@ const CoinManager: React.FC = () => {
       newSelection.add(coinId);
     }
     setSelectedCoins(newSelection);
-  };
-
-  // Helper to format balance for display
-  const formatBalance = (balance: string): string => {
-    const num = parseInt(balance, 10);
-    return (num / 1_000_000_000).toFixed(9);
   };
 
   // Helper to toggle expansion of a coin type
@@ -140,14 +167,42 @@ const CoinManager: React.FC = () => {
 
       // Group coins by type
       const coinsByType = new Map<string, CoinObject[]>();
+      const coinMetadata = new Map<string, number>();
+
+      // Fetch metadata for all coin types
+      for (const coin of allCoins) {
+        if (!coin.coinType) continue;
+        
+        if (!coinMetadata.has(coin.coinType)) {
+          try {
+            const metadata = await suiClient.getCoinMetadata({
+              coinType: coin.coinType,
+            });
+            
+            if (metadata) {
+              coinMetadata.set(coin.coinType, metadata.decimals);
+            } else {
+              // Default to 9 decimals if metadata not found
+              coinMetadata.set(coin.coinType, 9);
+            }
+          } catch (error) {
+            console.error(`Error fetching metadata for ${coin.coinType}:`, error);
+            // Default to 9 decimals on error
+            coinMetadata.set(coin.coinType, 9);
+          }
+        }
+      }
 
       allCoins.forEach(coin => {
         if (!coin.coinType) return;
 
+        const decimals = coinMetadata.get(coin.coinType) || 9;
+        
         const formattedCoin: CoinObject = {
           id: coin.coinObjectId,
           balance: coin.balance.toString(),
           type: coin.coinType,
+          decimals: decimals,
         };
 
         if (!coinsByType.has(coin.coinType)) {
@@ -165,13 +220,16 @@ const CoinManager: React.FC = () => {
           (sum, coin) => sum + BigInt(coin.balance),
           BigInt(0)
         ).toString();
+        
+        const decimals = coinMetadata.get(type) || 9;
 
         summaries.push({
           type,
           totalBalance,
           objectCount: coins.length,
           objects: coins,
-          expanded: false
+          expanded: false,
+          decimals: decimals
         });
       }
 
@@ -477,7 +535,7 @@ const CoinManager: React.FC = () => {
                               </Flex>
                             </td>
                             <td style={{ padding: "10px", textAlign: "right" }}>
-                              {formatBalance(summary.totalBalance)}
+                              {formatBalance(summary.totalBalance, summary.decimals)}
                             </td>
                             <td style={{ padding: "10px", textAlign: "center" }}>
                               <Badge colorScheme={summary.objectCount > 1 ? "orange" : "green"} fontSize="0.9em">
@@ -560,7 +618,7 @@ const CoinManager: React.FC = () => {
                                                 0
                                               </Box>
                                             ) : (
-                                              formatBalance(coin.balance)
+                                              formatBalance(coin.balance, summary.decimals)
                                             )}
                                           </td>
                                           <td></td>
