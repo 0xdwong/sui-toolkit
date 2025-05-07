@@ -8,8 +8,6 @@ import {
   Stack,
   Button,
   Spinner,
-  Badge,
-  useClipboard,
 } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import {
@@ -21,140 +19,10 @@ import { Transaction } from "@mysten/sui/transactions";
 import { SUI_TYPE_ARG } from "@mysten/sui/utils";
 import toast from "react-hot-toast";
 
-// Interface for coin objects
-interface CoinObject {
-  id: string;
-  balance: string;
-  type: string;
-  decimals?: number;
-}
-
-// Interface for coin type summary
-interface CoinTypeSummary {
-  type: string;
-  totalBalance: string;
-  objectCount: number;
-  objects: CoinObject[];
-  expanded: boolean;
-  decimals: number;
-}
-
-// Helper to format coin type for display
-const formatCoinType = (coinType: string): string => {
-  if (coinType === SUI_TYPE_ARG) return "SUI";
-
-  // Handle structured coin types (0x...::module::NAME)
-  const parts = coinType.split("::");
-  if (parts.length >= 2) {
-    const address = parts[0];
-    const name = parts[parts.length - 1];
-
-    // Format: 0xABC...XYZ::NAME
-    if (address.startsWith("0x") && address.length > 8) {
-      return `${address.substring(0, 4)}...${address.substring(address.length - 4)}::${name}`;
-    }
-  }
-
-  // If not a structured coin type or SUI, truncate if too long
-  if (coinType.length > 20) {
-    return `${coinType.substring(0, 10)}...${coinType.substring(coinType.length - 10)}`;
-  }
-
-  return coinType;
-};
-
-// Helper to format balance for display
-const formatBalance = (balance: string, decimals: number = 9): string => {
-  try {
-    const balanceBigInt = BigInt(balance);
-    const divisor = BigInt(10 ** decimals);
-    
-    if (balanceBigInt === BigInt(0)) return "0";
-    
-    // Calculate the integer and decimal parts
-    const integerPart = (balanceBigInt / divisor).toString();
-    const remainder = balanceBigInt % divisor;
-    
-    if (remainder === BigInt(0)) return integerPart;
-    
-    // Format the decimal part with proper padding
-    let decimalPart = remainder.toString().padStart(decimals, '0');
-    
-    // Remove trailing zeros
-    decimalPart = decimalPart.replace(/0+$/, '');
-    
-    if (decimalPart.length > 0) {
-      return `${integerPart}.${decimalPart}`;
-    }
-    
-    return integerPart;
-  } catch (error) {
-    console.error("Error formatting balance:", error);
-    return "0";
-  }
-};
-
-// CopyableText 组件 - 用于替换重复的复制逻辑
-const CopyableText: React.FC<{
-  text: string;
-  displayText: string;
-  label: string;
-}> = ({ text, displayText, label }) => {
-  const { onCopy, hasCopied } = useClipboard(text);
-
-  const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onCopy();
-  };
-
-  return (
-    <Flex alignItems="center">
-      <Text fontFamily="monospace" fontSize="0.9em" mr={2}>
-        {displayText}
-      </Text>
-      <Box
-        as="button"
-        aria-label={label}
-        title={hasCopied ? "已复制!" : "复制完整内容"}
-        onClick={handleCopy}
-        p={1}
-        borderRadius="md"
-        color="gray.500"
-        _hover={{ color: "blue.500", bg: "gray.100" }}
-        fontSize="sm"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-        </svg>
-      </Box>
-    </Flex>
-  );
-};
-
-// 更新 CoinTypeDisplay 组件使用通用的 CopyableText
-const CoinTypeDisplay: React.FC<{ coinType: string }> = ({ coinType }) => {
-  return (
-    <CopyableText 
-      text={coinType} 
-      displayText={formatCoinType(coinType)} 
-      label="复制币种类型" 
-    />
-  );
-};
-
-// 更新 ObjectIdDisplay 组件使用通用的 CopyableText
-const ObjectIdDisplay: React.FC<{ objectId: string }> = ({ objectId }) => {
-  const displayText = `${objectId.slice(0, 4)}...${objectId.slice(-4)}`;
-  
-  return (
-    <CopyableText 
-      text={objectId} 
-      displayText={displayText} 
-      label="复制对象ID" 
-    />
-  );
-};
+// 引入类型和子组件
+import { CoinTypeSummary, LoadingState } from "./types";
+import { formatCoinType } from "./utils";
+import CoinTypesList from "./CoinTypesList";
 
 const CoinManager: React.FC = () => {
   const { t } = useTranslation();
@@ -163,7 +31,7 @@ const CoinManager: React.FC = () => {
   const { mutate: signAndExecute } = useSignAndExecuteTransaction();
 
   // 统一的加载状态管理
-  const [loadingState, setLoadingState] = useState({
+  const [loadingState, setLoadingState] = useState<LoadingState>({
     fetchCoins: false,
     batchMerge: false,
     batchCleanZero: false,
@@ -216,7 +84,7 @@ const CoinManager: React.FC = () => {
       });
 
       // Group coins by type
-      const coinsByType = new Map<string, CoinObject[]>();
+      const coinsByType = new Map<string, any[]>();
       const coinMetadata = new Map<string, number>();
 
       // Fetch metadata for all coin types
@@ -248,7 +116,7 @@ const CoinManager: React.FC = () => {
 
         const decimals = coinMetadata.get(coin.coinType) || 9;
         
-        const formattedCoin: CoinObject = {
+        const formattedCoin = {
           id: coin.coinObjectId,
           balance: coin.balance.toString(),
           type: coin.coinType,
@@ -628,6 +496,8 @@ const CoinManager: React.FC = () => {
     }
 
     try {
+      setLoadingState(prev => ({ ...prev, singleOperation: true }));
+      
       // 自动选择该类型的所有币
       const coinIds = summary.objects.map(coin => coin.id);
       const newSelection = new Set(coinIds);
@@ -651,6 +521,8 @@ const CoinManager: React.FC = () => {
       fetchAllCoins();
     } catch (error) {
       console.error("Error preparing merge transaction:", error);
+    } finally {
+      setLoadingState(prev => ({ ...prev, singleOperation: false }));
     }
   };
 
@@ -717,176 +589,16 @@ const CoinManager: React.FC = () => {
                   <Text>{t("coinManager.noCoins")}</Text>
                 </Box>
               ) : (
-                <Box overflowX="auto">
-                  <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
-                    <colgroup>
-                      <col style={{ width: "40px" }} />
-                      <col style={{ width: "40%" }} />
-                      <col style={{ width: "25%" }} />
-                      <col style={{ width: "15%" }} />
-                      <col style={{ width: "20%" }} />
-                    </colgroup>
-                    <thead>
-                      <tr>
-                        <th style={{ padding: "10px", textAlign: "left", width: "40px" }}>
-                          {/* 展开/折叠列 */}
-                        </th>
-                        <th style={{ padding: "10px", textAlign: "left", width: "40%" }}>
-                          {t("coinManager.name")}
-                        </th>
-                        <th style={{ padding: "10px", textAlign: "right", width: "25%" }}>
-                          {t("coinManager.totalBalance")}
-                        </th>
-                        <th style={{ padding: "10px", textAlign: "left", width: "15%" }}>
-                          {t("coinManager.objectCount")}
-                        </th>
-                        <th style={{ padding: "10px", textAlign: "left", width: "20%" }}>
-                          {t("coinManager.actions")}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {coinTypeSummaries.map((summary) => (
-                        <React.Fragment key={summary.type}>
-                          <tr
-                            style={{ backgroundColor: selectedCoinType === summary.type ? "rgba(66, 153, 225, 0.1)" : "white" }}
-                          >
-                            <td style={{ padding: "10px", textAlign: "center" }}>
-                              <Box
-                                as="button"
-                                onClick={() => toggleCoinTypeExpansion(summary.type)}
-                                p={1}
-                                borderRadius="md"
-                                color="gray.600"
-                                _hover={{ color: "blue.500", bg: "gray.100" }}
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="16"
-                                  height="16"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  style={{
-                                    transform: summary.expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                                    transition: 'transform 0.2s'
-                                  }}
-                                >
-                                  <polyline points="6 9 12 15 18 9"></polyline>
-                                </svg>
-                              </Box>
-                            </td>
-                            <td style={{ padding: "10px", fontFamily: "monospace", fontSize: "0.9em", maxWidth: "300px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                              <Flex alignItems="center">
-                                <CoinTypeDisplay coinType={summary.type} />
-                              </Flex>
-                            </td>
-                            <td style={{ padding: "10px", textAlign: "right" }}>
-                              {formatBalance(summary.totalBalance, summary.decimals)}
-                            </td>
-                            <td style={{ padding: "10px", textAlign: "center" }}>
-                              <Badge colorScheme={summary.objectCount > 1 ? "orange" : "green"} fontSize="0.9em">
-                                {summary.objectCount}
-                              </Badge>
-                            </td>
-                            <td style={{ padding: "10px" }}>
-                              <Flex gap={2}>
-                                <Button
-                                  size="sm"
-                                  colorScheme="blue"
-                                  variant="outline"
-                                  disabled={loadingState.fetchCoins || loadingState.singleOperation || loadingState.batchMerge || loadingState.batchCleanZero || summary.objectCount < 2}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    autoMergeCoins(summary.type);
-                                  }}
-                                  loading={loadingState.singleOperation && selectedCoinType === summary.type}
-                                >
-                                  {t("coinManager.mergeCoin")}
-                                </Button>
-                                {summary.objects.some(coin => parseInt(coin.balance, 10) === 0) && (
-                                  <Button
-                                    size="sm"
-                                    colorScheme="red"
-                                    variant="outline"
-                                    disabled={loadingState.fetchCoins || loadingState.singleOperation || loadingState.batchMerge || loadingState.batchCleanZero}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleCleanZeroCoins(summary.type);
-                                    }}
-                                    loading={loadingState.singleOperation && selectedCoinType === summary.type}
-                                  >
-                                    {t("coinManager.cleanZeroCoins")}
-                                  </Button>
-                                )}
-                              </Flex>
-                            </td>
-                          </tr>
-
-                          {/* Expanded coin details */}
-                          {summary.expanded && (
-                            <tr>
-                              <td colSpan={5} style={{ padding: 0 }}>
-                                <Box p={4} bg="gray.50">
-                                  <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
-                                    <colgroup>
-                                      <col style={{ width: "40px" }} />
-                                      <col style={{ width: "40%" }} />
-                                      <col style={{ width: "25%" }} />
-                                      <col style={{ width: "35%" }} />
-                                    </colgroup>
-                                    <thead>
-                                      <tr>
-                                        <th style={{ padding: "10px", width: "40px" }}></th>
-                                        <th style={{ padding: "10px", textAlign: "left" }}>
-                                          {t("coinManager.objectId")}
-                                        </th>
-                                        <th style={{ padding: "10px", textAlign: "right" }}>
-                                          {t("coinManager.balance")}
-                                        </th>
-                                        <th></th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {summary.objects.map((coin) => (
-                                        <tr
-                                          key={coin.id}
-                                          onClick={() => toggleCoinSelection(coin.id)}
-                                          style={{
-                                            cursor: 'pointer',
-                                            backgroundColor: selectedCoins.has(coin.id) ? "rgba(66, 153, 225, 0.1)" : ""
-                                          }}
-                                        >
-                                          <td style={{ padding: "10px", width: "40px" }}></td>
-                                          <td style={{ padding: "10px", fontFamily: "monospace", fontSize: "0.9em" }}>
-                                            <ObjectIdDisplay objectId={coin.id} />
-                                          </td>
-                                          <td style={{ padding: "10px", textAlign: "right" }}>
-                                            {parseInt(coin.balance, 10) === 0 ? (
-                                              <Box as="span" px={2} py={1} bg="red.100" color="red.800" borderRadius="md" fontSize="0.8em">
-                                                0
-                                              </Box>
-                                            ) : (
-                                              formatBalance(coin.balance, summary.decimals)
-                                            )}
-                                          </td>
-                                          <td></td>
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
-                                </Box>
-                              </td>
-                            </tr>
-                          )}
-                        </React.Fragment>
-                      ))}
-                    </tbody>
-                  </table>
-                </Box>
+                <CoinTypesList
+                  coinTypeSummaries={coinTypeSummaries}
+                  selectedCoinType={selectedCoinType}
+                  selectedCoins={selectedCoins}
+                  isLoading={loadingState.singleOperation}
+                  onToggleCoinTypeExpansion={toggleCoinTypeExpansion}
+                  onToggleCoinSelection={toggleCoinSelection}
+                  onMergeCoin={autoMergeCoins}
+                  onCleanZeroCoins={handleCleanZeroCoins}
+                />
               )}
             </Box>
           </Stack>
