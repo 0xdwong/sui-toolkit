@@ -155,7 +155,7 @@ const BulkTransfer: React.FC = () => {
             <Heading as="h2" size="md">
               {t("bulkTransfer.transferList")}
             </Heading>
-            <Button onClick={addNewRow} colorScheme="green" size="sm">
+            <Button onClick={addNewRow} colorPalette="green" size="sm">
               {t("bulkTransfer.addRow")}
             </Button>
           </HStack>
@@ -207,7 +207,7 @@ const BulkTransfer: React.FC = () => {
                     <td style={{ padding: "10px" }}>
                       <Button
                         size="sm"
-                        colorScheme="red"
+                        colorPalette="red"
                         onClick={() => handleRemoveRow(index)}
                       >
                         {t("bulkTransfer.delete")}
@@ -229,7 +229,7 @@ const BulkTransfer: React.FC = () => {
               SUI
             </Text>
             <Button
-              colorScheme="blue"
+              colorPalette="blue"
               size="lg"
               onClick={executeTransfer}
               disabled={!currentAccount}

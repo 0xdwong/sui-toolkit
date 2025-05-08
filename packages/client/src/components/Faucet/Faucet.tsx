@@ -214,7 +214,7 @@ const Faucet: React.FC = () => {
             </Box>
 
             <Button
-              colorScheme="blue"
+              colorPalette="blue"
               size="lg"
               onClick={getFaucetTokens}
               disabled={isSubmitting}
