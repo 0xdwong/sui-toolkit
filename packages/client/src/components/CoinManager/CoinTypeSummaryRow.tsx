@@ -66,7 +66,7 @@ const CoinTypeSummaryRow: React.FC<CoinTypeSummaryRowProps> = ({
         {formatBalance(totalBalance, decimals)}
       </td>
       <td style={{ padding: "10px", textAlign: "center" }}>
-        <Badge colorScheme={objectCount > 1 ? "orange" : "green"} fontSize="0.9em">
+        <Badge colorPalette={objectCount > 1 ? "blue" : "green"} fontSize="0.9em">
           {objectCount}
         </Badge>
       </td>
@@ -74,8 +74,8 @@ const CoinTypeSummaryRow: React.FC<CoinTypeSummaryRowProps> = ({
         <Flex gap={2}>
           <Button
             size="sm"
-            colorScheme="blue"
-            variant="outline"
+            colorPalette="blue"
+            variant="solid"
             disabled={isLoading || objectCount < 2}
             onClick={(e) => {
               e.stopPropagation();
@@ -88,8 +88,8 @@ const CoinTypeSummaryRow: React.FC<CoinTypeSummaryRowProps> = ({
           {hasZeroBalanceCoins && (
             <Button
               size="sm"
-              colorScheme="red"
-              variant="outline"
+              colorPalette="red"
+              variant="solid"
               disabled={isLoading}
               onClick={(e) => {
                 e.stopPropagation();

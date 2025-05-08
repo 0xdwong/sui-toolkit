@@ -485,7 +485,8 @@ const CoinManager: React.FC = () => {
                 <Flex gap={3}>
                   <Button
                     size="sm"
-                    colorScheme="blue"
+                    colorPalette="blue"
+                    variant="solid"
                     loadingText={t("coinManager.loading")}
                     disabled={!hasMergeableCoins || loadingState.fetchCoins || loadingState.batchMerge || loadingState.batchCleanZero || loadingState.singleOperation}
                     onClick={handleBatchMerge}
@@ -496,7 +497,8 @@ const CoinManager: React.FC = () => {
                   </Button>
                   <Button
                     size="sm"
-                    colorScheme="red"
+                    colorPalette="red"
+                    variant="solid"
                     loadingText={t("coinManager.loading")}
                     disabled={!hasZeroBalanceCoins || loadingState.fetchCoins || loadingState.batchMerge || loadingState.batchCleanZero || loadingState.singleOperation}
                     onClick={handleBatchCleanZero}
@@ -514,7 +516,7 @@ const CoinManager: React.FC = () => {
                   <Text mt={4}>{t("coinManager.loading")}</Text>
                 </Box>
               ) : coinTypeSummaries.length === 0 ? (
-                <Box p={4} bg="blue.50" color="blue.800" borderRadius="md">
+                <Box p={4} bg="teal.50" color="teal.800" borderRadius="md">
                   <Text>{t("coinManager.noCoins")}</Text>
                 </Box>
               ) : (

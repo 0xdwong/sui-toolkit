@@ -28,7 +28,7 @@ const CoinObjectRow: React.FC<CoinObjectRowProps> = ({ coin, isSelected, onSelec
       </td>
       <td style={{ padding: "10px", textAlign: "right" }}>
         {isZeroBalance ? (
-          <Box as="span" px={2} py={1} bg="red.100" color="red.800" borderRadius="md" fontSize="0.8em">
+          <Box as="span" px={2} py={1} bg="purple.100" color="purple.800" borderRadius="md" fontSize="0.8em">
             0
           </Box>
         ) : (
