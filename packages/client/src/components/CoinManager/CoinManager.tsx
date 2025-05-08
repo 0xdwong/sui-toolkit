@@ -18,6 +18,7 @@ import {
 import { Transaction } from "@mysten/sui/transactions";
 import { SUI_TYPE_ARG } from "@mysten/sui/utils";
 import toast from "react-hot-toast";
+import { formatCoinType } from "./utils";
 
 // Import types and subcomponents
 import { CoinTypeSummary, LoadingState } from "./types";
@@ -84,7 +85,7 @@ const CoinManager: React.FC = () => {
 
       // Group coins by type
       const coinsByType = new Map<string, any[]>();
-      const coinMetadata = new Map<string, number>();
+      const coinMetadata = new Map<string, { decimals: number, symbol: string }>();
 
       // Fetch metadata for all coin types
       for (const coin of allCoins) {
@@ -97,15 +98,26 @@ const CoinManager: React.FC = () => {
             });
             
             if (metadata) {
-              coinMetadata.set(coin.coinType, metadata.decimals);
+              let symbol = metadata.symbol || formatCoinType(coin.coinType);
+              if(coin.coinType === "0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN") symbol = "wUSDC"
+              coinMetadata.set(coin.coinType, {
+                decimals: metadata.decimals,
+                symbol: symbol
+              });
             } else {
-              // Default to 9 decimals if metadata not found
-              coinMetadata.set(coin.coinType, 9);
+              // Default values if metadata not found
+              coinMetadata.set(coin.coinType, {
+                decimals: 9,
+                symbol: formatCoinType(coin.coinType)
+              });
             }
           } catch (error) {
             console.error(`Error fetching metadata for ${coin.coinType}:`, error);
-            // Default to 9 decimals on error
-            coinMetadata.set(coin.coinType, 9);
+            // Default values on error
+            coinMetadata.set(coin.coinType, {
+              decimals: 9,
+              symbol: formatCoinType(coin.coinType)
+            });
           }
         }
       }
@@ -113,13 +125,13 @@ const CoinManager: React.FC = () => {
       allCoins.forEach(coin => {
         if (!coin.coinType) return;
 
-        const decimals = coinMetadata.get(coin.coinType) || 9;
+        const metadata = coinMetadata.get(coin.coinType) || { decimals: 9, symbol: formatCoinType(coin.coinType) };
         
         const formattedCoin = {
           id: coin.coinObjectId,
           balance: coin.balance.toString(),
           type: coin.coinType,
-          decimals: decimals,
+          decimals: metadata.decimals,
         };
 
         if (!coinsByType.has(coin.coinType)) {
@@ -138,15 +150,16 @@ const CoinManager: React.FC = () => {
           BigInt(0)
         ).toString();
         
-        const decimals = coinMetadata.get(type) || 9;
+        const metadata = coinMetadata.get(type) || { decimals: 9, symbol: formatCoinType(type) };
 
         summaries.push({
           type,
+          symbol: metadata.symbol,
           totalBalance,
           objectCount: coins.length,
           objects: coins,
           expanded: false,
-          decimals: decimals
+          decimals: metadata.decimals
         });
       }
 

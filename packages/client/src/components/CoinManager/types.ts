@@ -9,6 +9,7 @@ export interface CoinObject {
 // Interface for coin type summary
 export interface CoinTypeSummary {
   type: string;
+  symbol: string;
   totalBalance: string;
   objectCount: number;
   objects: CoinObject[];

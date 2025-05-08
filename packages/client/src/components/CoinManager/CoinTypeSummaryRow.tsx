@@ -1,5 +1,5 @@
 import React from "react";
-import { Badge, Button, Flex, Box } from "@chakra-ui/react";
+import { Badge, Button, Flex, Box, Text } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { CoinTypeSummary } from "./types";
 import { CoinTypeDisplay } from "./DisplayComponents";
@@ -23,7 +23,7 @@ const CoinTypeSummaryRow: React.FC<CoinTypeSummaryRowProps> = ({
   onCleanZero
 }) => {
   const { t } = useTranslation();
-  const { type, totalBalance, objectCount, expanded, decimals, objects } = summary;
+  const { type, totalBalance, objectCount, expanded, decimals, objects, symbol } = summary;
   
   const hasZeroBalanceCoins = objects.some(coin => parseInt(coin.balance, 10) === 0);
 
@@ -57,9 +57,12 @@ const CoinTypeSummaryRow: React.FC<CoinTypeSummaryRowProps> = ({
           </svg>
         </Box>
       </td>
-      <td style={{ padding: "10px", fontFamily: "monospace", fontSize: "0.9em", maxWidth: "300px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-        <Flex alignItems="center">
-          <CoinTypeDisplay coinType={type} />
+      <td style={{ padding: "10px", fontFamily: "monospace", fontSize: "0.9em", maxWidth: "300px", overflow: "hidden", textOverflow: "ellipsis" }}>
+        <Flex direction="column" alignItems="flex-start" gap={1}>
+          <Text fontWeight="bold" fontSize="1em">{symbol || "Unknown"}</Text>
+          <Flex alignItems="center">
+            <CoinTypeDisplay coinType={type} />
+          </Flex>
         </Flex>
       </td>
       <td style={{ padding: "10px", textAlign: "right" }}>
