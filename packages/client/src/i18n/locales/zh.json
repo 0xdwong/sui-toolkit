@@ -6,7 +6,7 @@
   "navigation": {
     "home": "首页",
     "bulkTransfer": "批量转账",
-    "faucet": "测试网水龙头",
+    "faucet": "水龙头",
     "mcp": "MCP",
     "coinManager": "币管理"
   },
@@ -107,13 +107,22 @@
     "successAddresses": "成功的地址",
     "failedAddresses": "失败的地址",
     "viewInExplorer": "在浏览器中查看 {{address}}...",
-    "error": {
-      "title": "错误",
-      "description": "发生未知错误"
+    "networks": {
+      "devnet": "devnet",
+      "testnet": "testnet",
+      "unavailable": "暂不可用"
     },
     "success": {
       "title": "成功",
-      "description": "代币已发送到 {{count}} 个地址"
+      "description": "代币已发送到 {{count}} 个地址",
+      "message": "成功发送代币到 {{count}} 个地址"
+    },
+    "error": {
+      "title": "错误",
+      "description": "发生未知错误",
+      "noValidAddresses": "请至少输入一个有效地址",
+      "invalidAddressFormat": "无效的地址格式: {{address}}",
+      "noSuccessfulFunding": "没有成功获取代币的地址"
     }
   }
 }

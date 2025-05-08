@@ -65,13 +65,13 @@ const Faucet: React.FC = () => {
         .filter((addr) => addr.length > 0);
 
       if (addressList.length === 0) {
-        throw new Error("Please enter at least one valid address");
+        throw new Error(t("faucet.error.noValidAddresses"));
       }
 
       // Validate addresses format
       for (const addr of addressList) {
         if (!addr.startsWith("0x") || addr.length < 10) {
-          throw new Error(`Invalid address format: ${addr}`);
+          throw new Error(t("faucet.error.invalidAddressFormat", { address: addr }));
         }
       }
 
@@ -97,7 +97,7 @@ const Faucet: React.FC = () => {
       if (succeeds.length > 0) {
         setResult({
           success: true,
-          message: `Successfully sent tokens to ${succeeds.length} address(es)`,
+          message: t("faucet.success.message", { count: succeeds.length }),
           succeeded: succeeds,
           failed: faileds,
         });
@@ -109,7 +109,7 @@ const Faucet: React.FC = () => {
           }),
         });
       } else {
-        throw new Error("No addresses were successfully funded");
+        throw new Error(t("faucet.error.noSuccessfulFunding"));
       }
     } catch (error) {
       console.error("Error getting faucet tokens:", error);
@@ -194,9 +194,9 @@ const Faucet: React.FC = () => {
                   border: "1px solid #e2e8f0",
                 }}
               >
-                <option value="devnet">Devnet</option>
+                <option value="devnet">{t("faucet.networks.devnet")}</option>
                 <option value="testnet" disabled>
-                  Testnet (暂不可用)
+                  {t("faucet.networks.testnet")} ({t("faucet.networks.unavailable")})
                 </option>
               </select>
             </Box>
