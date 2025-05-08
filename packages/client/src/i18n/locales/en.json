@@ -26,7 +26,7 @@
     },
     "faucet": {
       "title": "Testnet Faucet",
-      "description": "Get SUI tokens on testnet"
+      "description": "Get SUI tokens on testnets"
     },
     "mcp": {
       "title": "MCP",
@@ -96,7 +96,7 @@
   },
   "faucet": {
     "title": "Testnet Faucet",
-    "description": "Get SUI tokens on testnet. Enter your address below to receive tokens.",
+    "description": "Get SUI tokens on testnets. Enter your address below to receive tokens.",
     "network": "Network",
     "addresses": "Addresses",
     "addressPlaceholder": "Enter one or more addresses (separate multiple with commas or newlines)",
