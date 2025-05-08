@@ -13,12 +13,13 @@ import { useTranslation } from "react-i18next";
 import {
   useCurrentAccount,
   useSuiClient,
-  useSignAndExecuteTransaction
+  useSignAndExecuteTransaction,
 } from "@mysten/dapp-kit";
 import { Transaction } from "@mysten/sui/transactions";
 import { SUI_TYPE_ARG } from "@mysten/sui/utils";
 import toast from "react-hot-toast";
 import { formatCoinType } from "./utils";
+import { useWalletNetwork } from "../CustomConnectButton";
 
 // Import types and subcomponents
 import { CoinTypeSummary, LoadingState } from "./types";
@@ -29,6 +30,7 @@ const CoinManager: React.FC = () => {
   const currentAccount = useCurrentAccount();
   const suiClient = useSuiClient();
   const { mutate: signAndExecute } = useSignAndExecuteTransaction();
+  const walletNetwork = useWalletNetwork(true);
 
   // Unified loading state management
   const [loadingState, setLoadingState] = useState<LoadingState>({
@@ -90,16 +92,16 @@ const CoinManager: React.FC = () => {
       // Fetch metadata for all coin types
       for (const coin of allCoins) {
         if (!coin.coinType) continue;
-        
+
         if (!coinMetadata.has(coin.coinType)) {
           try {
             const metadata = await suiClient.getCoinMetadata({
               coinType: coin.coinType,
             });
-            
+
             if (metadata) {
               let symbol = metadata.symbol || formatCoinType(coin.coinType);
-              if(coin.coinType === "0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN") symbol = "wUSDC"
+              if (coin.coinType === "0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN") symbol = "wUSDC"
               coinMetadata.set(coin.coinType, {
                 decimals: metadata.decimals,
                 symbol: symbol
@@ -126,7 +128,7 @@ const CoinManager: React.FC = () => {
         if (!coin.coinType) return;
 
         const metadata = coinMetadata.get(coin.coinType) || { decimals: 9, symbol: formatCoinType(coin.coinType) };
-        
+
         const formattedCoin = {
           id: coin.coinObjectId,
           balance: coin.balance.toString(),
@@ -149,7 +151,7 @@ const CoinManager: React.FC = () => {
           (sum, coin) => sum + BigInt(coin.balance),
           BigInt(0)
         ).toString();
-        
+
         const metadata = coinMetadata.get(type) || { decimals: 9, symbol: formatCoinType(type) };
 
         summaries.push({
@@ -181,25 +183,26 @@ const CoinManager: React.FC = () => {
 
   // Check if there's any coin type with multiple objects (can be merged)
   const hasMergeableCoins = coinTypeSummaries.some(summary => summary.objectCount > 1);
-  
+
   // Check if there's any zero balance coin object
-  const hasZeroBalanceCoins = coinTypeSummaries.some(summary => 
+  const hasZeroBalanceCoins = coinTypeSummaries.some(summary =>
     summary.objects.some(coin => parseInt(coin.balance, 10) === 0)
   );
 
   // Generic transaction execution function to reduce code duplication
   const executeTransaction = async (
-    tx: Transaction, 
-    successMessage: string, 
+    tx: Transaction,
+    successMessage: string,
     operationType: 'batchMerge' | 'batchCleanZero' | 'singleOperation'
   ) => {
     try {
       setLoadingState(prev => ({ ...prev, [operationType]: true }));
-      
+
       return new Promise((resolve, reject) => {
         signAndExecute(
-          { transaction: tx,
-           },
+          {
+            transaction: tx,
+          },
           {
             onSuccess: (result) => {
               toast.success(successMessage);
@@ -241,10 +244,10 @@ const CoinManager: React.FC = () => {
 
     try {
       setLoadingState(prev => ({ ...prev, batchMerge: true }));
-      
+
       // Create a single transaction for all coin types
       const tx = new Transaction();
-      
+
       // Add merge operations for each coin type
       mergeableCoinTypes.forEach(summary => {
         const coinIds = summary.objects.map(coin => coin.id);
@@ -252,11 +255,11 @@ const CoinManager: React.FC = () => {
         const otherCoins = coinIds.slice(1);
         tx.mergeCoins(primaryCoin, otherCoins);
       });
-      
+
       // Execute the transaction
       await executeTransaction(
-        tx, 
-        t("coinManager.batchMergeSuccess"), 
+        tx,
+        t("coinManager.batchMergeSuccess"),
         'batchMerge'
       );
 
@@ -277,7 +280,7 @@ const CoinManager: React.FC = () => {
       return;
     }
 
-    const coinTypesWithZeroBalance = coinTypeSummaries.filter(summary => 
+    const coinTypesWithZeroBalance = coinTypeSummaries.filter(summary =>
       summary.objects.some(coin => parseInt(coin.balance, 10) === 0)
     );
 
@@ -288,21 +291,21 @@ const CoinManager: React.FC = () => {
 
     try {
       setLoadingState(prev => ({ ...prev, batchCleanZero: true }));
-      
+
       // Create a single transaction for all zero-balance coins
       const tx = new Transaction();
       let totalCleanedCoins = 0;
-      
+
       // Add clean operations for each coin type
       coinTypesWithZeroBalance.forEach(summary => {
         // Filter zero balance coins
         const zeroBalanceCoins = summary.objects.filter(coin =>
           parseInt(coin.balance, 10) === 0
         );
-        
+
         if (zeroBalanceCoins.length === 0) return;
         totalCleanedCoins += zeroBalanceCoins.length;
-        
+
         if (summary.type === SUI_TYPE_ARG) {
           // Handle SUI coins
           for (const zeroCoin of zeroBalanceCoins) {
@@ -323,23 +326,23 @@ const CoinManager: React.FC = () => {
           }
         }
       });
-      
+
       if (totalCleanedCoins === 0) {
         toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.noZeroCoins"));
         setLoadingState(prev => ({ ...prev, batchCleanZero: false }));
         return;
       }
-      
+
       // Execute transaction
       await executeTransaction(
         tx,
         `${t("coinManager.batchCleanSuccess")}: ${totalCleanedCoins} objects`,
         'batchCleanZero'
       );
-      
+
       // Refresh coin list
       fetchAllCoins();
-      
+
     } catch (error) {
       console.error("Error batch cleaning zero-balance coins:", error);
       toast.error(t("coinManager.error.operationFailed") + ": " + (error instanceof Error ? error.message : t("coinManager.error.unknownError")));
@@ -439,7 +442,7 @@ const CoinManager: React.FC = () => {
 
     try {
       setLoadingState(prev => ({ ...prev, singleOperation: true }));
-      
+
       // Auto select all coins of this type
       const coinIds = summary.objects.map(coin => coin.id);
       const newSelection = new Set(coinIds);
@@ -468,14 +471,14 @@ const CoinManager: React.FC = () => {
     }
   };
 
-  // Load coins when account changes
+  // Load coins when account changes or network changes
   useEffect(() => {
     if (currentAccount) {
       fetchAllCoins();
     } else {
       setCoinTypeSummaries([]);
     }
-  }, [currentAccount]);
+  }, [currentAccount, walletNetwork]);
 
   return (
     <Container maxW="container.xl" py={8}>
@@ -484,7 +487,7 @@ const CoinManager: React.FC = () => {
           <Heading as="h1" mb={2}>
             {t("coinManager.title")}
           </Heading>
-          <Text color="gray.600">
+          <Text color="gray.600" mb={2}>
             {t("coinManager.description")}
           </Text>
         </Box>

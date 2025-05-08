@@ -2,20 +2,14 @@ import React, { useEffect } from "react";
 import { ConnectButton, useSuiClientContext, useCurrentWallet, useCurrentAccount } from "@mysten/dapp-kit";
 import { Box, Flex } from "@chakra-ui/react";
 
-// Custom ConnectButton component that uses direct styling
-const CustomConnectButton = () => {
-  // Get the current network information from the app
+// 自定义钩子，用于获取当前钱包的网络
+export const useWalletNetwork = (autoSync = false) => {
   const ctx = useSuiClientContext();
   const appNetwork = ctx.network;
-
-  // Get current wallet and its connection status
   const { isConnected } = useCurrentWallet();
   const currentAccount = useCurrentAccount();
-
-  // State to track wallet network
   const [walletNetwork, setWalletNetwork] = React.useState(appNetwork);
 
-  // Update wallet network info when connected
   useEffect(() => {
     if (isConnected && currentAccount && currentAccount.chains) {
       // The wallet chain usually contains the network ID (e.g., "sui:testnet")
@@ -25,15 +19,16 @@ const CustomConnectButton = () => {
         if (network && ['mainnet', 'testnet', 'devnet', 'localnet'].includes(network)) {
           setWalletNetwork(network);
 
-          // Optionally sync dApp network with wallet network
-          if (network !== appNetwork) {
+          // Sync dApp network with wallet network if autoSync is enabled
+          if (network !== appNetwork && autoSync) {
             try {
-              // Uncomment the following line to auto-sync dApp network with wallet
-              // ctx.selectNetwork(network);
-              console.log(`Wallet is connected to ${network}, but dApp is on ${appNetwork}`);
+              ctx.selectNetwork(network);
+              console.log(`Auto-synced dApp network to wallet network: ${network}`);
             } catch (error) {
               console.error("Failed to switch network:", error);
             }
+          } else if (network !== appNetwork) {
+            console.log(`Wallet is connected to ${network}, but dApp is on ${appNetwork}`);
           }
         }
       }
@@ -41,8 +36,48 @@ const CustomConnectButton = () => {
       // If not connected, show app network
       setWalletNetwork(appNetwork);
     }
-  }, [isConnected, currentAccount, appNetwork, ctx]);
+  }, [isConnected, currentAccount, appNetwork, ctx, autoSync]);
 
+  return walletNetwork;
+};
+
+// 获取网络标签颜色
+export const getNetworkTagColor = (network: string) => {
+  switch (network) {
+    case 'mainnet':
+      return 'green';
+    case 'testnet':
+      return 'orange';
+    case 'devnet':
+      return 'purple';
+    default:
+      return 'gray';
+  }
+};
+
+// 创建网络标识组件
+export const NetworkBadge = () => {
+  const walletNetwork = useWalletNetwork();
+  const color = getNetworkTagColor(walletNetwork);
+  return (
+    <Box
+      display="inline-flex"
+      alignItems="center"
+      height="24px"
+      bg={`${color}.100`}
+      color={`${color}.800`}
+      borderRadius="full"
+      px={3}
+      fontSize="sm"
+      fontWeight="medium"
+    >
+      {walletNetwork}
+    </Box>
+  );
+};
+
+// Custom ConnectButton component that uses direct styling
+const CustomConnectButton = () => {
   // Define custom button styles to apply via CSS
   React.useEffect(() => {
     // Create a style element
@@ -96,40 +131,6 @@ const CustomConnectButton = () => {
       document.head.removeChild(styleEl);
     };
   }, []);
-
-  // Get network tag color
-  const getNetworkTagColor = () => {
-    switch (walletNetwork) {
-      case 'mainnet':
-        return 'green';
-      case 'testnet':
-        return 'orange';
-      case 'devnet':
-        return 'purple';
-      default:
-        return 'gray';
-    }
-  };
-
-  // Create network badge component
-  const NetworkBadge = () => {
-    const color = getNetworkTagColor();
-    return (
-      <Box
-        display="inline-flex"
-        alignItems="center"
-        height="24px"
-        bg={`${color}.100`}
-        color={`${color}.800`}
-        borderRadius="full"
-        px={3}
-        fontSize="sm"
-        fontWeight="medium"
-      >
-        {walletNetwork}
-      </Box>
-    );
-  };
 
   return (
     <Flex gap={3} align="center">

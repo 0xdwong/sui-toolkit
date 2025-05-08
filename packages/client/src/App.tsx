@@ -9,6 +9,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import { useState } from "react";
 
 // Import i18n configuration
 import "./i18n/i18n";
@@ -30,12 +31,22 @@ const networks = {
 };
 
 function App() {
+  // 使用 useState 跟踪当前选择的网络
+  const [activeNetwork, setActiveNetwork] = useState<keyof typeof networks>("mainnet");
+
   return (
     <QueryClientProvider client={queryClient}>
-      <SuiClientProvider networks={networks} defaultNetwork="mainnet">
+      <SuiClientProvider
+        networks={networks}
+        network={activeNetwork}
+        onNetworkChange={(network) => {
+          console.log(`Network changed to: ${network}`);
+          setActiveNetwork(network as keyof typeof networks);
+        }}
+      >
         <WalletProvider autoConnect>
           <ChakraProvider value={defaultSystem}>
-            <Toaster 
+            <Toaster
               position="top-right"
               toastOptions={{
                 duration: 3000,
@@ -43,7 +54,7 @@ function App() {
                   background: "#363636",
                   color: "#fff",
                 }
-              }} 
+              }}
             />
             <Router>
               <Layout>
