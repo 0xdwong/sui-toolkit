@@ -33,7 +33,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <SuiClientProvider networks={networks} defaultNetwork="mainnet">
-        <WalletProvider>
+        <WalletProvider autoConnect>
           <ChakraProvider value={defaultSystem}>
             <Toaster 
               position="top-right"
