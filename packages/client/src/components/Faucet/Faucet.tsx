@@ -10,8 +10,8 @@ import {
   Link,
   Textarea,
 } from "@chakra-ui/react";
-import { isValidSuiAddress} from "@mysten/sui/utils";
-import { getFaucetHost, requestSuiFromFaucetV1 } from "@mysten/sui/faucet";
+import { isValidSuiAddress } from "@mysten/sui/utils";
+import { getFaucetHost, requestSuiFromFaucetV2 } from "@mysten/sui/faucet";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 
@@ -120,17 +120,16 @@ const Faucet: React.FC = () => {
   ): Promise<boolean> => {
     // Request faucet
     try {
-      const response = await requestSuiFromFaucetV1({
+      const response = await requestSuiFromFaucetV2({
         host: getFaucetHost(network),
         recipient: address,
       });
 
       // Check if response has error
-      if (response?.error) {
-        console.error("Invalid response from faucet:", response.error);
+      if (response.status !== "Success") {
+        console.error("Invalid response from faucet:", response.status);
         return false;
       }
-
       return true;
     } catch (error) {
       console.error("====Faucet request failed:", error);
@@ -142,12 +141,16 @@ const Faucet: React.FC = () => {
   const getExplorerUrl = (address: string) => {
     // const baseUrl = 'https://explorer.sui.io/address/';
     // return `${baseUrl}${address}?network=${network}`;
-    return getSuiscanUrl(address);
+    return getSuivisionUrl(address);
   };
 
   const getSuiscanUrl = (address: string) => {
     const baseUrl = "https://suiscan.xyz/";
     return `${baseUrl}${network}/account/${address}`;
+  };
+
+  const getSuivisionUrl = (address: string) => {
+    return `https://${network}.suivision.xyz/account/${address}`;
   };
 
   return (
