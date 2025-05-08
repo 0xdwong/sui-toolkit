@@ -10,8 +10,10 @@ import {
   Link,
   Textarea,
 } from "@chakra-ui/react";
+import { isValidSuiAddress} from "@mysten/sui/utils";
 import { getFaucetHost, requestSuiFromFaucetV1 } from "@mysten/sui/faucet";
 import { useTranslation } from "react-i18next";
+import toast from "react-hot-toast";
 
 type SuiFaucetNetwork = "testnet" | "devnet" | "localnet";
 
@@ -22,27 +24,11 @@ interface FaucetResult {
   failed?: string[];
 }
 
-// Simple toast implementation
-const useSimpleToast = () => {
-  return {
-    // Simple toast implementation
-    success: (options: { title: string; description: string }) => {
-      console.log("Success:", options.title, options.description);
-      alert(`Success: ${options.title} - ${options.description}`);
-    },
-    error: (options: { title: string; description: string }) => {
-      console.error("Error:", options.title, options.description);
-      alert(`Error: ${options.title} - ${options.description}`);
-    },
-  };
-};
-
 const Faucet: React.FC = () => {
   const [addresses, setAddresses] = useState<string>("");
   const [network, setNetwork] = useState<string>("devnet");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [result, setResult] = useState<FaucetResult | null>(null);
-  const toast = useSimpleToast();
   const { t } = useTranslation();
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -70,7 +56,7 @@ const Faucet: React.FC = () => {
 
       // Validate addresses format
       for (const addr of addressList) {
-        if (!addr.startsWith("0x") || addr.length < 10) {
+        if (!isValidSuiAddress(addr)) {
           throw new Error(t("faucet.error.invalidAddressFormat", { address: addr }));
         }
       }
@@ -102,12 +88,9 @@ const Faucet: React.FC = () => {
           failed: faileds,
         });
 
-        toast.success({
-          title: t("faucet.success.title"),
-          description: t("faucet.success.description", {
-            count: succeeds.length,
-          }),
-        });
+        toast.success(t("faucet.success.description", {
+          count: succeeds.length,
+        }));
       } else {
         throw new Error(t("faucet.error.noSuccessfulFunding"));
       }
@@ -121,13 +104,11 @@ const Faucet: React.FC = () => {
             : t("faucet.error.description"),
       });
 
-      toast.error({
-        title: t("faucet.error.title"),
-        description:
-          error instanceof Error
-            ? error.message
-            : t("faucet.error.description"),
-      });
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t("faucet.error.description")
+      );
     } finally {
       setIsSubmitting(false);
     }

@@ -16,32 +16,17 @@ import {
 } from "@mysten/dapp-kit";
 import { Transaction } from "@mysten/sui/transactions";
 import { useTranslation } from "react-i18next";
+import toast from "react-hot-toast";
 
 interface TransferItem {
   address: string;
   amount: string;
 }
 
-// Simple toast implementation
-const useSimpleToast = () => {
-  return {
-    // Simple toast implementation
-    success: (options: { title: string; description: string }) => {
-      console.log("Success:", options.title, options.description);
-      alert(`Success: ${options.title} - ${options.description}`);
-    },
-    error: (options: { title: string; description: string }) => {
-      console.error("Error:", options.title, options.description);
-      alert(`Error: ${options.title} - ${options.description}`);
-    },
-  };
-};
-
 const BulkTransfer: React.FC = () => {
   const [transferItems, setTransferItems] = useState<TransferItem[]>([
     { address: "", amount: "" },
   ]);
-  const toast = useSimpleToast();
   const currentAccount = useCurrentAccount();
   const { mutate: signAndExecute } = useSignAndExecuteTransaction();
   const { t } = useTranslation();
@@ -70,10 +55,7 @@ const BulkTransfer: React.FC = () => {
 
   const executeTransfer = async () => {
     if (!currentAccount) {
-      toast.error({
-        title: t("bulkTransfer.error.title"),
-        description: t("bulkTransfer.error.connectWallet"),
-      });
+      toast.error(t("bulkTransfer.error.connectWallet"));
       return;
     }
 
@@ -83,10 +65,7 @@ const BulkTransfer: React.FC = () => {
     );
 
     if (validTransfers.length === 0) {
-      toast.error({
-        title: t("bulkTransfer.error.title"),
-        description: t("bulkTransfer.error.noValidTransfers"),
-      });
+      toast.error(t("bulkTransfer.error.noValidTransfers"));
       return;
     }
 
@@ -114,32 +93,25 @@ const BulkTransfer: React.FC = () => {
         },
         {
           onSuccess: (result) => {
-            toast.success({
-              title: t("bulkTransfer.success.title"),
-              description: t("bulkTransfer.success.description", {
-                digest: result.digest,
-              }),
-            });
+            toast.success(t("bulkTransfer.success.description", {
+              digest: result.digest,
+            }));
           },
           onError: (error) => {
-            toast.error({
-              title: t("bulkTransfer.error.transferFailed"),
-              description:
-                error instanceof Error
-                  ? error.message
-                  : t("bulkTransfer.error.unknownError"),
-            });
+            toast.error(
+              error instanceof Error
+                ? error.message
+                : t("bulkTransfer.error.unknownError")
+            );
           },
         },
       );
     } catch (error) {
-      toast.error({
-        title: t("bulkTransfer.error.transferFailed"),
-        description:
-          error instanceof Error
-            ? error.message
-            : t("bulkTransfer.error.unknownError"),
-      });
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t("bulkTransfer.error.unknownError")
+      );
     }
   };
 
