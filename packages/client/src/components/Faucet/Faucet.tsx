@@ -14,6 +14,7 @@ import { isValidSuiAddress } from "@mysten/sui/utils";
 import { getFaucetHost, requestSuiFromFaucetV2 } from "@mysten/sui/faucet";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
+import { getExplorerUrl } from "../../utils/explorer";
 
 type SuiFaucetNetwork = "testnet" | "devnet" | "localnet";
 
@@ -137,22 +138,6 @@ const Faucet: React.FC = () => {
     }
   };
 
-  // Generate explorer URL based on network
-  const getExplorerUrl = (address: string) => {
-    // const baseUrl = 'https://explorer.sui.io/address/';
-    // return `${baseUrl}${address}?network=${network}`;
-    return getSuivisionUrl(address);
-  };
-
-  const getSuiscanUrl = (address: string) => {
-    const baseUrl = "https://suiscan.xyz/";
-    return `${baseUrl}${network}/account/${address}`;
-  };
-
-  const getSuivisionUrl = (address: string) => {
-    return `https://${network}.suivision.xyz/account/${address}`;
-  };
-
   return (
     <Container maxW="container.xl" py={8}>
       <Heading as="h1" mb={6}>
@@ -238,7 +223,7 @@ const Faucet: React.FC = () => {
                         (address: string, index: number) => (
                           <Link
                             key={index}
-                            href={getExplorerUrl(address)}
+                            href={getExplorerUrl(address, network)}
                             color="blue.500"
                             target="_blank"
                             rel="noopener noreferrer"
