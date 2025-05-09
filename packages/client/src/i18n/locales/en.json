@@ -69,7 +69,8 @@
       "batchMergeFailed": "Batch merge operation failed",
       "batchCleanFailed": "Batch clean operation failed",
       "notEnoughCoins": "Not coins to merge",
-      "noZeroCoins": "No zero balance coins found"
+      "noZeroCoins": "No zero balance coins found",
+      "cannotMergeTwoSuiCoins": "Cannot merge when there are only 2 SUI coins (one is needed for gas)"
     }
   },
   "bulkTransfer": {

@@ -251,9 +251,31 @@ const CoinManager: React.FC = () => {
       // Add merge operations for each coin type
       mergeableCoinTypes.forEach(summary => {
         const coinIds = summary.objects.map(coin => coin.id);
-        const primaryCoin = coinIds[0];
-        const otherCoins = coinIds.slice(1);
-        tx.mergeCoins(primaryCoin, otherCoins);
+
+        // Special handling for SUI coins
+        if (summary.type === SUI_TYPE_ARG) {
+          // Skip SUI if only 2 objects (one needed for gas)
+          if (summary.objects.length <= 2) {
+            return;
+          }
+
+          // Sort coins by balance and keep highest balance for gas
+          const sortedCoins = [...summary.objects].sort((a, b) =>
+            Number(BigInt(b.balance) - BigInt(a.balance))
+          );
+
+          const primaryCoin = sortedCoins[0].id;
+          const otherCoins = sortedCoins.slice(1).map(coin => coin.id);
+
+          if (otherCoins.length > 0) {
+            tx.mergeCoins(primaryCoin, otherCoins);
+          }
+        } else {
+          // For non-SUI coins, proceed as normal
+          const primaryCoin = coinIds[0];
+          const otherCoins = coinIds.slice(1);
+          tx.mergeCoins(primaryCoin, otherCoins);
+        }
       });
 
       // Execute the transaction
@@ -440,19 +462,44 @@ const CoinManager: React.FC = () => {
       return;
     }
 
+    // Special handling for SUI coins with only 2 objects
+    if (coinType === SUI_TYPE_ARG && summary.objects.length === 2) {
+      toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.cannotMergeTwoSuiCoins"));
+      return;
+    }
+
     try {
       setLoadingState(prev => ({ ...prev, singleOperation: true }));
 
       // Auto select all coins of this type
       const coinIds = summary.objects.map(coin => coin.id);
-      const newSelection = new Set(coinIds);
-      setSelectedCoins(newSelection);
 
-      // Create new transaction
+      // For SUI coins, ensure we keep one coin separate for gas
       const tx = new Transaction();
-      const primaryCoin = coinIds[0];
-      const otherCoins = coinIds.slice(1);
-      tx.mergeCoins(primaryCoin, otherCoins);
+
+      if (coinType === SUI_TYPE_ARG) {
+        // Sort coins by balance and keep the highest balance one for potential gas payment
+        const sortedCoins = [...summary.objects].sort((a, b) =>
+          Number(BigInt(b.balance) - BigInt(a.balance))
+        );
+
+        const primaryCoin = sortedCoins[0].id;
+        // Use all other coins except the primary one
+        const otherCoins = sortedCoins.slice(1).map(coin => coin.id);
+
+        if (otherCoins.length > 0) {
+          tx.mergeCoins(primaryCoin, otherCoins);
+        } else {
+          toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.notEnoughCoins"));
+          setLoadingState(prev => ({ ...prev, singleOperation: false }));
+          return;
+        }
+      } else {
+        // For non-SUI coins, proceed as normal
+        const primaryCoin = coinIds[0];
+        const otherCoins = coinIds.slice(1);
+        tx.mergeCoins(primaryCoin, otherCoins);
+      }
 
       // Execute transaction
       await executeTransaction(

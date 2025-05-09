@@ -69,7 +69,8 @@
       "batchMergeFailed": "批量合并失败",
       "batchCleanFailed": "批量清零失败",
       "notEnoughCoins": "没有可合并的币对象",
-      "noZeroCoins": "没有找到零余额币对象"
+      "noZeroCoins": "没有找到零余额币对象",
+      "cannotMergeTwoSuiCoins": "当只有两个 SUI 币对象时无法合并（一个需要用于支付 gas）"
     }
   },
   "bulkTransfer": {
