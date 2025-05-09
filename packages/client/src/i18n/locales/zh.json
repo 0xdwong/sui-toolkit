@@ -82,12 +82,15 @@
     "delete": "删除",
     "total": "总计",
     "execute": "执行批量转账",
+    "availableBalance": "可用余额",
     "error": {
       "title": "错误",
       "connectWallet": "请先连接你的钱包",
       "noValidTransfers": "没有有效的转账信息",
       "transferFailed": "转账失败",
-      "unknownError": "发生未知错误"
+      "unknownError": "发生未知错误",
+      "insufficientBalance": "余额不足",
+      "balanceFetchFailed": "获取余额失败"
     },
     "success": {
       "title": "转账成功",

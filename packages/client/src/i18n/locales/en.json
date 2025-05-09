@@ -82,12 +82,15 @@
     "delete": "Delete",
     "total": "Total",
     "execute": "Execute Bulk Transfer",
+    "availableBalance": "Available Balance",
     "error": {
       "title": "Error",
       "connectWallet": "Please connect your wallet first",
       "noValidTransfers": "No valid transfers provided",
       "transferFailed": "Transfer failed",
-      "unknownError": "Unknown error occurred"
+      "unknownError": "Unknown error occurred",
+      "insufficientBalance": "Insufficient balance",
+      "balanceFetchFailed": "Failed to fetch balance"
     },
     "success": {
       "title": "Transfer Successful",

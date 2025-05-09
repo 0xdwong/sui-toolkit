@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -13,6 +13,7 @@ import {
 import {
   useCurrentAccount,
   useSignAndExecuteTransaction,
+  useSuiClient,
 } from "@mysten/dapp-kit";
 import { Transaction } from "@mysten/sui/transactions";
 import { useTranslation } from "react-i18next";
@@ -27,9 +28,32 @@ const BulkTransfer: React.FC = () => {
   const [transferItems, setTransferItems] = useState<TransferItem[]>([
     { address: "", amount: "" },
   ]);
+  const [accountBalance, setAccountBalance] = useState<bigint>(BigInt(0));
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const currentAccount = useCurrentAccount();
   const { mutate: signAndExecute } = useSignAndExecuteTransaction();
+  const suiClient = useSuiClient();
   const { t } = useTranslation();
+
+  // Fetch account balance when currentAccount changes
+  useEffect(() => {
+    const fetchAccountBalance = async () => {
+      if (currentAccount) {
+        try {
+          const balanceResponse = await suiClient.getBalance({
+            owner: currentAccount.address,
+          });
+          setAccountBalance(BigInt(balanceResponse.totalBalance));
+        } catch (error) {
+          console.error("Failed to fetch balance:", error);
+          toast.error(t("bulkTransfer.error.balanceFetchFailed"));
+        }
+      }
+    };
+
+    fetchAccountBalance();
+  }, [currentAccount, suiClient, t]);
 
   const addNewRow = () => {
     setTransferItems([...transferItems, { address: "", amount: "" }]);
@@ -69,6 +93,18 @@ const BulkTransfer: React.FC = () => {
       return;
     }
 
+    // Calculate total amount needed for all transfers
+    const totalAmountInMist = validTransfers.reduce((sum, item) => {
+      return sum + BigInt(Math.floor(Number(item.amount) * 10 ** 9));
+    }, BigInt(0));
+
+    // Check if has enough balance
+    if (totalAmountInMist > accountBalance) {
+      toast.error(t("bulkTransfer.error.insufficientBalance"));
+      return;
+    }
+
+    setIsLoading(true);
     try {
       const tx = new Transaction();
 
@@ -96,6 +132,7 @@ const BulkTransfer: React.FC = () => {
             toast.success(t("bulkTransfer.success.description", {
               digest: result.digest,
             }));
+            setIsLoading(false);
           },
           onError: (error) => {
             toast.error(
@@ -103,6 +140,7 @@ const BulkTransfer: React.FC = () => {
                 ? error.message
                 : t("bulkTransfer.error.unknownError")
             );
+            setIsLoading(false);
           },
         },
       );
@@ -112,7 +150,13 @@ const BulkTransfer: React.FC = () => {
           ? error.message
           : t("bulkTransfer.error.unknownError")
       );
+      setIsLoading(false);
     }
+  };
+
+  // Convert bigint to human-readable SUI amount
+  const formatBalance = (balance: bigint): number => {
+    return Number(balance) / 10 ** 9;
   };
 
   return (
@@ -131,6 +175,12 @@ const BulkTransfer: React.FC = () => {
               {t("bulkTransfer.addRow")}
             </Button>
           </HStack>
+
+          {currentAccount && (
+            <Text mb={4}>
+              {t("bulkTransfer.availableBalance")}: {formatBalance(accountBalance)} SUI
+            </Text>
+          )}
 
           <Box overflowX="auto">
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -204,8 +254,9 @@ const BulkTransfer: React.FC = () => {
               colorPalette="blue"
               size="lg"
               onClick={executeTransfer}
-              disabled={!currentAccount}
+              disabled={!currentAccount || isLoading}
               width="full"
+              loading={isLoading}
             >
               {t("bulkTransfer.execute")}
             </Button>
