@@ -83,6 +83,9 @@
     "total": "Total",
     "execute": "Execute Bulk Transfer",
     "availableBalance": "Available Balance",
+    "transactionComplete": "Transaction Complete",
+    "transactionDigest": "Transaction Digest",
+    "viewInExplorer": "View in Explorer",
     "error": {
       "title": "Error",
       "connectWallet": "Please connect your wallet first",

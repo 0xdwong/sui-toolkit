@@ -9,6 +9,7 @@ import {
   Text,
   HStack,
   VStack,
+  Link,
 } from "@chakra-ui/react";
 import {
   useCurrentAccount,
@@ -18,6 +19,8 @@ import {
 import { Transaction } from "@mysten/sui/transactions";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
+import { getExplorerTxUrl } from "../../utils/explorer";
+import { useWalletNetwork } from "../CustomConnectButton";
 
 interface TransferItem {
   address: string;
@@ -30,11 +33,13 @@ const BulkTransfer: React.FC = () => {
   ]);
   const [accountBalance, setAccountBalance] = useState<bigint>(BigInt(0));
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [lastTxDigest, setLastTxDigest] = useState<string | null>(null);
 
   const currentAccount = useCurrentAccount();
   const { mutate: signAndExecute } = useSignAndExecuteTransaction();
   const suiClient = useSuiClient();
   const { t } = useTranslation();
+  const network = useWalletNetwork();
 
   // Fetch account balance when currentAccount changes
   useEffect(() => {
@@ -105,6 +110,7 @@ const BulkTransfer: React.FC = () => {
     }
 
     setIsLoading(true);
+    setLastTxDigest(null);
     try {
       const tx = new Transaction();
 
@@ -129,6 +135,7 @@ const BulkTransfer: React.FC = () => {
         },
         {
           onSuccess: (result) => {
+            setLastTxDigest(result.digest);
             toast.success(t("bulkTransfer.success.description", {
               digest: result.digest,
             }));
@@ -260,6 +267,28 @@ const BulkTransfer: React.FC = () => {
             >
               {t("bulkTransfer.execute")}
             </Button>
+            
+            {lastTxDigest && (
+              <Box mt={4} p={4} borderWidth="1px" borderRadius="md" width="full" bg="blue.50">
+                <Text fontSize="sm" mb={2}>
+                  {t("bulkTransfer.transactionComplete")}
+                </Text>
+                <HStack>
+                  <Text fontWeight="semibold" fontSize="sm" truncate>
+                    {t("bulkTransfer.transactionDigest")}: {lastTxDigest.slice(0, 8)}...{lastTxDigest.slice(-6)}
+                  </Text>
+                  <Link 
+                    href={getExplorerTxUrl(lastTxDigest, network)} 
+                    color="blue.500" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    ml="auto"
+                  >
+                    {t("bulkTransfer.viewInExplorer")}
+                  </Link>
+                </HStack>
+              </Box>
+            )}
           </VStack>
         </Box>
       </Stack>

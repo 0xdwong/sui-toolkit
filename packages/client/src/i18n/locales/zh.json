@@ -83,6 +83,9 @@
     "total": "总计",
     "execute": "执行批量转账",
     "availableBalance": "可用余额",
+    "transactionComplete": "交易完成",
+    "transactionDigest": "交易摘要",
+    "viewInExplorer": "在浏览器中查看",
     "error": {
       "title": "错误",
       "connectWallet": "请先连接你的钱包",
