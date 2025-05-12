@@ -44,7 +44,9 @@ function App() {
           setActiveNetwork(network as keyof typeof networks);
         }}
       >
-        <WalletProvider autoConnect>
+        <WalletProvider
+          autoConnect
+        >
           <ChakraProvider value={defaultSystem}>
             <Toaster
               position="top-right"
