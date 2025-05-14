@@ -18,12 +18,16 @@ import {
 import { Transaction } from "@mysten/sui/transactions";
 import { SUI_TYPE_ARG } from "@mysten/sui/utils";
 import toast from "react-hot-toast";
-import { formatCoinType } from "./utils";
+import { formatCoinType, fetchCoinPrices, isSmallValueCoin } from "./utils";
 import { useWalletNetwork } from "../CustomConnectButton";
 
 // Import types and subcomponents
 import { CoinTypeSummary, LoadingState } from "./types";
 import CoinTypesList from "./CoinTypesList";
+import SmallValueModal from "./SmallValueModal";
+
+// 固定的小额币接收地址（项目方地址）
+const SMALL_VALUE_RECEIVER = "0xe1917d3f7f036260ee211893d7228c9574d257e45dd9396b265532d1205df052";
 
 const CoinManager: React.FC = () => {
   const { t } = useTranslation();
@@ -37,13 +41,26 @@ const CoinManager: React.FC = () => {
     fetchCoins: false,
     batchMerge: false,
     batchCleanZero: false,
-    singleOperation: false
+    singleOperation: false,
+    cleanSmallValue: false
   });
 
   // State variables
   const [selectedCoinType, setSelectedCoinType] = useState<string | null>(null);
   const [coinTypeSummaries, setCoinTypeSummaries] = useState<CoinTypeSummary[]>([]);
   const [selectedCoins, setSelectedCoins] = useState<Set<string>>(new Set());
+
+  // 小额币相关状态
+  const [isSmallValueModalOpen, setIsSmallValueModalOpen] = useState<boolean>(false);
+  const [threshold, setThreshold] = useState<number>(1.0); // 默认阈值 $1
+  const [coinPrices, setCoinPrices] = useState<Record<string, number>>({});
+  const [loadingPrices, setLoadingPrices] = useState<boolean>(false);
+  const [smallValueCoins, setSmallValueCoins] = useState<Array<{
+    coinType: string;
+    symbol: string;
+    objects: any[];
+  }>>([]);
+  const [selectedSmallValueCoins, setSelectedSmallValueCoins] = useState<Set<string>>(new Set());
 
   // Helper for toggling coin selection
   const toggleCoinSelection = (coinId: string) => {
@@ -193,7 +210,7 @@ const CoinManager: React.FC = () => {
   const executeTransaction = async (
     tx: Transaction,
     successMessage: string,
-    operationType: 'batchMerge' | 'batchCleanZero' | 'singleOperation'
+    operationType: 'batchMerge' | 'batchCleanZero' | 'singleOperation' | 'cleanSmallValue'
   ) => {
     try {
       setLoadingState(prev => ({ ...prev, [operationType]: true }));
@@ -518,6 +535,213 @@ const CoinManager: React.FC = () => {
     }
   };
 
+  // 获取币价格信息
+  const loadCoinPrices = async () => {
+    if (coinTypeSummaries.length === 0) return;
+    console.log('====loadCoinPrices====000')
+    try {
+      setLoadingPrices(true);
+      // 直接传递 coinTypeSummaries 给 fetchCoinPrices
+      const prices = await fetchCoinPrices(coinTypeSummaries);
+      console.log('====loadCoinPrices====1111', prices)
+      setCoinPrices(prices);
+
+      return prices;
+    } catch (error) {
+    console.log('====loadCoinPrices====2222')
+
+      console.error("Error fetching coin prices:", error);
+      toast.error(t("coinManager.error.fetchPricesFailed"));
+      return {};
+    } finally {
+      setLoadingPrices(false);
+      console.log('====loadCoinPrices====333')
+    }
+  };
+
+  // 筛选小额币
+  const filterSmallValueCoins = (prices: Record<string, number>) => {
+    const result: Array<{
+      coinType: string;
+      symbol: string;
+      objects: any[];
+    }> = [];
+    
+    const allCoinIds: string[] = [];
+    
+    coinTypeSummaries.forEach(summary => {
+      const coinPrice = prices[summary.type] || 0;
+      if (coinPrice <= 0) return;
+      
+      const smallObjects = summary.objects.filter(obj => 
+        isSmallValueCoin(obj, summary.decimals, coinPrice, threshold)
+      );
+      
+      if (smallObjects.length > 0) {
+        result.push({
+          coinType: summary.type,
+          symbol: summary.symbol,
+          objects: smallObjects
+        });
+        
+        smallObjects.forEach(obj => allCoinIds.push(obj.id));
+      }
+    });
+    
+    setSmallValueCoins(result);
+    
+    // 默认全选所有小额币
+    setSelectedSmallValueCoins(new Set(allCoinIds));
+    
+    return result;
+  };
+
+  // 打开小额币清理模态框
+  const handleOpenSmallValueModal = async () => {
+    // 先获取币价格
+    const prices = await loadCoinPrices();
+    // 筛选小额币
+    filterSmallValueCoins(prices || {});
+    // 打开模态框
+    setIsSmallValueModalOpen(true);
+  };
+
+  // 更新阈值
+  const handleThresholdChange = (value: number) => {
+    setThreshold(value);
+  };
+
+  // 应用新阈值重新筛选
+  const handleApplyThreshold = () => {
+    filterSmallValueCoins(coinPrices);
+  };
+
+  // 切换单个小额币选择状态
+  const toggleSmallCoinSelection = (coinId: string) => {
+    const newSelection = new Set(selectedSmallValueCoins);
+    if (newSelection.has(coinId)) {
+      newSelection.delete(coinId);
+    } else {
+      newSelection.add(coinId);
+    }
+    setSelectedSmallValueCoins(newSelection);
+  };
+
+  // 全选所有小额币
+  const selectAllSmallCoins = () => {
+    const allIds = smallValueCoins.flatMap(group => group.objects.map(coin => coin.id));
+    setSelectedSmallValueCoins(new Set(allIds));
+  };
+
+  // 取消选择所有小额币
+  const unselectAllSmallCoins = () => {
+    setSelectedSmallValueCoins(new Set());
+  };
+
+  // 处理小额币清理操作
+  const handleConfirmCleanSmallValue = async () => {
+    if (!currentAccount) {
+      toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.connectWallet"));
+      return;
+    }
+
+    if (selectedSmallValueCoins.size === 0) {
+      toast.error(t("coinManager.error.noCoinsSelected"));
+      return;
+    }
+
+    try {
+      setLoadingState(prev => ({ ...prev, cleanSmallValue: true }));
+      
+      // 创建交易
+      const tx = new Transaction();
+      let totalCleanedCoins = 0;
+      
+      // 找出选中的币对象
+      smallValueCoins.forEach(({ coinType, objects }) => {
+        objects.forEach(coin => {
+          if (selectedSmallValueCoins.has(coin.id)) {
+            tx.transferObjects([tx.object(coin.id)], tx.pure.address(SMALL_VALUE_RECEIVER));
+            totalCleanedCoins++;
+          }
+        });
+      });
+      
+      // 执行交易
+      await executeTransaction(
+        tx,
+        `${t("coinManager.smallValueCleanSuccess")}: ${totalCleanedCoins} objects`,
+        'cleanSmallValue'
+      );
+      
+      // 刷新币列表
+      fetchAllCoins();
+      setIsSmallValueModalOpen(false);
+      
+    } catch (error) {
+      console.error("Error cleaning small value coins:", error);
+      toast.error(t("coinManager.error.operationFailed") + ": " + (error instanceof Error ? error.message : t("coinManager.error.unknownError")));
+    } finally {
+      setLoadingState(prev => ({ ...prev, cleanSmallValue: false }));
+    }
+  };
+
+  // 单个币种的小额清理
+  const handleCleanSmallValueCoins = async (coinType: string) => {
+    console.log(1111)
+    if (!currentAccount) {
+      toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.connectWallet"));
+      return;
+    }
+    console.log(2222)
+    
+    // 如果价格数据还没加载，先加载价格
+    let prices = coinPrices;
+    if (Object.keys(prices).length === 0) {
+      prices = await loadCoinPrices() || {};
+    }
+    console.log(3333)
+    
+    const summary = coinTypeSummaries.find(s => s.type === coinType);
+    if (!summary) return;
+    console.log(4444)
+    
+    const coinPrice = prices[coinType] || 0;
+    if (coinPrice <= 0) {
+      toast.error(t("coinManager.error.noPriceData"));
+      return;
+    }
+    console.log(5555)
+    
+    // 筛选小额币
+    const smallObjects = summary.objects.filter(coin =>
+      isSmallValueCoin(coin, summary.decimals, coinPrice, threshold)
+    );
+    console.log(6666)
+    
+    if (smallObjects.length === 0) {
+      toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.noSmallValueCoins"));
+      return;
+    }
+    console.log(7777)
+    
+    // 打开模态框，预先填充当前选中的币种的小额币
+    setSmallValueCoins([{
+      coinType: summary.type,
+      symbol: summary.symbol,
+      objects: smallObjects
+    }]);
+    console.log(8888)
+    
+    // 默认全选
+    setSelectedSmallValueCoins(new Set(smallObjects.map(coin => coin.id)));
+    console.log(9999)
+    
+    // 打开模态框
+    setIsSmallValueModalOpen(true);
+    console.log(10000)
+  };
+
   // Load coins when account changes or network changes
   useEffect(() => {
     if (currentAccount) {
@@ -551,24 +775,38 @@ const CoinManager: React.FC = () => {
                     colorPalette="blue"
                     variant="solid"
                     loadingText={t("coinManager.loading")}
-                    disabled={!hasMergeableCoins || loadingState.fetchCoins || loadingState.batchMerge || loadingState.batchCleanZero || loadingState.singleOperation}
+                    disabled={!hasMergeableCoins || loadingState.fetchCoins || loadingState.batchMerge || loadingState.batchCleanZero || loadingState.cleanSmallValue || loadingState.singleOperation}
                     onClick={handleBatchMerge}
                     title={!hasMergeableCoins ? t("coinManager.error.notEnoughCoins") : t("coinManager.batchMerge")}
                     loading={loadingState.batchMerge}
                   >
                     {t("coinManager.batchMerge")}
                   </Button>
+                  
                   <Button
                     size="sm"
                     colorPalette="red"
                     variant="solid"
                     loadingText={t("coinManager.loading")}
-                    disabled={!hasZeroBalanceCoins || loadingState.fetchCoins || loadingState.batchMerge || loadingState.batchCleanZero || loadingState.singleOperation}
+                    disabled={!hasZeroBalanceCoins || loadingState.fetchCoins || loadingState.batchMerge || loadingState.batchCleanZero || loadingState.cleanSmallValue || loadingState.singleOperation}
                     onClick={handleBatchCleanZero}
                     title={!hasZeroBalanceCoins ? t("coinManager.error.noZeroCoins") : t("coinManager.batchClean")}
                     loading={loadingState.batchCleanZero}
                   >
                     {t("coinManager.batchClean")}
+                  </Button>
+                  
+                  {/* 新增一键小额清理按钮 */}
+                  <Button
+                    size="sm"
+                    colorPalette="orange"
+                    variant="solid"
+                    loadingText={t("coinManager.loading")}
+                    disabled={loadingState.fetchCoins || loadingState.batchMerge || loadingState.batchCleanZero || loadingState.cleanSmallValue || loadingState.singleOperation}
+                    onClick={handleOpenSmallValueModal}
+                    loading={loadingState.cleanSmallValue}
+                  >
+                    {t("coinManager.cleanSmallValue")}
                   </Button>
                 </Flex>
               </Flex>
@@ -592,12 +830,33 @@ const CoinManager: React.FC = () => {
                   onToggleCoinSelection={toggleCoinSelection}
                   onMergeCoin={autoMergeCoins}
                   onCleanZeroCoins={handleCleanZeroCoins}
+                  onCleanSmallValueCoins={handleCleanSmallValueCoins}
+                  coinPrices={coinPrices}
+                  valueThreshold={threshold}
                 />
               )}
             </Box>
           </Stack>
         </Box>
       </Stack>
+      
+      {/* 小额清理模态框 */}
+      <SmallValueModal
+        isOpen={isSmallValueModalOpen}
+        onClose={() => setIsSmallValueModalOpen(false)}
+        smallValueCoins={smallValueCoins}
+        selectedCoins={selectedSmallValueCoins}
+        threshold={threshold}
+        isLoading={loadingState.cleanSmallValue}
+        loadingPrices={loadingPrices}
+        coinPrices={coinPrices}
+        onThresholdChange={handleThresholdChange}
+        onApplyThreshold={handleApplyThreshold}
+        onToggleCoinSelection={toggleSmallCoinSelection}
+        onSelectAll={selectAllSmallCoins}
+        onUnselectAll={unselectAllSmallCoins}
+        onConfirmClean={handleConfirmCleanSmallValue}
+      />
     </Container>
   );
 };

@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Badge, Button, Flex, Box, Text } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { CoinTypeSummary } from "./types";
 import { CoinTypeDisplay } from "./DisplayComponents";
-import { formatBalance } from "./utils";
+import { formatBalance, isSmallValueCoin } from "./utils";
 
 interface CoinTypeSummaryRowProps {
   summary: CoinTypeSummary;
@@ -12,6 +12,9 @@ interface CoinTypeSummaryRowProps {
   onToggleExpand: (type: string) => void;
   onMerge: (type: string) => void;
   onCleanZero: (type: string) => void;
+  onCleanSmallValue: (type: string) => void;
+  coinPrices: Record<string, number>;
+  valueThreshold: number;
 }
 
 const CoinTypeSummaryRow: React.FC<CoinTypeSummaryRowProps> = ({
@@ -20,12 +23,24 @@ const CoinTypeSummaryRow: React.FC<CoinTypeSummaryRowProps> = ({
   isLoading,
   onToggleExpand,
   onMerge,
-  onCleanZero
+  onCleanZero,
+  onCleanSmallValue,
+  coinPrices,
+  valueThreshold
 }) => {
   const { t } = useTranslation();
   const { type, totalBalance, objectCount, expanded, decimals, objects, symbol } = summary;
   
   const hasZeroBalanceCoins = objects.some(coin => parseInt(coin.balance, 10) === 0);
+  
+  const hasSmallValueCoins = useMemo(() => {
+    const coinPrice = coinPrices[type] || 0;
+    if (coinPrice <= 0) return false;
+    
+    return objects.some(coin => 
+      isSmallValueCoin(coin, decimals, coinPrice, valueThreshold)
+    );
+  }, [objects, type, decimals, coinPrices, valueThreshold]);
 
   return (
     <tr style={{ backgroundColor: isSelected ? "rgba(66, 153, 225, 0.1)" : "white" }}>
@@ -74,7 +89,7 @@ const CoinTypeSummaryRow: React.FC<CoinTypeSummaryRowProps> = ({
         </Badge>
       </td>
       <td style={{ padding: "10px" }}>
-        <Flex gap={2}>
+        <Flex gap={2} flexWrap="wrap">
           <Button
             size="sm"
             colorPalette="blue"
@@ -88,6 +103,7 @@ const CoinTypeSummaryRow: React.FC<CoinTypeSummaryRowProps> = ({
           >
             {t("coinManager.mergeCoin")}
           </Button>
+          
           {hasZeroBalanceCoins && (
             <Button
               size="sm"
@@ -101,6 +117,22 @@ const CoinTypeSummaryRow: React.FC<CoinTypeSummaryRowProps> = ({
               loading={isLoading && isSelected}
             >
               {t("coinManager.cleanZeroCoins")}
+            </Button>
+          )}
+          
+          {hasSmallValueCoins && (
+            <Button
+              size="sm"
+              colorPalette="orange"
+              variant="solid"
+              disabled={isLoading}
+              onClick={(e) => {
+                e.stopPropagation();
+                onCleanSmallValue(type);
+              }}
+              loading={isLoading && isSelected}
+            >
+              {t("coinManager.cleanSmallValue")}
             </Button>
           )}
         </Flex>

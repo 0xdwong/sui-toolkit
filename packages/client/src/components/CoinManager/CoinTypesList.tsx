@@ -14,6 +14,9 @@ interface CoinTypesListProps {
   onToggleCoinSelection: (coinId: string) => void;
   onMergeCoin: (type: string) => void;
   onCleanZeroCoins: (type: string) => void;
+  onCleanSmallValueCoins: (type: string) => void;
+  coinPrices: Record<string, number>;
+  valueThreshold: number;
 }
 
 const CoinTypesList: React.FC<CoinTypesListProps> = ({
@@ -24,7 +27,10 @@ const CoinTypesList: React.FC<CoinTypesListProps> = ({
   onToggleCoinTypeExpansion,
   onToggleCoinSelection,
   onMergeCoin,
-  onCleanZeroCoins
+  onCleanZeroCoins,
+  onCleanSmallValueCoins,
+  coinPrices,
+  valueThreshold
 }) => {
   const { t } = useTranslation();
 
@@ -67,6 +73,9 @@ const CoinTypesList: React.FC<CoinTypesListProps> = ({
                 onToggleExpand={onToggleCoinTypeExpansion}
                 onMerge={onMergeCoin}
                 onCleanZero={onCleanZeroCoins}
+                onCleanSmallValue={onCleanSmallValueCoins}
+                coinPrices={coinPrices}
+                valueThreshold={valueThreshold}
               />
 
               {/* Expanded coin details */}

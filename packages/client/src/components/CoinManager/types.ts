@@ -23,4 +23,5 @@ export interface LoadingState {
   batchMerge: boolean;
   batchCleanZero: boolean;
   singleOperation: boolean;
+  cleanSmallValue: boolean; // 小额清理状态
 } 

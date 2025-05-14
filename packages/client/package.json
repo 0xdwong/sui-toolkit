@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@cetusprotocol/aggregator-sdk": "^0.9.1",
     "@chakra-ui/react": "^3.16.1",
     "@emotion/react": "^11.14.0",
     "@mysten/dapp-kit": "^0.16.0",
@@ -59,6 +60,7 @@
     ]
   },
   "devDependencies": {
+    "@types/bn.js": "^5.1.6",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "eslint-config-react-app": "^7.0.1",

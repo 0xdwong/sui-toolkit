@@ -1,7 +1,8 @@
 {
   "common": {
     "appName": "Sui 工具箱",
-    "footer": "© {{year}} Sui 工具箱"
+    "footer": "© {{year}} Sui 工具箱",
+    "cancel": "取消"
   },
   "navigation": {
     "home": "首页",
@@ -50,7 +51,21 @@
     "cleanZeroCoins": "清零",
     "batchMerge": "一键合并",
     "batchClean": "一键清零",
+    "cleanSmallValue": "小额清理",
+    "smallValueCoins": "小额币列表",
+    "valueThreshold": "价值阈值 (美元)",
+    "apply": "应用",
+    "loadingPrices": "加载币价格中...",
+    "selectCoins": "选择币",
+    "selectAll": "全选",
+    "unselectAll": "取消全选",
+    "price": "价格",
+    "confirmClean": "确认清理",
+    "objectsSelected": "个对象已选择",
+    "totalValue": "总价值 (美元)",
+    "smallValueCleanSuccess": "小额币清理成功",
     "noCoins": "没有找到币对象",
+    "noSmallValueCoins": "当前阈值下没有小额币",
     "loading": "加载中...",
     "selectSome": "请选择至少两个币对象进行合并",
     "mergeSuccess": "币对象合并成功",
@@ -63,34 +78,38 @@
     },
     "error": {
       "title": "错误",
-      "connectWallet": "请先连接你的钱包",
+      "connectWallet": "请先连接钱包",
       "operationFailed": "操作失败",
       "unknownError": "发生未知错误",
-      "batchMergeFailed": "批量合并失败",
-      "batchCleanFailed": "批量清零失败",
-      "notEnoughCoins": "没有可合并的币对象",
-      "noZeroCoins": "没有找到零余额币对象",
-      "cannotMergeTwoSuiCoins": "当只有两个 SUI 币对象时无法合并（一个需要用于支付 gas）"
+      "batchMergeFailed": "批量合并操作失败",
+      "batchCleanFailed": "批量清零操作失败",
+      "notEnoughCoins": "没有足够的币可合并",
+      "noZeroCoins": "没有找到零余额币",
+      "cannotMergeTwoSuiCoins": "只有2个SUI币时不能合并(需要1个用于支付Gas)",
+      "fetchPricesFailed": "获取币价格失败",
+      "noSmallValueCoins": "没有找到小额币",
+      "noPriceData": "该币种无价格数据",
+      "noCoinsSelected": "请至少选择一个币进行清理"
     }
   },
   "bulkTransfer": {
     "title": "批量转账工具",
     "transferList": "转账列表",
-    "addRow": "添加一行",
+    "addRow": "添加行",
     "receivingAddress": "接收地址",
-    "amount": "金额 (SUI)",
+    "amount": "数量 (SUI)",
     "action": "操作",
     "delete": "删除",
     "total": "总计",
     "execute": "执行批量转账",
     "availableBalance": "可用余额",
     "transactionComplete": "交易完成",
-    "transactionDigest": "交易摘要",
+    "transactionDigest": "交易哈希",
     "viewInExplorer": "在浏览器中查看",
     "error": {
       "title": "错误",
-      "connectWallet": "请先连接你的钱包",
-      "noValidTransfers": "没有有效的转账信息",
+      "connectWallet": "请先连接钱包",
+      "noValidTransfers": "没有提供有效的转账信息",
       "transferFailed": "转账失败",
       "unknownError": "发生未知错误",
       "insufficientBalance": "余额不足",
@@ -98,38 +117,24 @@
     },
     "success": {
       "title": "转账成功",
-      "description": "交易摘要: {{digest}}"
+      "description": "交易哈希: {{digest}}"
     }
   },
   "faucet": {
     "title": "测试网水龙头",
-    "description": "获取测试网 SUI 代币。在下方输入你的地址以接收代币。",
+    "address": "地址",
     "network": "网络",
-    "addresses": "地址",
-    "addressPlaceholder": "输入一个或多个地址（用逗号或换行符分隔多个地址）",
-    "getTokens": "获取代币",
-    "submitting": "提交中...",
-    "requestSuccess": "请求成功",
-    "requestFailed": "请求失败",
-    "successAddresses": "成功的地址",
-    "failedAddresses": "失败的地址",
-    "viewInExplorer": "在浏览器中查看 {{address}}...",
-    "networks": {
-      "devnet": "devnet",
-      "testnet": "testnet",
-      "unavailable": "暂不可用"
-    },
-    "success": {
-      "title": "成功",
-      "description": "代币已发送到 {{count}} 个地址",
-      "message": "成功发送代币到 {{count}} 个地址"
-    },
+    "devnet": "开发网",
+    "testnet": "测试网",
+    "request": "请求 SUI",
+    "success": "请求成功",
     "error": {
       "title": "错误",
-      "description": "发生未知错误",
-      "noValidAddresses": "请至少输入一个有效地址",
-      "invalidAddressFormat": "无效的地址格式: {{address}}",
-      "noSuccessfulFunding": "没有成功获取代币的地址"
+      "addressEmpty": "请输入有效地址",
+      "networkEmpty": "请选择网络",
+      "requestFailed": "请求失败",
+      "unknownError": "发生未知错误",
+      "invalidAddress": "无效的地址格式"
     }
   }
 }

@@ -1,7 +1,8 @@
 {
   "common": {
     "appName": "Sui Toolkit",
-    "footer": "© {{year}} Sui Toolkit"
+    "footer": "© {{year}} Sui Toolkit",
+    "cancel": "Cancel"
   },
   "navigation": {
     "home": "Home",
@@ -50,7 +51,21 @@
     "cleanZeroCoins": "Clean Zero",
     "batchMerge": "Batch Merge",
     "batchClean": "Batch Clean Zero",
+    "cleanSmallValue": "Clean Dust",
+    "smallValueCoins": "Dust Coins",
+    "valueThreshold": "Value Threshold (USD)",
+    "apply": "Apply",
+    "loadingPrices": "Loading coin prices...",
+    "selectCoins": "Select Coins",
+    "selectAll": "Select All",
+    "unselectAll": "Unselect All",
+    "price": "Price",
+    "confirmClean": "Confirm Clean",
+    "objectsSelected": "objects selected",
+    "totalValue": "Total Value (USD)",
+    "smallValueCleanSuccess": "Small value coins cleaned successfully",
     "noCoins": "No coin objects found",
+    "noSmallValueCoins": "No small value coins found with current threshold",
     "loading": "Loading...",
     "selectSome": "Please select at least two coin objects to merge",
     "mergeSuccess": "Coins merged successfully",
@@ -70,7 +85,11 @@
       "batchCleanFailed": "Batch clean operation failed",
       "notEnoughCoins": "Not coins to merge",
       "noZeroCoins": "No zero balance coins found",
-      "cannotMergeTwoSuiCoins": "Cannot merge when there are only 2 SUI coins (one is needed for gas)"
+      "cannotMergeTwoSuiCoins": "Cannot merge when there are only 2 SUI coins (one is needed for gas)",
+      "fetchPricesFailed": "Failed to fetch coin prices",
+      "noSmallValueCoins": "No small value coins found",
+      "noPriceData": "No price data available for this coin",
+      "noCoinsSelected": "Please select at least one coin to clean"
     }
   },
   "bulkTransfer": {
@@ -103,33 +122,19 @@
   },
   "faucet": {
     "title": "Testnet Faucet",
-    "description": "Get SUI tokens on testnets. Enter your address below to receive tokens.",
+    "address": "Address",
     "network": "Network",
-    "addresses": "Addresses",
-    "addressPlaceholder": "Enter one or more addresses (separate multiple with commas or newlines)",
-    "getTokens": "Get Tokens",
-    "submitting": "Submitting...",
-    "requestSuccess": "Request Successful",
-    "requestFailed": "Request Failed",
-    "successAddresses": "Successful Addresses",
-    "failedAddresses": "Failed Addresses",
-    "viewInExplorer": "View {{address}}... in Explorer",
-    "networks": {
-      "devnet": "Devnet",
-      "testnet": "Testnet",
-      "unavailable": "unavailable"
-    },
-    "success": {
-      "title": "Success",
-      "description": "Tokens sent to {{count}} addresses",
-      "message": "Successfully sent tokens to {{count}} address(es)"
-    },
+    "devnet": "Devnet",
+    "testnet": "Testnet",
+    "request": "Request SUI",
+    "success": "Request successful",
     "error": {
       "title": "Error",
-      "description": "Unknown error occurred",
-      "noValidAddresses": "Please enter at least one valid address",
-      "invalidAddressFormat": "Invalid address format: {{address}}",
-      "noSuccessfulFunding": "No addresses were successfully funded"
+      "addressEmpty": "Please enter a valid address",
+      "networkEmpty": "Please select a network",
+      "requestFailed": "Request failed",
+      "unknownError": "Unknown error occurred",
+      "invalidAddress": "Invalid address format"
     }
   }
 }
