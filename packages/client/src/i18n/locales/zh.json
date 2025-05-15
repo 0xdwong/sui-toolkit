@@ -45,6 +45,7 @@
     "select": "选择",
     "actions": "操作",
     "totalBalance": "总余额",
+    "value": "价值",
     "objectCount": "对象数量",
     "mergeCoin": "合并",
     "cleanZeroCoins": "清零",

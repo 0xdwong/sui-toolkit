@@ -23,9 +23,14 @@ const CoinTypeSummaryRow: React.FC<CoinTypeSummaryRowProps> = ({
   onCleanZero
 }) => {
   const { t } = useTranslation();
-  const { type, totalBalance, objectCount, expanded, decimals, objects, symbol } = summary;
+  const { type, totalBalance, objectCount, expanded, decimals, objects, symbol, price, value } = summary;
   
   const hasZeroBalanceCoins = objects.some(coin => parseInt(coin.balance, 10) === 0);
+  
+  // Format the value display with USD format
+  const formattedValue = value !== undefined && value !== null 
+    ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
+    : '-';
 
   return (
     <tr style={{ backgroundColor: isSelected ? "rgba(66, 153, 225, 0.1)" : "white" }}>
@@ -67,6 +72,14 @@ const CoinTypeSummaryRow: React.FC<CoinTypeSummaryRowProps> = ({
       </td>
       <td style={{ padding: "10px", textAlign: "right" }}>
         {formatBalance(totalBalance, decimals)}
+      </td>
+      <td style={{ padding: "10px", textAlign: "right" }}>
+        <Text>{formattedValue}</Text>
+        {price && (
+          <Text fontSize="xs" color="gray.500">
+            (${Number(price).toFixed(6)})
+          </Text>
+        )}
       </td>
       <td style={{ padding: "10px", textAlign: "center" }}>
         <Badge colorPalette={objectCount > 1 ? "blue" : "green"} fontSize="0.9em">

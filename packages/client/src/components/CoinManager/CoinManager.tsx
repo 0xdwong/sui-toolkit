@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Container,
   Heading,
@@ -16,10 +16,11 @@ import {
   useSignAndExecuteTransaction,
 } from "@mysten/dapp-kit";
 import { Transaction } from "@mysten/sui/transactions";
-import { SUI_TYPE_ARG } from "@mysten/sui/utils";
 import toast from "react-hot-toast";
 import { formatCoinType } from "./utils";
 import { useWalletNetwork } from "../CustomConnectButton";
+import { getPriceDirectAPI, calculateValue } from "../../utils/priceUtils";
+import { USDC_COIN_TYPE, SUI_TYPE_ARG, WUSDC_COIN_TYPE, USDC_COIN_DECIMALS } from "../../utils/constants";
 
 // Import types and subcomponents
 import { CoinTypeSummary, LoadingState } from "./types";
@@ -37,7 +38,8 @@ const CoinManager: React.FC = () => {
     fetchCoins: false,
     batchMerge: false,
     batchCleanZero: false,
-    singleOperation: false
+    singleOperation: false,
+    fetchPrices: false
   });
 
   // State variables
@@ -74,7 +76,7 @@ const CoinManager: React.FC = () => {
   };
 
   // Fetch all coins for the connected wallet
-  const fetchAllCoins = async () => {
+  const fetchAllCoins = useCallback(async () => {
     if (!currentAccount) return;
 
     try {
@@ -101,7 +103,7 @@ const CoinManager: React.FC = () => {
 
             if (metadata) {
               let symbol = metadata.symbol || formatCoinType(coin.coinType);
-              if (coin.coinType === "0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN") symbol = "wUSDC"
+              if (coin.coinType === WUSDC_COIN_TYPE) symbol = "wUSDC"
               coinMetadata.set(coin.coinType, {
                 decimals: metadata.decimals,
                 symbol: symbol
@@ -173,13 +175,17 @@ const CoinManager: React.FC = () => {
       });
 
       setCoinTypeSummaries(summaries);
+      
+      // Fetch prices for all coin types
+      await fetchCoinPrices(summaries);
+      
     } catch (error) {
       console.error("Error fetching coins:", error);
       toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.unknownError"));
     } finally {
       setLoadingState(prev => ({ ...prev, fetchCoins: false }));
     }
-  };
+  }, [currentAccount, suiClient, t]);
 
   // Check if there's any coin type with multiple objects (can be merged)
   const hasMergeableCoins = coinTypeSummaries.some(summary => summary.objectCount > 1);
@@ -408,7 +414,7 @@ const CoinManager: React.FC = () => {
         );
 
         if (nonZeroCoins.length === 0) {
-          toast.error(t("coinManager.error.operationFailed") + ": " + "Need at least one coin with balance for gas");
+          toast.error(t("coinManager.error.operationFailed") + ": Need at least one coin with balance for gas");
           setLoadingState(prev => ({ ...prev, singleOperation: false }));
           return;
         }
@@ -518,6 +524,56 @@ const CoinManager: React.FC = () => {
     }
   };
 
+  // Fetch prices for all coins
+  const fetchCoinPrices = useCallback(async (summaries: CoinTypeSummary[]) => {
+    if (!summaries.length) return;
+    
+    try {
+      setLoadingState(prev => ({ ...prev, fetchPrices: true }));
+      // Create a copy of summaries to update with price data
+      const updatedSummaries = [...summaries];
+      
+      // Fetch price for each coin type
+      for (let i = 0; i < updatedSummaries.length; i++) {
+        const summary = updatedSummaries[i];
+        
+        try {
+          // Skip fetching price for wUSDC itself
+          if (summary.type === USDC_COIN_TYPE) {
+            summary.price = "1.0";
+            summary.value = Number(summary.totalBalance) / Math.pow(10, summary.decimals);
+            continue;
+          }
+          
+          const price = await getPriceDirectAPI(
+            summary.type,
+            summary.decimals,
+            USDC_COIN_TYPE,
+            USDC_COIN_DECIMALS
+          );
+          
+          // Update the summary with price and calculated value
+          summary.price = price;
+          if (price) {
+            summary.value = calculateValue(summary.totalBalance, price, summary.decimals);
+          } else {
+            summary.value = 0;
+          }
+        } catch (error) {
+          console.error(`Error fetching price for ${summary.symbol}:`, error);
+          summary.price = null;
+          summary.value = 0;
+        }
+      }
+      
+      setCoinTypeSummaries(updatedSummaries);
+    } catch (error) {
+      console.error("Error fetching coin prices:", error);
+    } finally {
+      setLoadingState(prev => ({ ...prev, fetchPrices: false }));
+    }
+  }, [suiClient]);
+
   // Load coins when account changes or network changes
   useEffect(() => {
     if (currentAccount) {
@@ -525,7 +581,7 @@ const CoinManager: React.FC = () => {
     } else {
       setCoinTypeSummaries([]);
     }
-  }, [currentAccount, walletNetwork]);
+  }, [currentAccount, walletNetwork, fetchAllCoins]);
 
   return (
     <Container maxW="container.xl" py={8}>
@@ -573,7 +629,7 @@ const CoinManager: React.FC = () => {
                 </Flex>
               </Flex>
 
-              {loadingState.fetchCoins ? (
+              {loadingState.fetchCoins || loadingState.fetchPrices ? (
                 <Box textAlign="center" py={10}>
                   <Spinner size="xl" />
                   <Text mt={4}>{t("coinManager.loading")}</Text>

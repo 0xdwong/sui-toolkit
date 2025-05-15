@@ -36,8 +36,8 @@
   "coinManager": {
     "title": "Coin Manager",
     "description": "Manage your coin objects, merge same type coins and clean zero balance coins",
-    "coinType": "Coin Type",
     "coinList": "Coin Objects List",
+    "coinType": "Coin Type",
     "coinId": "Coin ID",
     "objectId": "Object ID",
     "balance": "Balance",
@@ -45,6 +45,7 @@
     "select": "Select",
     "actions": "Actions",
     "totalBalance": "Total Balance",
+    "value": "Value",
     "objectCount": "Object Count",
     "mergeCoin": "Merge",
     "cleanZeroCoins": "Clean Zero",

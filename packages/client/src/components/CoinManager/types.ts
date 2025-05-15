@@ -15,6 +15,8 @@ export interface CoinTypeSummary {
   objects: CoinObject[];
   expanded: boolean;
   decimals: number;
+  price?: string | null;   // Price in USD
+  value?: number;          // Total value in USD
 }
 
 // Loading state interface
@@ -23,4 +25,5 @@ export interface LoadingState {
   batchMerge: boolean;
   batchCleanZero: boolean;
   singleOperation: boolean;
+  fetchPrices: boolean;    // New state for price loading
 } 

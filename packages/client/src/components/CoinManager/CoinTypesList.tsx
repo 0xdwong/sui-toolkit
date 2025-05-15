@@ -33,8 +33,9 @@ const CoinTypesList: React.FC<CoinTypesListProps> = ({
       <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
         <colgroup>
           <col style={{ width: "40px" }} />
-          <col style={{ width: "40%" }} />
-          <col style={{ width: "25%" }} />
+          <col style={{ width: "30%" }} />
+          <col style={{ width: "20%" }} />
+          <col style={{ width: "15%" }} />
           <col style={{ width: "15%" }} />
           <col style={{ width: "20%" }} />
         </colgroup>
@@ -43,11 +44,14 @@ const CoinTypesList: React.FC<CoinTypesListProps> = ({
             <th style={{ padding: "10px", textAlign: "left", width: "40px" }}>
               {/* 展开/折叠列 */}
             </th>
-            <th style={{ padding: "10px", textAlign: "left", width: "40%" }}>
+            <th style={{ padding: "10px", textAlign: "left", width: "30%" }}>
               {t("coinManager.name")}
             </th>
-            <th style={{ padding: "10px", textAlign: "right", width: "25%" }}>
+            <th style={{ padding: "10px", textAlign: "right", width: "20%" }}>
               {t("coinManager.totalBalance")}
+            </th>
+            <th style={{ padding: "10px", textAlign: "right", width: "15%" }}>
+              {t("coinManager.value")}
             </th>
             <th style={{ padding: "10px", textAlign: "left", width: "15%" }}>
               {t("coinManager.objectCount")}
@@ -72,7 +76,7 @@ const CoinTypesList: React.FC<CoinTypesListProps> = ({
               {/* Expanded coin details */}
               {summary.expanded && (
                 <tr>
-                  <td colSpan={5} style={{ padding: 0 }}>
+                  <td colSpan={6} style={{ padding: 0 }}>
                     <CoinObjectsTable
                       objects={summary.objects}
                       selectedCoins={selectedCoins}
