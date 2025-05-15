@@ -81,6 +81,8 @@ const CoinTypesList: React.FC<CoinTypesListProps> = ({
                       objects={summary.objects}
                       selectedCoins={selectedCoins}
                       onToggleCoinSelection={onToggleCoinSelection}
+                      price={summary.price}
+                      decimals={summary.decimals}
                     />
                   </td>
                 </tr>

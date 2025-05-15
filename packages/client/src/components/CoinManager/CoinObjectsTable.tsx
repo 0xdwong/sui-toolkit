@@ -8,12 +8,16 @@ interface CoinObjectsTableProps {
   objects: CoinObject[];
   selectedCoins: Set<string>;
   onToggleCoinSelection: (coinId: string) => void;
+  price?: string | null;
+  decimals: number;
 }
 
 const CoinObjectsTable: React.FC<CoinObjectsTableProps> = ({
   objects,
   selectedCoins,
-  onToggleCoinSelection
+  onToggleCoinSelection,
+  price,
+  decimals
 }) => {
   const { t } = useTranslation();
 
@@ -22,9 +26,11 @@ const CoinObjectsTable: React.FC<CoinObjectsTableProps> = ({
       <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
         <colgroup>
           <col style={{ width: "40px" }} />
-          <col style={{ width: "40%" }} />
-          <col style={{ width: "25%" }} />
-          <col style={{ width: "35%" }} />
+          <col style={{ width: "30%" }} />
+          <col style={{ width: "20%" }} />
+          <col style={{ width: "15%" }} />
+          <col style={{ width: "15%" }} />
+          <col style={{ width: "20%" }} />
         </colgroup>
         <thead>
           <tr>
@@ -35,6 +41,10 @@ const CoinObjectsTable: React.FC<CoinObjectsTableProps> = ({
             <th style={{ padding: "10px", textAlign: "right" }}>
               {t("coinManager.balance")}
             </th>
+            <th style={{ padding: "10px", textAlign: "right" }}>
+              {t("coinManager.value")}
+            </th>
+            <th></th>
             <th></th>
           </tr>
         </thead>
@@ -45,6 +55,7 @@ const CoinObjectsTable: React.FC<CoinObjectsTableProps> = ({
               coin={coin}
               isSelected={selectedCoins.has(coin.id)}
               onSelect={onToggleCoinSelection}
+              price={price}
             />
           ))}
         </tbody>

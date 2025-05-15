@@ -3,16 +3,21 @@ import { Box } from "@chakra-ui/react";
 import { CoinObject } from "./types";
 import { ObjectIdDisplay } from "./DisplayComponents";
 import { formatBalance } from "./utils";
+import { calculateValue } from "../../utils/priceUtils";
 
 interface CoinObjectRowProps {
   coin: CoinObject;
   isSelected: boolean;
   onSelect: (coinId: string) => void;
+  price?: string | null;
 }
 
-const CoinObjectRow: React.FC<CoinObjectRowProps> = ({ coin, isSelected, onSelect }) => {
+const CoinObjectRow: React.FC<CoinObjectRowProps> = ({ coin, isSelected, onSelect, price }) => {
   const { id, balance, decimals = 9 } = coin;
   const isZeroBalance = parseInt(balance, 10) === 0;
+  
+  // Calculate coin value if price is available
+  const value = price ? calculateValue(balance, price, decimals) : 0;
 
   return (
     <tr
@@ -35,6 +40,16 @@ const CoinObjectRow: React.FC<CoinObjectRowProps> = ({ coin, isSelected, onSelec
           formatBalance(balance, decimals)
         )}
       </td>
+      <td style={{ padding: "10px", textAlign: "right" }}>
+        {price ? (
+          isZeroBalance ? 
+            "0" : 
+            `$${value.toFixed(4)}`
+        ) : (
+          "-"
+        )}
+      </td>
+      <td></td>
       <td></td>
     </tr>
   );
