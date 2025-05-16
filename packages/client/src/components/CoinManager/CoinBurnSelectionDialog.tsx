@@ -160,7 +160,7 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
               const value = Number(coin.balance) / Math.pow(10, coinDecimals) * Number(coinPrice);
               return value < 0.1 && Number(coin.balance) > 0;
             } else {
-              // 无价格数据，选择所有余额大于0的代币
+              // 无价格数据，选择所有代币，不再检查余额
               return true;
             }
           })
@@ -179,10 +179,8 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
           })
           .map(coin => coin.id);
       } else {
-        // If no price data, select all non-zero balance coins
-        autoSelected = coins
-          .filter(coin => Number(coin.balance) > 0)
-          .map(coin => coin.id);
+        // If no price data, select all coins, no need to check balance
+        autoSelected = coins.map(coin => coin.id);
       }
       
       setSelectedCoinIds(autoSelected);
@@ -212,8 +210,8 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
                 const value = Number(coin.balance) / Math.pow(10, coinDecimals) * Number(coinPrice);
                 return value < 0.1 && Number(coin.balance) > 0;
               } else {
-                // 无价格数据，选择所有余额大于0的代币
-                return Number(coin.balance) > 0;
+                // 无价格数据，选择所有代币，不再检查余额
+                return true;
               }
             })
             .map(coin => coin.id);
