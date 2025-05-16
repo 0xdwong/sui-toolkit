@@ -3,7 +3,15 @@
     "appName": "Sui Toolkit",
     "footer": "© {{year}} Sui Toolkit",
     "cancel": "Cancel",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "connect": "Connect Wallet",
+    "disconnect": "Disconnect",
+    "sign": "Sign",
+    "execute": "Execute",
+    "installed": "Installed",
+    "notInstalled": "Not Installed"
   },
   "navigation": {
     "home": "Home",
@@ -76,6 +84,20 @@
       "coinType": "Copy Coin Type",
       "objectId": "Copy Object ID"
     },
+    "selected": "Selected",
+    "selectAll": "Select All",
+    "burnSingle": "Burn Single Coin",
+    "burnCoins": "Burn Coins",
+    "burnCoinsTitle": "Burn {{symbol}} Coins",
+    "burnCoinsDescription": "Select coin objects to burn. Coins with value less than $0.1 are automatically selected.",
+    "totalValueSelected": "Total Value Selected",
+    "lowValue": "Low Value",
+    "noPrice": "No Price",
+    "batchBurnCoinsTitle": "Batch Burn Coins",
+    "batchBurnCoinsDescription": "Select coin objects to burn from multiple types. Low value coins are automatically selected.",
+    "multipleCoins": "Multiple Coins",
+    "confirmBurnSingle": "Confirm Burn Single Coin",
+    "confirmBurnSingleMessage": "Are you sure you want to burn {{symbol}} coin with balance {{balance}}?",
     "error": {
       "title": "Error",
       "connectWallet": "Please connect your wallet first",
@@ -87,7 +109,8 @@
       "noZeroCoins": "No zero balance coins found",
       "noCoinsSelected": "No coins selected",
       "noLowValueCoins": "No low value coins found",
-      "cannotMergeTwoSuiCoins": "Cannot merge when there are only 2 SUI coins (one is needed for gas)"
+      "cannotMergeTwoSuiCoins": "Cannot merge when there are only 2 SUI coins (one is needed for gas)",
+      "noMergeableCoins": "No mergeable coins found"
     }
   },
   "bulkTransfer": {

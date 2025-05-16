@@ -23,10 +23,17 @@ import { getPriceDirectAPI, calculateValue } from "../../utils/priceUtils";
 import { USDC_COIN_TYPE, SUI_TYPE_ARG, WUSDC_COIN_TYPE, USDC_COIN_DECIMALS } from "../../utils/constants";
 
 // Import types and subcomponents
-import { CoinTypeSummary, LoadingState } from "./types";
+import { CoinTypeSummary, LoadingState, CoinObject } from "./types";
 import CoinTypesList from "./CoinTypesList";
 import BurnConfirmationDialog from "./BurnConfirmationDialog";
 import CoinBurnSelectionDialog from "./CoinBurnSelectionDialog";
+
+// 扩展CoinObject接口以支持批量销毁模式的额外属性
+interface ExtendedCoinObject extends CoinObject {
+  symbol?: string;
+  value?: number | null;
+  price?: string | null;
+}
 
 const CoinManager: React.FC = () => {
   const { t } = useTranslation();
@@ -49,6 +56,7 @@ const CoinManager: React.FC = () => {
   const [selectedCoinType, setSelectedCoinType] = useState<string | null>(null);
   const [coinTypeSummaries, setCoinTypeSummaries] = useState<CoinTypeSummary[]>([]);
   const [selectedCoins, setSelectedCoins] = useState<Set<string>>(new Set());
+  const [allCoinsForBurnDialog, setAllCoinsForBurnDialog] = useState<ExtendedCoinObject[]>([]);
 
   // Confirmation dialog states
   const [burnConfirmation, setBurnConfirmation] = useState({
@@ -663,52 +671,132 @@ const CoinManager: React.FC = () => {
     });
   };
 
-  // Handle batch burn of low value coins (< $0.1)
+  // 处理批量销毁代币（显示所有代币，默认选中低价值代币）
   const handleBatchBurnLowValueCoins = async () => {
     if (!currentAccount) {
       toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.connectWallet"));
       return;
     }
 
-    // Find coins with value < $0.1
-    const lowValueCoins = new Map<string, string[]>();
-    let hasNoPriceCoins = false;
+    // 调试信息：总共有多少SUI代币
+    const suiSummary = coinTypeSummaries.find(s => s.type === SUI_TYPE_ARG);
+    if (suiSummary) {
+      console.log(`总共有 ${suiSummary.objects.length} 个SUI代币对象`);
+    }
 
-    coinTypeSummaries.forEach(summary => {
-      if (!summary.price) {
-        hasNoPriceCoins = true;
-        console.log(`No price data for coin: ${summary.symbol} (${summary.type})`);
-        return;
+    // 创建扩展后的代币对象列表，包含价格和其他必要信息
+    const batchCoins: ExtendedCoinObject[] = [];
+    // 记录低价值代币的ID，用于默认选择
+    const lowValueCoinIds: string[] = [];
+    
+    // 收集所有代币，并标记低价值代币
+    for (const summary of coinTypeSummaries) {
+      // 输出每个币种的信息
+      console.log(`处理币种: ${summary.symbol}, 数量: ${summary.objects.length}, 有价格数据: ${!!summary.price}`);
+      
+      // 处理每个代币对象
+      for (const coin of summary.objects) {
+        // 忽略余额为0的代币
+        if (Number(coin.balance) === 0) continue;
+        
+        // 创建扩展代币对象
+        const extendedCoin: ExtendedCoinObject = {
+          ...coin,
+          symbol: summary.symbol,
+          decimals: summary.decimals,
+          price: summary.price,
+          type: summary.type // 确保type字段正确设置
+        };
+        
+        // 判断是否是低价值代币
+        let isLowValue = false;
+        
+        // 如果有价格数据，计算价值
+        if (summary.price) {
+          const value = Number(coin.balance) / Math.pow(10, summary.decimals) * Number(summary.price);
+          // 特别为SUI代币添加更详细的日志
+          if (summary.type === SUI_TYPE_ARG) {
+            console.log(`SUI代币: ${coin.id}, 余额=${coin.balance}, 价值=$${value.toFixed(4)}`);
+          }
+          
+          // 标记低价值代币（价值 < $0.1）
+          if (value < 0.1) {
+            isLowValue = true;
+            lowValueCoinIds.push(coin.id);
+          }
+        } else {
+          // 如果没有价格数据，也将其视为低价值代币并默认选中
+          console.log(`无价格数据代币: ${summary.symbol} (${coin.id}), 余额=${coin.balance}`);
+          isLowValue = true;
+          lowValueCoinIds.push(coin.id);
+        }
+        
+        // 添加到批量代币列表
+        batchCoins.push(extendedCoin);
       }
-
-      const lowValueObjects = summary.objects.filter(coin => {
-        // Calculate this coin object's value
-        const value = Number(coin.balance) / Math.pow(10, summary.decimals) * Number(summary.price);
-        console.log(`Coin ${summary.symbol} object: balance=${coin.balance}, value=$${value.toFixed(4)}`);
-        return value < 0.1 && Number(coin.balance) > 0; // Ensure balance is not zero
-      });
-
-      if (lowValueObjects.length > 0) {
-        lowValueCoins.set(summary.type, lowValueObjects.map(c => c.id));
-      }
-    });
-
-    const totalCoins = Array.from(lowValueCoins.values()).flat().length;
-    if (totalCoins === 0) {
-      if (hasNoPriceCoins) {
-        toast.error(t("coinManager.error.title") + ": " + "Some coins have no price data");
-      } else {
-        toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.noLowValueCoins"));
-      }
-      console.log("Low value coins summary:", lowValueCoins);
+    }
+    
+    if (batchCoins.length === 0) {
+      toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.noCoins"));
       return;
     }
 
-    // Show confirmation dialog
+    // 输出调试信息
+    console.log(`批量销毁 - 总共收集了 ${batchCoins.length} 个代币对象`);
+    console.log(`批量销毁 - 默认选中了 ${lowValueCoinIds.length} 个低价值代币`);
+    console.log(`批量销毁 - SUI代币数量: ${batchCoins.filter(c => c.type === SUI_TYPE_ARG || c.type?.includes("sui::SUI")).length}`);
+
+    // 更新状态
+    setAllCoinsForBurnDialog(batchCoins);
+
+    // 设置批量销毁对话框
+    setBurnSelectionDialog({
+      isOpen: true,
+      coinType: "batch-burn", // 使用特殊标识表示批量销毁模式
+      symbol: t("coinManager.multipleCoins"),
+      price: null, // 不同币种混合，没有统一价格
+      decimals: 9, // 默认精度
+      onConfirm: (selectedCoinIds: string[]) => {
+        handleBatchBurnConfirmed(selectedCoinIds);
+      }
+    });
+
+    // 在对话框初始化后设置默认选中的代币
+    setTimeout(() => {
+      const dialogElement = document.querySelector('.chakra-modal__content');
+      if (dialogElement) {
+        // 创建自定义事件，传递默认选中的代币ID
+        const event = new CustomEvent('updateCoins', { 
+          bubbles: true,
+          detail: { defaultSelectedIds: lowValueCoinIds }
+        });
+        dialogElement.dispatchEvent(event);
+      }
+    }, 100);
+  };
+  
+  // 处理批量销毁确认
+  const handleBatchBurnConfirmed = async (coinIds: string[]) => {
+    if (!currentAccount) {
+      toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.connectWallet"));
+      return;
+    }
+
+    if (coinIds.length === 0) {
+      toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.noCoinsSelected"));
+      return;
+    }
+
+    setBurnSelectionDialog(prev => ({ ...prev, isOpen: false }));
+
+    // 创建消息文本，包括提示一些代币可能没有价格数据
+    const messageText = `${t("coinManager.confirmBurnMessage")} (${coinIds.length} ${t("coinManager.objects")})`;
+
+    // 显示确认对话框
     setBurnConfirmation({
       isOpen: true,
       title: t("coinManager.confirmBatchBurn"),
-      message: `${t("coinManager.confirmBatchBurnMessage")} (${totalCoins} ${t("coinManager.objects")})`,
+      message: messageText,
       type: "batch",
       onConfirm: async () => {
         setBurnConfirmation(prev => ({ ...prev, isOpen: false }));
@@ -716,38 +804,33 @@ const CoinManager: React.FC = () => {
         try {
           setLoadingState(prev => ({ ...prev, batchBurn: true }));
 
-          // Create transaction
+          // 创建交易
           const tx = new Transaction();
           let burnCount = 0;
 
-          // Add burn operations for each coin type
-          for (const [, coinIds] of lowValueCoins.entries()) {
-            if (coinIds.length === 0) continue;
-
-            // Transfer all coins to zero address (0x0)
-            for (const coinId of coinIds) {
-              tx.transferObjects(
-                [tx.object(coinId)],
-                tx.pure.address("0x0")
-              );
-              burnCount++;
-            }
+          // 转移所有选中的代币到零地址 (0x0)
+          for (const coinId of coinIds) {
+            tx.transferObjects(
+              [tx.object(coinId)],
+              tx.pure.address("0x0")
+            );
+            burnCount++;
           }
 
           if (burnCount === 0) {
-            toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.noLowValueCoins"));
+            toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.noCoinsSelected"));
             setLoadingState(prev => ({ ...prev, batchBurn: false }));
             return;
           }
 
-          // Execute transaction
+          // 执行交易
           await executeTransaction(
             tx,
             `${t("coinManager.batchBurnSuccess")}: ${burnCount} ${t("coinManager.objects")}`,
             'batchBurn'
           );
 
-          // Refresh coin list
+          // 刷新代币列表
           fetchAllCoins();
         } catch (error) {
           console.error("Error batch burning coins:", error);
@@ -1012,30 +1095,34 @@ const CoinManager: React.FC = () => {
         </Box>
       </Stack>
 
-      {/* Standard Burn Confirmation Dialog */}
+      {/* 销毁确认对话框 */}
       <BurnConfirmationDialog
         isOpen={burnConfirmation.isOpen}
-        onClose={() => setBurnConfirmation(prev => ({ ...prev, isOpen: false }))}
         title={burnConfirmation.title}
-        message={burnConfirmation.message}
+        onClose={() => setBurnConfirmation(prev => ({ ...prev, isOpen: false }))}
         onConfirm={burnConfirmation.onConfirm}
+        message={burnConfirmation.message}
         isLoading={burnConfirmation.type === "single" ? loadingState.singleOperation : loadingState.batchBurn}
       />
 
-      {/* New Multi-Select Burn Dialog */}
+      {/* 销毁选择对话框 */}
       <CoinBurnSelectionDialog
         isOpen={burnSelectionDialog.isOpen}
         onClose={handleBurnDialogClose}
         onConfirm={burnSelectionDialog.onConfirm}
-        coins={coinTypeSummaries.find(s => s.type === burnSelectionDialog.coinType)?.objects || []}
+        coins={burnSelectionDialog.coinType === "batch-burn" 
+          ? allCoinsForBurnDialog || [] 
+          : coinTypeSummaries.find(s => s.type === burnSelectionDialog.coinType)?.objects || []}
         coinType={burnSelectionDialog.coinType}
         symbol={burnSelectionDialog.symbol}
-        price={coinTypeSummaries.find(s => s.type === burnSelectionDialog.coinType)?.price || null}
+        price={burnSelectionDialog.coinType === "batch-burn"
+          ? null
+          : coinTypeSummaries.find(s => s.type === burnSelectionDialog.coinType)?.price || null}
         decimals={burnSelectionDialog.decimals}
-        isLoading={loadingState.singleOperation}
+        isLoading={burnSelectionDialog.coinType === "batch-burn" ? loadingState.batchBurn : loadingState.singleOperation}
       />
     </Container>
   );
 };
 
-export default CoinManager; 
+export default CoinManager;
