@@ -34,7 +34,7 @@
     },
     "coinManager": {
       "title": "币管理",
-      "description": "合并相同类型币对象和清理零余额币对象"
+      "description": "合并相同类型代币、清理零余额和销毁低价值代币"
     },
     "faucet": {
       "title": "测试网水龙头",
@@ -47,7 +47,7 @@
   },
   "coinManager": {
     "title": "代币管理器",
-    "description": "管理您的代币：合并、清理零余额、销毁低价值代币。",
+    "description": "管理你的代币：合并、清理零余额、销毁低价值代币。",
     "refreshCoins": "刷新列表",
     "coinType": "币种类型",
     "coinList": "币种列表",
@@ -142,7 +142,7 @@
     "summary": "汇总",
     "confirmTransfer": "确认转账",
     "processingSummary": "处理汇总",
-    "confirmTransferMessage": "您确定要转账给 {{count}} 个地址吗？总数量: {{amount}} SUI",
+    "confirmTransferMessage": "确定要转账给 {{count}} 个地址吗？总数量: {{amount}} SUI",
     "transferSuccess": "转账成功！",
     "loading": "加载中...",
     "transferList": "转账列表",

@@ -34,7 +34,7 @@
     },
     "coinManager": {
       "title": "Coin Manager",
-      "description": "Merge same type coins and clean zero balance coins"
+      "description": "Merge same type coins, clean zero balance coins and burn low value coins"
     },
     "faucet": {
       "title": "Testnet Faucet",
@@ -47,7 +47,7 @@
   },
   "coinManager": {
     "title": "Coin Manager",
-    "description": "Manage your coin objects, merge same type coins and clean zero balance coins",
+    "description": "Manage your coin objects, merge same type coins, clean zero balance coins and burn low value coins",
     "refreshCoins": "Refresh Coins",
     "coinList": "Coin Objects List",
     "coinType": "Coin Type",
