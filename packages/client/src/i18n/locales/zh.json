@@ -11,7 +11,9 @@
     "sign": "签名",
     "execute": "执行",
     "installed": "已安装",
-    "notInstalled": "未安装"
+    "notInstalled": "未安装",
+    "currentNetwork": "当前网络",
+    "unknown": "未知"
   },
   "navigation": {
     "home": "首页",
@@ -46,6 +48,7 @@
   "coinManager": {
     "title": "代币管理器",
     "description": "管理您的代币：合并、清理零余额、销毁低价值代币。",
+    "refreshCoins": "刷新列表",
     "coinType": "币种类型",
     "coinList": "币种列表",
     "coinId": "币 ID",
@@ -63,6 +66,9 @@
     "batchMerge": "一键合并",
     "batchClean": "一键清零",
     "batchBurn": "批量销毁",
+    "batchBurnCoinsTitle": "批量销毁代币",
+    "multipleCoins": "多个代币",
+    "batchBurnCoinsDescription": "选择要批量销毁的代币对象。价值低于 $0.1 的代币已被自动选中。",
     "noCoins": "没有找到代币。请连接钱包或者切换网络。",
     "loading": "加载中...",
     "selectSome": "请选择至少两个币对象进行合并",

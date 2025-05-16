@@ -11,7 +11,9 @@
     "sign": "Sign",
     "execute": "Execute",
     "installed": "Installed",
-    "notInstalled": "Not Installed"
+    "notInstalled": "Not Installed",
+    "currentNetwork": "Current Network",
+    "unknown": "Unknown"
   },
   "navigation": {
     "home": "Home",
@@ -46,6 +48,7 @@
   "coinManager": {
     "title": "Coin Manager",
     "description": "Manage your coin objects, merge same type coins and clean zero balance coins",
+    "refreshCoins": "Refresh Coins",
     "coinList": "Coin Objects List",
     "coinType": "Coin Type",
     "coinId": "Coin ID",

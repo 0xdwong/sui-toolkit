@@ -122,10 +122,17 @@ const CoinManager: React.FC = () => {
     try {
       setLoadingState(prev => ({ ...prev, fetchCoins: true }));
 
+      // 记录当前网络信息
+      console.log("当前网络:", walletNetwork);
+      console.log("钱包地址:", currentAccount.address);
+
       // Get all coins for the account
       const { data: allCoins } = await suiClient.getAllCoins({
         owner: currentAccount.address,
       });
+
+      // 输出获取到的代币数量
+      console.log(`获取到 ${allCoins.length} 个代币对象`);
 
       // Group coins by type
       const coinsByType = new Map<string, any[]>();
@@ -225,7 +232,7 @@ const CoinManager: React.FC = () => {
     } finally {
       setLoadingState(prev => ({ ...prev, fetchCoins: false }));
     }
-  }, [currentAccount, suiClient, t]);
+  }, [currentAccount, suiClient, t, walletNetwork]);
 
   // Check if there's any coin type with multiple objects (can be merged)
   const hasMergeableCoins = coinTypeSummaries.some(summary => summary.objectCount > 1);
@@ -1018,6 +1025,23 @@ const CoinManager: React.FC = () => {
           <Text color="gray.600" mb={2}>
             {t("coinManager.description")}
           </Text>
+          
+          {/* 添加手动刷新按钮 */}
+          <Button
+            size="sm"
+            colorPalette="green"
+            variant="outline"
+            onClick={fetchAllCoins}
+            loading={loadingState.fetchCoins}
+            loadingText={t("coinManager.loading")}
+          >
+            <Flex gap="2" alignItems="center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"/>
+              </svg>
+              {t("coinManager.refreshCoins")}
+            </Flex>
+          </Button>
         </Box>
 
         <Box p={5} borderWidth="1px" borderRadius="md" bg="white">
