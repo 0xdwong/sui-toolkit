@@ -14,6 +14,9 @@ interface CoinTypesListProps {
   onToggleCoinSelection: (coinId: string) => void;
   onMergeCoin: (type: string) => void;
   onCleanZeroCoins: (type: string) => void;
+  onBurnCoin: (type: string) => void;
+  onBurnSingleCoin?: (coinId: string) => void;
+  onShowBurnDialog?: (type: string) => void;
 }
 
 const CoinTypesList: React.FC<CoinTypesListProps> = ({
@@ -24,7 +27,10 @@ const CoinTypesList: React.FC<CoinTypesListProps> = ({
   onToggleCoinTypeExpansion,
   onToggleCoinSelection,
   onMergeCoin,
-  onCleanZeroCoins
+  onCleanZeroCoins,
+  onBurnCoin,
+  onBurnSingleCoin,
+  onShowBurnDialog
 }) => {
   const { t } = useTranslation();
 
@@ -71,6 +77,7 @@ const CoinTypesList: React.FC<CoinTypesListProps> = ({
                 onToggleExpand={onToggleCoinTypeExpansion}
                 onMerge={onMergeCoin}
                 onCleanZero={onCleanZeroCoins}
+                onBurn={onShowBurnDialog || onBurnCoin}
               />
 
               {/* Expanded coin details */}
@@ -81,8 +88,10 @@ const CoinTypesList: React.FC<CoinTypesListProps> = ({
                       objects={summary.objects}
                       selectedCoins={selectedCoins}
                       onToggleCoinSelection={onToggleCoinSelection}
+                      onBurnSingle={onBurnSingleCoin}
                       price={summary.price}
                       decimals={summary.decimals}
+                      isLoading={isLoading}
                     />
                   </td>
                 </tr>

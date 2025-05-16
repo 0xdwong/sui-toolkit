@@ -23,7 +23,6 @@ export async function getPriceDirectAPI(
         const routes = response.data?.data?.routes;
         
         if (!routes || routes.length === 0) {
-            console.log('No routes found');
             return null;
         }
 

@@ -8,16 +8,20 @@ interface CoinObjectsTableProps {
   objects: CoinObject[];
   selectedCoins: Set<string>;
   onToggleCoinSelection: (coinId: string) => void;
+  onBurnSingle?: (coinId: string) => void;
   price?: string | null;
   decimals: number;
+  isLoading?: boolean;
 }
 
 const CoinObjectsTable: React.FC<CoinObjectsTableProps> = ({
   objects,
   selectedCoins,
   onToggleCoinSelection,
+  onBurnSingle,
   price,
-  decimals
+  decimals,
+  isLoading = false
 }) => {
   const { t } = useTranslation();
 
@@ -45,7 +49,9 @@ const CoinObjectsTable: React.FC<CoinObjectsTableProps> = ({
               {t("coinManager.value")}
             </th>
             <th></th>
-            <th></th>
+            <th style={{ padding: "10px", textAlign: "right" }}>
+              {t("coinManager.actions")}
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -55,7 +61,9 @@ const CoinObjectsTable: React.FC<CoinObjectsTableProps> = ({
               coin={coin}
               isSelected={selectedCoins.has(coin.id)}
               onSelect={onToggleCoinSelection}
+              onBurnSingle={onBurnSingle}
               price={price}
+              isLoading={isLoading}
             />
           ))}
         </tbody>

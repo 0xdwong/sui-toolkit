@@ -1,27 +1,45 @@
 import React from "react";
-import { Box } from "@chakra-ui/react";
+import { Box, Button } from "@chakra-ui/react";
 import { CoinObject } from "./types";
 import { ObjectIdDisplay } from "./DisplayComponents";
 import { formatBalance } from "./utils";
 import { calculateValue } from "../../utils/priceUtils";
+import { useTranslation } from "react-i18next";
 
 interface CoinObjectRowProps {
   coin: CoinObject;
   isSelected: boolean;
   onSelect: (coinId: string) => void;
+  onBurnSingle?: (coinId: string) => void;
   price?: string | null;
+  isLoading?: boolean;
 }
 
-const CoinObjectRow: React.FC<CoinObjectRowProps> = ({ coin, isSelected, onSelect, price }) => {
+const CoinObjectRow: React.FC<CoinObjectRowProps> = ({ 
+  coin, 
+  isSelected, 
+  onSelect, 
+  onBurnSingle,
+  price,
+  isLoading = false
+}) => {
+  const { t } = useTranslation();
   const { id, balance, decimals = 9 } = coin;
   const isZeroBalance = parseInt(balance, 10) === 0;
   
   // Calculate coin value if price is available
   const value = price ? calculateValue(balance, price, decimals) : 0;
 
+  const handleRowClick = (e: React.MouseEvent) => {
+    // Only select if not clicking on the burn button
+    if ((e.target as HTMLElement).closest('button') === null) {
+      onSelect(id);
+    }
+  };
+
   return (
     <tr
-      onClick={() => onSelect(id)}
+      onClick={handleRowClick}
       style={{
         cursor: 'pointer',
         backgroundColor: isSelected ? "rgba(66, 153, 225, 0.1)" : ""
@@ -50,7 +68,24 @@ const CoinObjectRow: React.FC<CoinObjectRowProps> = ({ coin, isSelected, onSelec
         )}
       </td>
       <td></td>
-      <td></td>
+      <td style={{ padding: "10px", textAlign: "right" }}>
+        {onBurnSingle && (
+          <Button
+            size="xs"
+            colorPalette="red"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              onBurnSingle(id);
+            }}
+            loading={isLoading}
+            loadingText=""
+            title={t("coinManager.burnSingle")}
+          >
+            {t("coinManager.burn")}
+          </Button>
+        )}
+      </td>
     </tr>
   );
 };

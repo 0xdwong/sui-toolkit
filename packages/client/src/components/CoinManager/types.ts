@@ -16,7 +16,7 @@ export interface CoinTypeSummary {
   expanded: boolean;
   decimals: number;
   price?: string | null;   // Price in USD
-  value?: number;          // Total value in USD
+  value?: number | null;          // Total value in USD
 }
 
 // Loading state interface
@@ -24,6 +24,7 @@ export interface LoadingState {
   fetchCoins: boolean;
   batchMerge: boolean;
   batchCleanZero: boolean;
+  batchBurn: boolean;      // New state for batch burn operation
   singleOperation: boolean;
   fetchPrices: boolean;    // New state for price loading
 } 

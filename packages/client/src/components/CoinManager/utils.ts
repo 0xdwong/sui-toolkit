@@ -53,4 +53,10 @@ export const formatBalance = (balance: string, decimals: number = 9): string => 
     console.error("Error formatting balance:", error);
     return "0";
   }
+};
+
+// Helper to format coin ID with ellipsis in the middle
+export const formatCoinId = (id: string): string => {
+  if (id.length <= 14) return id;
+  return `${id.substring(0, 4)}...${id.substring(id.length - 4)}`;
 }; 

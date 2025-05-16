@@ -12,6 +12,7 @@ interface CoinTypeSummaryRowProps {
   onToggleExpand: (type: string) => void;
   onMerge: (type: string) => void;
   onCleanZero: (type: string) => void;
+  onBurn: (type: string) => void;
 }
 
 const CoinTypeSummaryRow: React.FC<CoinTypeSummaryRowProps> = ({
@@ -20,7 +21,8 @@ const CoinTypeSummaryRow: React.FC<CoinTypeSummaryRowProps> = ({
   isLoading,
   onToggleExpand,
   onMerge,
-  onCleanZero
+  onCleanZero,
+  onBurn
 }) => {
   const { t } = useTranslation();
   const { type, totalBalance, objectCount, expanded, decimals, objects, symbol, price, value } = summary;
@@ -116,6 +118,19 @@ const CoinTypeSummaryRow: React.FC<CoinTypeSummaryRowProps> = ({
               {t("coinManager.cleanZeroCoins")}
             </Button>
           )}
+          <Button
+            size="sm"
+            colorPalette="orange"
+            variant="solid"
+            disabled={isLoading}
+            onClick={(e) => {
+              e.stopPropagation();
+              onBurn(type);
+            }}
+            loading={isLoading && isSelected}
+          >
+            {t("coinManager.burn")}
+          </Button>
         </Flex>
       </td>
     </tr>

@@ -1,7 +1,9 @@
 {
   "common": {
     "appName": "Sui Toolkit",
-    "footer": "© {{year}} Sui Toolkit"
+    "footer": "© {{year}} Sui Toolkit",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
   },
   "navigation": {
     "home": "Home",
@@ -49,8 +51,10 @@
     "objectCount": "Object Count",
     "mergeCoin": "Merge",
     "cleanZeroCoins": "Clean Zero",
+    "burn": "Burn",
     "batchMerge": "Batch Merge",
     "batchClean": "Batch Clean Zero",
+    "batchBurn": "Batch Burn",
     "noCoins": "No coin objects found",
     "loading": "Loading...",
     "selectSome": "Please select at least two coin objects to merge",
@@ -58,6 +62,16 @@
     "batchMergeSuccess": "Multiple coin types merged successfully",
     "cleanSuccess": "Zero balance coins cleaned successfully",
     "batchCleanSuccess": "Multiple coin types' zero balance coins cleaned successfully",
+    "burnSuccess": "Coins burned successfully",
+    "batchBurnSuccess": "Low value coins burned successfully",
+    "confirmBurn": "Confirm Burn",
+    "confirmBurnMessage": "Are you sure you want to burn these coins? This action cannot be undone.",
+    "confirmBatchBurn": "Confirm Batch Burn",
+    "confirmBatchBurnMessage": "Are you sure you want to burn all low value coins? This action cannot be undone.",
+    "objects": "objects",
+    "object": "object",
+    "coinObject": "Coin Object",
+    "amount": "Amount",
     "copy": {
       "coinType": "Copy Coin Type",
       "objectId": "Copy Object ID"
@@ -71,6 +85,8 @@
       "batchCleanFailed": "Batch clean operation failed",
       "notEnoughCoins": "Not coins to merge",
       "noZeroCoins": "No zero balance coins found",
+      "noCoinsSelected": "No coins selected",
+      "noLowValueCoins": "No low value coins found",
       "cannotMergeTwoSuiCoins": "Cannot merge when there are only 2 SUI coins (one is needed for gas)"
     }
   },
