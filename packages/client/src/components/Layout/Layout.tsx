@@ -8,11 +8,14 @@ import {
   Text,
   Button,
   Link,
+  HStack,
+  Icon,
 } from "@chakra-ui/react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import CustomConnectButton from "../CustomConnectButton";
 import LanguageSwitcher from "../LanguageSwitcher/LanguageSwitcher";
+import { FaGithub, FaTwitter } from "react-icons/fa";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -101,10 +104,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </Box>
 
       <Box as="footer" p={6} bg="white" borderTopWidth="1px">
-        <Container maxW="container.xl" textAlign="center">
-          <Text color="gray.500">
-            {t("common.footer", { year: new Date().getFullYear() })}
-          </Text>
+        <Container maxW="container.xl">
+          <Flex direction="column" align="center" gap={3}>
+            <Text color="gray.500">
+              {t("common.footer", { year: new Date().getFullYear() })}
+            </Text>
+            <HStack gap={4}>
+              <Link href="https://github.com/0xdwong/sui-toolkit" target="_blank">
+                <Icon as={FaGithub} boxSize={5} color="gray.600" />
+              </Link>
+              <Link href="https://x.com/0xdwong" target="_blank">
+                <Icon as={FaTwitter} boxSize={5} color="gray.600" />
+              </Link>
+            </HStack>
+          </Flex>
         </Container>
       </Box>
     </Flex>
