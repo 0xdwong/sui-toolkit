@@ -26,8 +26,8 @@ const CoinObjectsTable: React.FC<CoinObjectsTableProps> = ({
   const { t } = useTranslation();
 
   return (
-    <Box p={4} bg="gray.50">
-      <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+    <Box p={0} bg="gray.50">
+      <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed", padding: "4px" }}>
         <colgroup>
           <col style={{ width: "40px" }} />
           <col style={{ width: "30%" }} />
@@ -38,18 +38,18 @@ const CoinObjectsTable: React.FC<CoinObjectsTableProps> = ({
         </colgroup>
         <thead>
           <tr>
-            <th style={{ padding: "10px", width: "40px" }}></th>
-            <th style={{ padding: "10px", textAlign: "left" }}>
+            <th style={{ padding: "10px", width: "40px", fontWeight: "normal" }}></th>
+            <th style={{ padding: "10px", textAlign: "left", fontWeight: "normal" }}>
               {t("coinManager.objectId")}
             </th>
-            <th style={{ padding: "10px", textAlign: "right" }}>
+            <th style={{ padding: "10px", textAlign: "right", fontWeight: "normal" }}>
               {t("coinManager.balance")}
             </th>
-            <th style={{ padding: "10px", textAlign: "right" }}>
+            <th style={{ padding: "10px", textAlign: "right", fontWeight: "normal" }}>
               {t("coinManager.value")}
             </th>
-            <th></th>
-            <th style={{ padding: "10px", textAlign: "right" }}>
+            <th style={{ padding: "10px", textAlign: "center", fontWeight: "normal" }}></th>
+            <th style={{ padding: "10px", textAlign: "center", width: "20%", fontWeight: "normal" }}>
               {t("coinManager.actions")}
             </th>
           </tr>

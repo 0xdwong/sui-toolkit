@@ -47,22 +47,22 @@ const CoinTypesList: React.FC<CoinTypesListProps> = ({
         </colgroup>
         <thead>
           <tr>
-            <th style={{ padding: "10px", textAlign: "left", width: "40px" }}>
+            <th style={{ padding: "10px", textAlign: "center", width: "40px", fontWeight: "normal" }}>
               {/* 展开/折叠列 */}
             </th>
-            <th style={{ padding: "10px", textAlign: "left", width: "30%" }}>
+            <th style={{ padding: "10px", textAlign: "left", width: "30%", fontWeight: "normal" }}>
               {t("coinManager.name")}
             </th>
-            <th style={{ padding: "10px", textAlign: "right", width: "20%" }}>
+            <th style={{ padding: "10px", textAlign: "right", width: "20%", fontWeight: "normal" }}>
               {t("coinManager.totalBalance")}
             </th>
-            <th style={{ padding: "10px", textAlign: "right", width: "15%" }}>
+            <th style={{ padding: "10px", textAlign: "right", width: "15%", fontWeight: "normal" }}>
               {t("coinManager.value")}
             </th>
-            <th style={{ padding: "10px", textAlign: "left", width: "15%" }}>
+            <th style={{ padding: "10px", textAlign: "center", width: "15%", fontWeight: "normal" }}>
               {t("coinManager.objectCount")}
             </th>
-            <th style={{ padding: "10px", textAlign: "left", width: "20%" }}>
+            <th style={{ padding: "10px", textAlign: "center", width: "20%", fontWeight: "normal" }}>
               {t("coinManager.actions")}
             </th>
           </tr>
@@ -83,7 +83,7 @@ const CoinTypesList: React.FC<CoinTypesListProps> = ({
               {/* Expanded coin details */}
               {summary.expanded && (
                 <tr>
-                  <td colSpan={6} style={{ padding: 0 }}>
+                  <td colSpan={6} style={{ padding: 0, border: "none" }}>
                     <CoinObjectsTable
                       objects={summary.objects}
                       selectedCoins={selectedCoins}

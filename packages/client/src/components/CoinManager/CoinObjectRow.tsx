@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button } from "@chakra-ui/react";
+import { Box, Button, Flex } from "@chakra-ui/react";
 import { CoinObject } from "./types";
 import { ObjectIdDisplay } from "./DisplayComponents";
 import { formatBalance } from "./utils";
@@ -45,7 +45,7 @@ const CoinObjectRow: React.FC<CoinObjectRowProps> = ({
         backgroundColor: isSelected ? "rgba(66, 153, 225, 0.1)" : ""
       }}
     >
-      <td style={{ padding: "10px", width: "40px" }}></td>
+      <td style={{ padding: "10px", textAlign: "center", width: "40px" }}></td>
       <td style={{ padding: "10px", fontFamily: "monospace", fontSize: "0.9em" }}>
         <ObjectIdDisplay objectId={id} />
       </td>
@@ -67,23 +67,25 @@ const CoinObjectRow: React.FC<CoinObjectRowProps> = ({
           "-"
         )}
       </td>
-      <td></td>
-      <td style={{ padding: "10px", textAlign: "right" }}>
+      <td style={{ padding: "10px", textAlign: "center" }}></td>
+      <td style={{ padding: "10px", textAlign: "center" }}>
         {onBurnSingle && (
-          <Button
-            size="xs"
-            colorPalette="red"
-            variant="outline"
-            onClick={(e) => {
-              e.stopPropagation();
-              onBurnSingle(id);
-            }}
-            loading={isLoading}
-            loadingText=""
-            title={t("coinManager.burnSingle")}
-          >
-            {t("coinManager.burn")}
-          </Button>
+          <Flex justify="center" gap={2}>
+            <Button
+              size="sm"
+              colorPalette="orange"
+              variant="solid"
+              onClick={(e) => {
+                e.stopPropagation();
+                onBurnSingle(id);
+              }}
+              loading={isLoading}
+              loadingText={t("coinManager.loading")}
+              title={t("coinManager.burnSingle")}
+            >
+              {t("coinManager.burn")}
+            </Button>
+          </Flex>
         )}
       </td>
     </tr>

@@ -88,8 +88,8 @@ const CoinTypeSummaryRow: React.FC<CoinTypeSummaryRowProps> = ({
           {objectCount}
         </Badge>
       </td>
-      <td style={{ padding: "10px" }}>
-        <Flex gap={2}>
+      <td style={{ padding: "10px", textAlign: "center" }}>
+        <Flex justify="center" gap={2}>
           <Button
             size="sm"
             colorPalette="blue"
