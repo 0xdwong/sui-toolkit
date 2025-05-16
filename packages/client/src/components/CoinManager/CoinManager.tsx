@@ -382,17 +382,7 @@ const CoinManager: React.FC = () => {
         if (zeroBalanceCoins.length === 0) return;
         totalCleanedCoins += zeroBalanceCoins.length;
 
-        if (summary.type === SUI_TYPE_ARG) {
-          // Handle SUI coins
-          for (const zeroCoin of zeroBalanceCoins) {
-            tx.moveCall({
-              target: "0x2::sui::destroy_zero_value_coin",
-              arguments: [tx.object(zeroCoin.id)],
-              typeArguments: [],
-            });
-          }
-        } else {
-          // Handle other coin types
+                  // Handle coins (both SUI and other types)
           for (const zeroCoin of zeroBalanceCoins) {
             tx.moveCall({
               target: "0x2::coin::destroy_zero",
@@ -400,7 +390,6 @@ const CoinManager: React.FC = () => {
               typeArguments: [summary.type],
             });
           }
-        }
       });
 
       if (totalCleanedCoins === 0) {
@@ -454,9 +443,8 @@ const CoinManager: React.FC = () => {
       // Create transaction
       const tx = new Transaction();
 
+      // 检查是否有足够的非零余额代币用于支付gas（仅针对SUI代币）
       if (coinType === SUI_TYPE_ARG) {
-        // Handle SUI coins
-        const zeroIds = zeroBalanceCoins.map(coin => coin.id);
         const nonZeroCoins = summary.objects.filter(coin =>
           parseInt(coin.balance, 10) > 0
         );
@@ -466,23 +454,15 @@ const CoinManager: React.FC = () => {
           setLoadingState(prev => ({ ...prev, singleOperation: false }));
           return;
         }
-
-        for (const zeroId of zeroIds) {
-          tx.moveCall({
-            target: "0x2::sui::destroy_zero_value_coin",
-            arguments: [tx.object(zeroId)],
-            typeArguments: [],
-          });
-        }
-      } else {
-        // Handle other coin types
-        for (const zeroCoin of zeroBalanceCoins) {
-          tx.moveCall({
-            target: "0x2::coin::destroy_zero",
-            arguments: [tx.object(zeroCoin.id)],
-            typeArguments: [coinType],
-          });
-        }
+      }
+      
+      // 处理所有代币类型（包括SUI和其他类型）
+      for (const zeroCoin of zeroBalanceCoins) {
+        tx.moveCall({
+          target: "0x2::coin::destroy_zero",
+          arguments: [tx.object(zeroCoin.id)],
+          typeArguments: [coinType],
+        });
       }
 
       // Execute transaction
