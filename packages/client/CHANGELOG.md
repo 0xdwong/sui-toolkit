@@ -1,4 +1,13 @@
-## [0.2.0] - 2025-05-21
+# Changelog
+
+## [0.3.0] - 2025-05-16
+
+### Added
+  - Display coin values based on real-time price data
+  - Burn functionality for individual coins and batch operations
+  - Low value coin identification and batch burning
+
+## [0.2.0] - 2025-05-11
 
 ### Added
 - Coin Manager module:
