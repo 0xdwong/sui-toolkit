@@ -206,7 +206,7 @@ const BulkTransfer: React.FC = () => {
                       width: "100px",
                     }}
                   >
-                    {t("bulkTransfer.action")}
+                    {t("bulkTransfer.actions")}
                   </th>
                 </tr>
               </thead>
