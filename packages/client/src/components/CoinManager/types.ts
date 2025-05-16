@@ -27,4 +27,5 @@ export interface LoadingState {
   batchBurn: boolean;      // New state for batch burn operation
   singleOperation: boolean;
   fetchPrices: boolean;    // New state for price loading
+  networkSync: boolean;    // Network synchronization state
 } 

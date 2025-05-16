@@ -71,6 +71,8 @@
     "batchBurnCoinsDescription": "选择要批量销毁的代币对象。价值低于 $0.1 的代币已被自动选中。",
     "noCoins": "没有找到代币。请连接钱包或者切换网络。",
     "loading": "加载中...",
+    "syncingNetwork": "网络同步中...",
+    "loadingPrices": "加载价格中...",
     "selectSome": "请选择至少两个币对象进行合并",
     "mergeSuccess": "合并成功",
     "batchMergeSuccess": "批量合并成功",
@@ -100,6 +102,7 @@
     "burnCoinsDescription": "选择要销毁的代币对象。价值低于 $0.1 的代币已被自动选中。",
     "totalValueSelected": "已选择总价值",
     "lowValue": "低价值",
+    "noPrice": "无价格数据",
     "error": {
       "title": "错误",
       "unknownError": "未知错误",
@@ -110,7 +113,9 @@
       "cannotMergeTwoSuiCoins": "不能合并仅有的两个SUI代币（一个用于支付交易费用）",
       "noZeroCoins": "没有零余额代币",
       "noMergeableCoins": "没有可合并的代币",
-      "noLowValueCoins": "没有低价值代币"
+      "noLowValueCoins": "没有低价值代币",
+      "batchMergeFailed": "批量合并操作失败",
+      "batchCleanFailed": "批量清理操作失败"
     }
   },
   "bulkTransfer": {
@@ -140,6 +145,16 @@
     "confirmTransferMessage": "您确定要转账给 {{count}} 个地址吗？总数量: {{amount}} SUI",
     "transferSuccess": "转账成功！",
     "loading": "加载中...",
+    "transferList": "转账列表",
+    "addRow": "添加行",
+    "receivingAddress": "接收地址",
+    "delete": "删除",
+    "total": "总计",
+    "execute": "执行批量转账",
+    "availableBalance": "可用余额",
+    "transactionComplete": "交易完成",
+    "transactionDigest": "交易哈希",
+    "viewInExplorer": "在浏览器中查看",
     "error": {
       "title": "错误",
       "invalidAddress": "无效地址",
@@ -149,7 +164,14 @@
       "insufficientBalance": "余额不足",
       "invalidCSV": "无效的CSV格式",
       "transferFailed": "转账失败",
-      "unknownError": "未知错误"
+      "unknownError": "未知错误",
+      "connectWallet": "请先连接钱包",
+      "noValidTransfers": "没有有效的转账",
+      "balanceFetchFailed": "获取余额失败"
+    },
+    "success": {
+      "title": "转账成功",
+      "description": "交易哈希: {{digest}}"
     }
   },
   "faucet": {

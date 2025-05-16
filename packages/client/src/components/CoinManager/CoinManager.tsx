@@ -49,7 +49,8 @@ const CoinManager: React.FC = () => {
     batchCleanZero: false,
     batchBurn: false,
     singleOperation: false,
-    fetchPrices: false
+    fetchPrices: false,
+    networkSync: true // 默认为等待网络同步状态
   });
 
   // State variables
@@ -797,7 +798,7 @@ const CoinManager: React.FC = () => {
     setBurnSelectionDialog(prev => ({ ...prev, isOpen: false }));
 
     // 创建消息文本，包括提示一些代币可能没有价格数据
-    const messageText = `${t("coinManager.confirmBurnMessage")} (${coinIds.length} ${t("coinManager.objects")})`;
+    const messageText = t("coinManager.confirmBurnMessage", { count: coinIds.length });
 
     // 显示确认对话框
     setBurnConfirmation({
@@ -1008,11 +1009,21 @@ const CoinManager: React.FC = () => {
 
   // Load coins when account changes or network changes
   useEffect(() => {
-    if (currentAccount) {
-      fetchAllCoins();
-    } else {
-      setCoinTypeSummaries([]);
-    }
+    // 先清空当前列表，防止显示旧网络数据
+    setCoinTypeSummaries([]);
+    
+    // 添加一个小延迟确保网络完全同步
+    const timer = setTimeout(() => {
+      if (currentAccount) {
+        console.log(`准备获取代币数据，当前网络: ${walletNetwork}`);
+        setLoadingState(prev => ({ ...prev, networkSync: false })); // 更新网络同步状态
+        fetchAllCoins();
+      } else {
+        setLoadingState(prev => ({ ...prev, networkSync: false })); // 如果没有连接钱包，也更新状态
+      }
+    }, 500); // 500ms延迟等待网络同步完成
+    
+    return () => clearTimeout(timer);
   }, [currentAccount, walletNetwork, fetchAllCoins]);
 
   return (
@@ -1090,11 +1101,17 @@ const CoinManager: React.FC = () => {
                 </Flex>
               </Flex>
 
-              {loadingState.fetchCoins || loadingState.fetchPrices ? (
-                <Box textAlign="center" py={10}>
-                  <Spinner size="xl" />
-                  <Text mt={4}>{t("coinManager.loading")}</Text>
-                </Box>
+              {loadingState.networkSync || loadingState.fetchCoins || loadingState.fetchPrices ? (
+                                  <Box textAlign="center" py={10}>
+                    <Spinner size="xl" />
+                    <Text mt={4}>
+                      {loadingState.networkSync 
+                        ? t("coinManager.syncingNetwork") 
+                        : loadingState.fetchPrices 
+                          ? t("coinManager.loadingPrices")
+                          : t("coinManager.loading")}
+                    </Text>
+                  </Box>
               ) : coinTypeSummaries.length === 0 ? (
                 <Box p={4} bg="teal.50" color="teal.800" borderRadius="md">
                   <Text>{t("coinManager.noCoins")}</Text>
