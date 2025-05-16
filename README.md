@@ -12,10 +12,14 @@ Currently, Sui Toolkit offers the following features:
 
 - [Batch Transfer](https://toolkit.wal.app/bulk-transfer): Conveniently transfer SUI tokens to multiple addresses simultaneously
 - [Faucet](https://toolkit.wal.app/faucet): Quickly obtain testnet SUI tokens for development and testing
+- [Coin Manager](https://toolkit.wal.app/coin-manager): Efficiently manage your SUI tokens with features like merging, cleaning zero-value coins, and burning unwanted tokens
 
 ## Future Plans
 
 We plan to continuously expand the functionality of Sui Toolkit by adding more practical tools to further enhance the development experience in the Sui ecosystem.
+These upcoming features include:
+- Walrus faucet integration and file management capabilities
+- Comprehensive Sui environment statistics
 
 ## How to Access
 
