@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import CustomConnectButton from "../CustomConnectButton";
 import LanguageSwitcher from "../LanguageSwitcher/LanguageSwitcher";
 import { FaGithub, FaTwitter } from "react-icons/fa";
+import { FiExternalLink } from "react-icons/fi";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -85,8 +86,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   fontWeight="medium"
                   fontSize="md"
                   _focus={{ boxShadow: "outline" }}
+                  display="flex"
+                  alignItems="center"
                 >
                   {t("navigation.mcp")}
+                  <Icon as={FiExternalLink} ml={1} boxSize={3} />
                 </Link>
                 {/* More tool navigation links will be added after implementation */}
               </Stack>
