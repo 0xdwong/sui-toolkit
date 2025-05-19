@@ -116,6 +116,56 @@ const CoinManager: React.FC = () => {
     setSelectedCoins(new Set());
   };
 
+  // Fetch prices for all coins
+  const fetchCoinPrices = useCallback(async (summaries: CoinTypeSummary[]) => {
+    if (!summaries.length) return;
+
+    try {
+      setLoadingState(prev => ({ ...prev, fetchPrices: true }));
+      // Create a copy of summaries to update with price data
+      const updatedSummaries = [...summaries];
+
+      // Fetch price for each coin type
+      for (let i = 0; i < updatedSummaries.length; i++) {
+        const summary = updatedSummaries[i];
+
+        try {
+          // Skip fetching price for wUSDC itself
+          if (summary.type === USDC_COIN_TYPE) {
+            summary.price = "1.0";
+            summary.value = Number(summary.totalBalance) / Math.pow(10, summary.decimals);
+            continue;
+          }
+
+          const price = await getPriceDirectAPI(
+            summary.type,
+            summary.decimals,
+            USDC_COIN_TYPE,
+            USDC_COIN_DECIMALS
+          );
+
+          // Update the summary with price and calculated value
+          summary.price = price;
+          if (price) {
+            summary.value = calculateValue(summary.totalBalance, price, summary.decimals);
+          } else {
+            summary.value = null;
+          }
+        } catch (error) {
+          console.error(`Error fetching price for ${summary.symbol}:`, error);
+          summary.price = null;
+          summary.value = null;
+        }
+      }
+
+      setCoinTypeSummaries(updatedSummaries);
+    } catch (error) {
+      console.error("Error fetching coin prices:", error);
+    } finally {
+      setLoadingState(prev => ({ ...prev, fetchPrices: false }));
+    }
+  }, []);
+
   // Fetch all coins for the connected wallet
   const fetchAllCoins = useCallback(async () => {
     if (!currentAccount) return;
@@ -233,7 +283,7 @@ const CoinManager: React.FC = () => {
     } finally {
       setLoadingState(prev => ({ ...prev, fetchCoins: false }));
     }
-  }, [currentAccount, suiClient, t, walletNetwork]);
+  }, [currentAccount, suiClient, t, walletNetwork, fetchCoinPrices]);
 
   // Check if there's any coin type with multiple objects (can be merged)
   const hasMergeableCoins = coinTypeSummaries.some(summary => summary.objectCount > 1);
@@ -552,56 +602,6 @@ const CoinManager: React.FC = () => {
     }
   };
 
-  // Fetch prices for all coins
-  const fetchCoinPrices = useCallback(async (summaries: CoinTypeSummary[]) => {
-    if (!summaries.length) return;
-
-    try {
-      setLoadingState(prev => ({ ...prev, fetchPrices: true }));
-      // Create a copy of summaries to update with price data
-      const updatedSummaries = [...summaries];
-
-      // Fetch price for each coin type
-      for (let i = 0; i < updatedSummaries.length; i++) {
-        const summary = updatedSummaries[i];
-
-        try {
-          // Skip fetching price for wUSDC itself
-          if (summary.type === USDC_COIN_TYPE) {
-            summary.price = "1.0";
-            summary.value = Number(summary.totalBalance) / Math.pow(10, summary.decimals);
-            continue;
-          }
-
-          const price = await getPriceDirectAPI(
-            summary.type,
-            summary.decimals,
-            USDC_COIN_TYPE,
-            USDC_COIN_DECIMALS
-          );
-
-          // Update the summary with price and calculated value
-          summary.price = price;
-          if (price) {
-            summary.value = calculateValue(summary.totalBalance, price, summary.decimals);
-          } else {
-            summary.value = null;
-          }
-        } catch (error) {
-          console.error(`Error fetching price for ${summary.symbol}:`, error);
-          summary.price = null;
-          summary.value = null;
-        }
-      }
-
-      setCoinTypeSummaries(updatedSummaries);
-    } catch (error) {
-      console.error("Error fetching coin prices:", error);
-    } finally {
-      setLoadingState(prev => ({ ...prev, fetchPrices: false }));
-    }
-  }, [suiClient]);
-
   // Handle burn selected coins for a specific coin type
   const handleBurnSelectedCoins = async (coinType: string) => {
     if (!currentAccount) {
@@ -696,9 +696,6 @@ const CoinManager: React.FC = () => {
           type: summary.type // 确保type字段正确设置
         };
         
-        // 判断是否是低价值代币
-        let isLowValue = false;
-        
         // 如果有价格数据，计算价值
         if (summary.price) {
           const value = Number(coin.balance) / Math.pow(10, summary.decimals) * Number(summary.price);
@@ -709,13 +706,11 @@ const CoinManager: React.FC = () => {
           
           // 标记低价值代币（价值 < $0.1）
           if (value < 0.1) {
-            isLowValue = true;
             lowValueCoinIds.push(coin.id);
           }
         } else {
           // 如果没有价格数据，也将其视为低价值代币并默认选中
           console.log(`无价格数据代币: ${summary.symbol} (${coin.id}), 余额=${coin.balance}`);
-          isLowValue = true;
           lowValueCoinIds.push(coin.id);
         }
         
