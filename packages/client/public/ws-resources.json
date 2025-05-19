@@ -1,5 +1,12 @@
 {
   "routes": {
     "/*": "/index.html"
+  },
+  "metadata": {
+      "link": "https://toolkit.wal.app/",
+      "image_url": "https://images.chaintoolkit.xyz/sui-toolkit.png",
+      "description": "Practical toolset created for Sui developers and users",
+      "project_url": "https://github.com/0xdwong/sui-toolkit/",
+      "creator": "dwong"
   }
 } 
