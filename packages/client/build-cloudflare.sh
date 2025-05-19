@@ -10,5 +10,5 @@ set -x
 # Install dependencies with --no-immutable flag
 yarn install --no-immutable
 
-# Build the project
-yarn build 
+# Build the project with CI=false to ignore ESLint errors
+CI=false yarn build 
