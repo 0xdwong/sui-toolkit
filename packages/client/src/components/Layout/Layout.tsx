@@ -11,7 +11,7 @@ import {
   HStack,
   Icon,
 } from "@chakra-ui/react";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import CustomConnectButton from "../CustomConnectButton";
 import LanguageSwitcher from "../LanguageSwitcher/LanguageSwitcher";
@@ -30,6 +30,10 @@ const NavLink = ({
   children: React.ReactNode;
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // 检查当前路径是否与此链接的路径匹配
+  const isActive = location.pathname === to;
 
   return (
     <Button
@@ -37,6 +41,17 @@ const NavLink = ({
       fontWeight="medium"
       p={2}
       onClick={() => navigate(to)}
+      position="relative"
+      _after={{
+        content: '""',
+        position: 'absolute',
+        bottom: '0',
+        left: '0',
+        width: '100%',
+        height: '2px',
+        bg: isActive ? 'blue.500' : 'transparent',
+        transition: 'all 0.2s ease-in-out'
+      }}
     >
       {children}
     </Button>
