@@ -17,6 +17,7 @@ import {
   useSuiClient,
 } from "@mysten/dapp-kit";
 import { Transaction } from "@mysten/sui/transactions";
+import { isValidSuiAddress } from "@mysten/sui/utils";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { getExplorerTxUrl } from "../../utils/explorer";
@@ -25,11 +26,12 @@ import { useWalletNetwork } from "../CustomConnectButton";
 interface TransferItem {
   address: string;
   amount: string;
+  isValidAddress: boolean;
 }
 
 const BulkTransfer: React.FC = () => {
   const [transferItems, setTransferItems] = useState<TransferItem[]>([
-    { address: "", amount: "" },
+    { address: "", amount: "", isValidAddress: true },
   ]);
   const [accountBalance, setAccountBalance] = useState<bigint>(BigInt(0));
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -61,15 +63,26 @@ const BulkTransfer: React.FC = () => {
   }, [currentAccount, suiClient, t]);
 
   const addNewRow = () => {
-    setTransferItems([...transferItems, { address: "", amount: "" }]);
+    setTransferItems([...transferItems, { address: "", amount: "", isValidAddress: true }]);
   };
 
   const handleChange = (
     index: number,
-    field: keyof TransferItem,
+    field: "address" | "amount",
     value: string,
   ) => {
     const newItems = [...transferItems];
+
+    // Ensure amount is not negative
+    if (field === "amount" && value.startsWith("-")) {
+      value = value.replace("-", "");
+    }
+
+    // Check if address is valid when address field changes
+    if (field === "address") {
+      newItems[index].isValidAddress = value === "" || isValidSuiAddress(value);
+    }
+
     newItems[index][field] = value;
     setTransferItems(newItems);
   };
@@ -220,6 +233,9 @@ const BulkTransfer: React.FC = () => {
                           handleChange(index, "address", e.target.value)
                         }
                         placeholder="0x..."
+                        borderColor={
+                          item.address && !item.isValidAddress ? "red.500" : undefined
+                        }
                       />
                     </td>
                     <td style={{ padding: "10px" }}>
@@ -230,7 +246,8 @@ const BulkTransfer: React.FC = () => {
                         }
                         placeholder="0.0"
                         type="number"
-                        step="0.000000001"
+                        step="0.01"
+                        min="0"
                       />
                     </td>
                     <td style={{ padding: "10px" }}>
@@ -267,7 +284,7 @@ const BulkTransfer: React.FC = () => {
             >
               {t("bulkTransfer.execute")}
             </Button>
-            
+
             {lastTxDigest && (
               <Box mt={4} p={4} borderWidth="1px" borderRadius="md" width="full" bg="blue.50">
                 <Text fontSize="sm" mb={2}>
@@ -277,10 +294,10 @@ const BulkTransfer: React.FC = () => {
                   <Text fontWeight="semibold" fontSize="sm" truncate>
                     {t("bulkTransfer.transactionDigest")}: {lastTxDigest.slice(0, 8)}...{lastTxDigest.slice(-6)}
                   </Text>
-                  <Link 
-                    href={getExplorerTxUrl(lastTxDigest, network)} 
-                    color="blue.500" 
-                    target="_blank" 
+                  <Link
+                    href={getExplorerTxUrl(lastTxDigest, network)}
+                    color="blue.500"
+                    target="_blank"
                     rel="noopener noreferrer"
                     ml="auto"
                   >
