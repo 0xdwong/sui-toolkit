@@ -28,16 +28,26 @@ interface CoinBurnSelectionDialogProps {
   isLoading: boolean;
 }
 
-// 为Checkbox的onCheckedChange添加类型定义
+// For Checkbox.onCheckedChange type definition
 interface CheckedChangeEvent {
   checked?: boolean;
 }
 
-// 扩展CoinObject接口以支持批量销毁模式的额外属性
+// Extended CoinObject interface to support additional properties for batch burn mode
 interface ExtendedCoinObject extends CoinObject {
   symbol?: string;
   value?: number | null;
   price?: string | null;
+  iconUrl?: string | null;  // Add icon URL field
+}
+
+// Coin type group data structure for batch mode
+interface CoinTypeGroupData {
+  symbol: string; 
+  coins: ExtendedCoinObject[]; 
+  decimals: number; 
+  price: string | null;
+  iconUrl?: string | null;  // Add icon URL field
 }
 
 const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
@@ -55,76 +65,78 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
   const cancelRef = React.useRef<HTMLButtonElement>(null);
   const [selectedCoinIds, setSelectedCoinIds] = useState<string[]>([]);
   
-  // 检查是否是批量销毁模式 (多种币种)
+  // Check if it's batch burn mode (multiple coin types)
   const isBatchMode = coinType === "batch-burn";
 
-  // 按照币种对代币进行分组
+  // Group coins by type
   const coinsByType = React.useMemo(() => {
     if (!isBatchMode) {
-      return { [coinType]: { symbol, coins, decimals, price } };
+      return { [coinType]: { symbol, coins, decimals, price, iconUrl: coins[0]?.iconUrl || null } };
     }
     
-    console.log("批量模式 - 原始代币:", coins.length);
-    console.log("SUI代币数量 (原始):", coins.filter(c => 
+    console.log("Batch mode - Original coins:", coins.length);
+    console.log("SUI coins count (original):", coins.filter(c => 
       (c.type === "0x2::sui::SUI" || (c.type || "").includes("sui::SUI"))).length);
     
-    // 对于批量模式，按币种分组
-    const byType: Record<string, { 
-      symbol: string; 
-      coins: ExtendedCoinObject[]; 
-      decimals: number; 
-      price: string | null 
-    }> = {};
+    // For batch mode, group by coin type
+    const byType: Record<string, CoinTypeGroupData> = {};
     
-    // 确保所有代币都被包含，不进行任何过滤
-    (coins as ExtendedCoinObject[]).forEach(coin => {
-      // 确保coin对象有type属性
+    // Ensure all coins are included without filtering
+    (coins as ExtendedCoinObject[]).forEach((coin: ExtendedCoinObject) => {
+      // Ensure coin object has type property
       const type = coin.type || "";
       
-      // 统一SUI代币类型识别 - 添加额外检查
+      // Unified SUI coin type recognition - add extra check
       const normalizedType = type.includes("sui::SUI") ? "0x2::sui::SUI" : type;
       
       if (!byType[normalizedType]) {
-        // 获取币种信息
+        // Get coin type info
         const coinSymbol = coin.symbol || normalizedType.split("::").pop() || "Unknown";
+        
+        // Special handling for SUI coin icon
+        const iconUrl = normalizedType === "0x2::sui::SUI" 
+          ? "https://images.chaintoolkit.xyz/sui-logo.svg" 
+          : coin.iconUrl || null;
+        
         byType[normalizedType] = {
           symbol: coinSymbol,
           coins: [],
           decimals: coin.decimals || decimals,
-          price: coin.price || null // 使用代币自身携带的价格信息
+          price: coin.price || null, // Use the price information carried by the coin itself
+          iconUrl: iconUrl // Use special SUI icon or the coin's own icon URL
         };
       }
       
-      // 确保每个代币对象都被添加到相应类型的数组中
+      // Ensure each coin object is added to the corresponding type array
       byType[normalizedType].coins.push({...coin});
     });
     
-    // 输出调试信息
-    console.log("原始代币数量:", coins.length);
+    // Output debug information
+    console.log("Original coin count:", coins.length);
     Object.entries(byType).forEach(([type, data]) => {
-      console.log(`${type} 代币数量:`, data.coins.length);
+      console.log(`${type} coin count:`, data.coins.length);
       if (type === "0x2::sui::SUI") {
-        data.coins.forEach((c, i) => console.log(`SUI代币 #${i+1} ID:`, c.id));
+        data.coins.forEach((c, i) => console.log(`SUI coin #${i+1} ID:`, c.id));
       }
     });
     
-    // 对代币进行排序，确保SUI始终位于顶部
+    // Sort coins, ensure SUI is always at the top
     const ordered: typeof byType = {};
     
-    // 如果有SUI代币，确保它们首先被处理
+    // If there are SUI coins, make sure they are processed first
     if (byType["0x2::sui::SUI"]) {
-      // 添加深度拷贝，防止意外修改
+      // Add deep copy to prevent accidental modification
       ordered["0x2::sui::SUI"] = {
         ...byType["0x2::sui::SUI"],
         coins: [...byType["0x2::sui::SUI"].coins]
       };
       delete byType["0x2::sui::SUI"];
       
-      // 添加调试信息
-      console.log("SUI代币组处理 - 代币数量:", ordered["0x2::sui::SUI"].coins.length);
+      // Add debug info
+      console.log("SUI coin group processing - Coin count:", ordered["0x2::sui::SUI"].coins.length);
     }
     
-    // 添加剩余的代币类型
+    // Add remaining coin types
     Object.keys(byType).sort().forEach(key => {
       ordered[key] = {
         ...byType[key],
@@ -132,12 +144,12 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
       };
     });
     
-    // 最终检查
-    console.log("最终分组结果:");
+    // Final check
+    console.log("Final grouping result:");
     Object.entries(ordered).forEach(([type, data]) => {
-      console.log(`${type}: ${data.coins.length} 个代币`);
+      console.log(`${type}: ${data.coins.length} coins`);
     });
-    console.log("总计:", Object.values(ordered).reduce((sum, data) => sum + data.coins.length, 0));
+    console.log("Total:", Object.values(ordered).reduce((sum, data) => sum + data.coins.length, 0));
     
     return ordered;
   }, [coins, coinType, symbol, decimals, price, isBatchMode]);
@@ -149,27 +161,27 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
       let autoSelected: string[] = [];
       
       if (isBatchMode) {
-        // 批量模式下也只选择低价值代币
+        // In batch mode, also only select low value coins
         autoSelected = (coins as ExtendedCoinObject[])
           .filter(coin => {
-            // 检查代币是否有价格
+            // Check if the coin has price data
             const coinPrice = coin.price || null;
-            // 如果有价格，检查价值是否小于0.1美元
+            // If it has price, check if value is less than $0.1
             if (coinPrice) {
               const coinDecimals = coin.decimals || decimals;
               const value = Number(coin.balance) / Math.pow(10, coinDecimals) * Number(coinPrice);
               return value < 0.1 && Number(coin.balance) > 0;
             } else {
-              // 无价格数据，选择所有代币，不再检查余额
+              // No price data, select all coins, no longer check balance
               return true;
             }
           })
           .map(coin => coin.id);
         
-        // 添加调试日志
-        console.log("批量销毁模式 - 自动选择代币数:", autoSelected.length);
-        console.log("批量销毁模式 - 原始代币数:", coins.length);
-        console.log("SUI代币信息:", coins.filter(c => (c.type || "").includes("sui::SUI")).length);
+        // Add debug logs
+        console.log("Batch burn mode - Automatically selected coins:", autoSelected.length);
+        console.log("Batch burn mode - Original coins count:", coins.length);
+        console.log("SUI coins info:", coins.filter(c => (c.type || "").includes("sui::SUI")).length);
       } else if (price) {
         // Select low value coins (value < $0.1)
         autoSelected = coins
@@ -187,30 +199,30 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
     }
   }, [isOpen, coins, price, decimals, isBatchMode]);
 
-  // 监听外部事件，用于强制更新选择状态
+  // Listen for external events to force update selection state
   useEffect(() => {
     const handleUpdateCoins = (event: Event) => {
       if (isOpen && isBatchMode && coins.length > 0) {
-        // 检查是否是批量销毁模式下的默认选择ID列表
+        // Check if it's default selection ID list in batch burn mode
         const customEvent = event as CustomEvent;
         const defaultSelectedIds = customEvent.detail?.defaultSelectedIds as string[] | undefined;
         
         if (defaultSelectedIds && defaultSelectedIds.length > 0) {
-          console.log(`接收到默认选择代币ID: ${defaultSelectedIds.length}个`);
+          console.log(`Received default selected coin IDs: ${defaultSelectedIds.length}`);
           setSelectedCoinIds(defaultSelectedIds);
         } else {
-          // 使用原始的默认选择逻辑
+          // Use original default selection logic
           const coinsToSelect = (coins as ExtendedCoinObject[])
             .filter(coin => {
-              // 检查代币是否有价格
+              // Check if coin has price
               const coinPrice = coin.price || null;
-              // 如果有价格，检查价值是否小于0.1美元
+              // If it has price, check if value is less than $0.1
               if (coinPrice) {
                 const coinDecimals = coin.decimals || decimals;
                 const value = Number(coin.balance) / Math.pow(10, coinDecimals) * Number(coinPrice);
                 return value < 0.1 && Number(coin.balance) > 0;
               } else {
-                // 无价格数据，选择所有代币，不再检查余额
+                // No price data, select all coins, no longer check balance
                 return true;
               }
             })
@@ -235,16 +247,16 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
     if (checked) {
       // Select all
       if (isBatchMode) {
-        // 在批量模式下，需要从分组中获取所有代币ID
+        // In batch mode, need to get all coin IDs from the groups
         const allIds: string[] = [];
         Object.values(coinsByType).forEach(typeData => {
-          typeData.coins.forEach(coin => {
+          typeData.coins.forEach((coin: CoinObject) => {
             allIds.push(coin.id);
           });
         });
         setSelectedCoinIds(allIds);
       } else {
-        // 单币种模式，直接使用coins
+        // Single coin type mode, use coins directly
         setSelectedCoinIds(coins.map(coin => coin.id));
       }
     } else {
@@ -292,14 +304,14 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
       }, 0)
     : null;
 
-  // 渲染批量模式下的币种组
-  const renderCoinTypeGroup = (type: string, data: any) => {
-    const { symbol, coins: typeCoins, decimals, price: typePrice } = data;
+  // Render coin type group in batch mode
+  const renderCoinTypeGroup = (type: string, data: CoinTypeGroupData) => {
+    const { symbol, coins: typeCoins, decimals, price: typePrice, iconUrl } = data;
     
-    // 确保typeCoins是数组，并且有正确的数量
-    console.log(`渲染${type}代币组，数量:`, typeCoins.length);
+    // Ensure typeCoins is an array and has correct count
+    console.log(`Rendering ${type} coin group, count:`, typeCoins.length);
     
-    // 防止空数组导致渲染问题
+    // Prevent empty array causing render issues
     if (!Array.isArray(typeCoins) || typeCoins.length === 0) {
       return null;
     }
@@ -310,7 +322,7 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
     
     return (
       <Box key={type} w="100%" borderWidth="1px" borderRadius="md" mb={3}>
-        {/* 币种标题和选择 */}
+        {/* Coin type title and selection */}
         <Flex 
           p={3} 
           bg="gray.100" 
@@ -328,7 +340,39 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
               <Checkbox.HiddenInput />
               <Checkbox.Control />
               <Checkbox.Label>
-                <Text fontWeight="bold" ml={2}>{symbol} ({typeCoins.length}) {!typePrice && !isBatchMode && <Badge colorPalette="yellow" size="sm">{t("coinManager.noPrice")}</Badge>}</Text>
+                <Flex alignItems="center" ml={2}>
+                  {iconUrl ? (
+                    <Box position="relative" boxSize="20px" mr={2}>
+                      <img 
+                        src={iconUrl} 
+                        alt={symbol}
+                        style={{
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '50%',
+                          objectFit: 'cover'
+                        }}
+                        onError={(e) => {
+                          // Hide the image on error and show background color
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                      {/* This will show when image fails to load */}
+                      <Box 
+                        position="absolute" 
+                        top="0" 
+                        left="0" 
+                        boxSize="20px" 
+                        borderRadius="full" 
+                        bg="gray.200" 
+                        zIndex="-1"
+                      />
+                    </Box>
+                  ) : (
+                    <Box boxSize="20px" bg="gray.200" borderRadius="full" mr={2} />
+                  )}
+                  <Text fontWeight="bold">{symbol} ({typeCoins.length}) {!typePrice && !isBatchMode && <Badge colorPalette="yellow" size="sm">{t("coinManager.noPrice")}</Badge>}</Text>
+                </Flex>
               </Checkbox.Label>
             </Checkbox.Root>
           </Flex>
@@ -337,7 +381,7 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
           </Text>
         </Flex>
         
-        {/* 表头 */}
+        {/* Table header */}
         <Flex 
           p={2} 
           px={3}
@@ -352,11 +396,11 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
           <Text flex="0 0 100px" textAlign="right" fontSize="sm">{t("coinManager.value")}</Text>
         </Flex>
         
-        {/* 币列表 */}
+        {/* Coin list */}
         <Box>
           {typeCoins.map((coin: CoinObject, index: number) => {
             const isSelected = selectedCoinIds.includes(coin.id);
-            // 计算代币价值
+            // Calculate coin value
             let coinValue = null;
             if (typePrice) {
               coinValue = calculateValue(coin.balance, typePrice, decimals);
@@ -410,9 +454,9 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
     );
   };
 
-  // 简化版模式，避开组件嵌套问题
+  // Simplified mode, avoiding component nesting issues
   const renderBatchBurnView = () => {
-    // 计算所有分组中的代币总数
+    // Calculate total coin count in all groups
     const totalCoinsCount = Object.values(coinsByType).reduce((sum, typeData) => {
       return sum + typeData.coins.length;
     }, 0);
@@ -471,10 +515,10 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
               
               <Dialog.Body>
                 {isBatchMode ? (
-                  // 批量销毁视图
+                  // Batch burn view
                   renderBatchBurnView()
                 ) : (
-                  // 原始的单币种模式
+                  // Original single coin type mode
                   <>
                     <Text mb={4}>{t("coinManager.burnCoinsDescription")}</Text>
                 
@@ -495,7 +539,7 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
                     
                     <Box maxH="500px" overflowY="auto">
                       <Box borderWidth="1px" borderRadius="md">
-                        {/* 表头 */}
+                        {/* Table header */}
                         <Flex 
                           p={3} 
                           justifyContent="space-between" 

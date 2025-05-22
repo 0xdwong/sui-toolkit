@@ -13,6 +13,8 @@ interface CoinObjectRowProps {
   onBurnSingle?: (coinId: string) => void;
   price?: string | null;
   isLoading?: boolean;
+  symbol?: string;
+  iconUrl?: string | null;
 }
 
 const CoinObjectRow: React.FC<CoinObjectRowProps> = ({ 
@@ -21,11 +23,16 @@ const CoinObjectRow: React.FC<CoinObjectRowProps> = ({
   onSelect, 
   onBurnSingle,
   price,
-  isLoading = false
+  isLoading = false,
+  symbol,
+  iconUrl
 }) => {
   const { t } = useTranslation();
   const { id, balance, decimals = 9 } = coin;
   const isZeroBalance = parseInt(balance, 10) === 0;
+  
+  // 使用代币自身的图标URL，如果提供的话
+  const coinIconUrl = coin.iconUrl || iconUrl;
   
   // Calculate coin value if price is available
   const value = price ? calculateValue(balance, price, decimals) : 0;
@@ -47,7 +54,39 @@ const CoinObjectRow: React.FC<CoinObjectRowProps> = ({
     >
       <td style={{ padding: "10px", textAlign: "center", width: "40px" }}></td>
       <td style={{ padding: "10px", fontFamily: "monospace", fontSize: "0.9em" }}>
-        <ObjectIdDisplay objectId={id} />
+        <Flex alignItems="center" gap={2}>
+          {coinIconUrl ? (
+            <Box position="relative" boxSize="16px">
+              <img 
+                src={coinIconUrl} 
+                alt={symbol || ""}
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  borderRadius: '50%',
+                  objectFit: 'cover'
+                }}
+                onError={(e) => {
+                  // Hide the image on error
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+              {/* This will show when image fails to load */}
+              <Box 
+                position="absolute" 
+                top="0" 
+                left="0" 
+                boxSize="16px" 
+                borderRadius="full" 
+                bg="gray.200" 
+                zIndex="-1"
+              />
+            </Box>
+          ) : (
+            <Box boxSize="16px" bg="gray.200" borderRadius="full" display="inline-block" />
+          )}
+          <ObjectIdDisplay objectId={id} />
+        </Flex>
       </td>
       <td style={{ padding: "10px", textAlign: "right" }}>
         {isZeroBalance ? (

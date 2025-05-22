@@ -12,6 +12,8 @@ interface CoinObjectsTableProps {
   price?: string | null;
   decimals: number;
   isLoading?: boolean;
+  symbol?: string;
+  iconUrl?: string | null;
 }
 
 const CoinObjectsTable: React.FC<CoinObjectsTableProps> = ({
@@ -21,7 +23,9 @@ const CoinObjectsTable: React.FC<CoinObjectsTableProps> = ({
   onBurnSingle,
   price,
   decimals,
-  isLoading = false
+  isLoading = false,
+  symbol,
+  iconUrl
 }) => {
   const { t } = useTranslation();
 
@@ -64,6 +68,8 @@ const CoinObjectsTable: React.FC<CoinObjectsTableProps> = ({
               onBurnSingle={onBurnSingle}
               price={price}
               isLoading={isLoading}
+              symbol={symbol}
+              iconUrl={iconUrl}
             />
           ))}
         </tbody>

@@ -187,7 +187,7 @@ const CoinManager: React.FC = () => {
 
       // Group coins by type
       const coinsByType = new Map<string, any[]>();
-      const coinMetadata = new Map<string, { decimals: number, symbol: string }>();
+      const coinMetadata = new Map<string, { decimals: number, symbol: string, iconUrl: string | null }>();
 
       // Fetch metadata for all coin types
       for (const coin of allCoins) {
@@ -204,13 +204,15 @@ const CoinManager: React.FC = () => {
               if (coin.coinType === WUSDC_COIN_TYPE) symbol = "wUSDC"
               coinMetadata.set(coin.coinType, {
                 decimals: metadata.decimals,
-                symbol: symbol
+                symbol: symbol,
+                iconUrl: metadata.iconUrl || null  // 获取代币图标URL
               });
             } else {
               // Default values if metadata not found
               coinMetadata.set(coin.coinType, {
                 decimals: 9,
-                symbol: formatCoinType(coin.coinType)
+                symbol: formatCoinType(coin.coinType),
+                iconUrl: null
               });
             }
           } catch (error) {
@@ -218,7 +220,8 @@ const CoinManager: React.FC = () => {
             // Default values on error
             coinMetadata.set(coin.coinType, {
               decimals: 9,
-              symbol: formatCoinType(coin.coinType)
+              symbol: formatCoinType(coin.coinType),
+              iconUrl: null
             });
           }
         }
@@ -227,13 +230,24 @@ const CoinManager: React.FC = () => {
       allCoins.forEach(coin => {
         if (!coin.coinType) return;
 
-        const metadata = coinMetadata.get(coin.coinType) || { decimals: 9, symbol: formatCoinType(coin.coinType) };
+        const metadata = coinMetadata.get(coin.coinType) || { 
+          decimals: 9, 
+          symbol: formatCoinType(coin.coinType),
+          iconUrl: null 
+        };
+
+        // Special handling for SUI coin - use a specific logo URL
+        const isSuiCoin = coin.coinType === SUI_TYPE_ARG;
+        const iconUrl = isSuiCoin 
+          ? "https://images.chaintoolkit.xyz/sui-logo.svg" 
+          : metadata.iconUrl;
 
         const formattedCoin = {
           id: coin.coinObjectId,
           balance: coin.balance.toString(),
           type: coin.coinType,
           decimals: metadata.decimals,
+          iconUrl: iconUrl  // Use special SUI icon or metadata icon
         };
 
         if (!coinsByType.has(coin.coinType)) {
@@ -252,7 +266,17 @@ const CoinManager: React.FC = () => {
           BigInt(0)
         ).toString();
 
-        const metadata = coinMetadata.get(type) || { decimals: 9, symbol: formatCoinType(type) };
+        const metadata = coinMetadata.get(type) || { 
+          decimals: 9, 
+          symbol: formatCoinType(type),
+          iconUrl: null 
+        };
+
+        // Special handling for SUI coin icon
+        const isSuiCoin = type === SUI_TYPE_ARG;
+        const iconUrl = isSuiCoin 
+          ? "https://images.chaintoolkit.xyz/sui-logo.svg" 
+          : metadata.iconUrl;
 
         summaries.push({
           type,
@@ -261,7 +285,8 @@ const CoinManager: React.FC = () => {
           objectCount: coins.length,
           objects: coins,
           expanded: false,
-          decimals: metadata.decimals
+          decimals: metadata.decimals,
+          iconUrl: iconUrl  // Use special SUI icon or metadata icon
         });
       }
 

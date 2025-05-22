@@ -92,6 +92,8 @@ const CoinTypesList: React.FC<CoinTypesListProps> = ({
                       price={summary.price}
                       decimals={summary.decimals}
                       isLoading={isLoading}
+                      symbol={summary.symbol}
+                      iconUrl={summary.iconUrl}
                     />
                   </td>
                 </tr>

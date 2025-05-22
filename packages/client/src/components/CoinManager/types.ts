@@ -4,6 +4,7 @@ export interface CoinObject {
   balance: string;
   type: string;
   decimals?: number;
+  iconUrl?: string | null;  // 添加图标URL字段
 }
 
 // Interface for coin type summary
@@ -17,6 +18,7 @@ export interface CoinTypeSummary {
   decimals: number;
   price?: string | null;   // Price in USD
   value?: number | null;          // Total value in USD
+  iconUrl?: string | null; // Coin icon URL
 }
 
 // Loading state interface

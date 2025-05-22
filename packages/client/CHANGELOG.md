@@ -7,6 +7,10 @@
 - Bulk Transfer module improvements:
   - Added validation to prevent negative transfer amounts
   - Added real-time Sui address validation with visual feedback
+- Coin Manager improvements:
+  - Added coin icons display for better visual identification
+  - Special handling for SUI coin with dedicated icon
+  - Fallback display for coins without icon metadata
 
 
 ## [0.3.0] - 2025-05-16
