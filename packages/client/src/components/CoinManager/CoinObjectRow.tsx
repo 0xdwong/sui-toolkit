@@ -31,7 +31,7 @@ const CoinObjectRow: React.FC<CoinObjectRowProps> = ({
   const { id, balance, decimals = 9 } = coin;
   const isZeroBalance = parseInt(balance, 10) === 0;
   
-  // 使用代币自身的图标URL，如果提供的话
+  // Use the coin's own icon URL if provided
   const coinIconUrl = coin.iconUrl || iconUrl;
   
   // Calculate coin value if price is available

@@ -31,7 +31,7 @@ const networks = {
 };
 
 function App() {
-  // 使用 useState 跟踪当前选择的网络
+  // Track current selected network using useState
   const [activeNetwork, setActiveNetwork] = useState<keyof typeof networks>("mainnet");
 
   return (

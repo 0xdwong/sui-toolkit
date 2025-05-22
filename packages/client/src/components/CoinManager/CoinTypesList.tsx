@@ -48,7 +48,7 @@ const CoinTypesList: React.FC<CoinTypesListProps> = ({
         <thead>
           <tr>
             <th style={{ padding: "10px", textAlign: "center", width: "40px", fontWeight: "normal" }}>
-              {/* 展开/折叠列 */}
+              {/* Expand/collapse column */}
             </th>
             <th style={{ padding: "10px", textAlign: "left", width: "30%", fontWeight: "normal" }}>
               {t("coinManager.name")}

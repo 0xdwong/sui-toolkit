@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { ConnectButton, useSuiClientContext, useCurrentWallet, useCurrentAccount } from "@mysten/dapp-kit";
 import { Box, Flex } from "@chakra-ui/react";
 
-// 自定义钩子，用于获取当前钱包的网络
+// Custom hook to get the current wallet network
 export const useWalletNetwork = (autoSync = false) => {
   const ctx = useSuiClientContext();
   const appNetwork = ctx.network;

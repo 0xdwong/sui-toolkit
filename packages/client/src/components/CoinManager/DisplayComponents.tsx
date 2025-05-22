@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import CopyableText from "./CopyableText";
 import { formatCoinType } from "./utils";
 
-// 币种类型显示组件
+// Coin type display component
 export const CoinTypeDisplay: React.FC<{ coinType: string }> = ({ coinType }) => {
   const { t } = useTranslation();
   return (
@@ -15,7 +15,7 @@ export const CoinTypeDisplay: React.FC<{ coinType: string }> = ({ coinType }) =>
   );
 };
 
-// 对象ID显示组件
+// Object ID display component
 export const ObjectIdDisplay: React.FC<{ objectId: string }> = ({ objectId }) => {
   const { t } = useTranslation();
   const displayText = `${objectId.slice(0, 4)}...${objectId.slice(-4)}`;

@@ -243,6 +243,7 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
     onConfirm(selectedCoinIds);
   };
 
+  // Toggle selection of all coins
   const toggleSelectAll = (checked: boolean) => {
     if (checked) {
       // Select all
@@ -265,18 +266,18 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
     }
   };
   
-  // 切换特定币种的全选状态
+  // Toggle selection of all coins of a specific type
   const toggleCoinTypeSelection = (typeCoins: CoinObject[], checked: boolean) => {
     const typeIds = typeCoins.map(coin => coin.id);
     
     setSelectedCoinIds(prev => {
       if (checked) {
-        // 添加该币种的所有币
+        // Add all coins of this type
         const currentSelected = new Set(prev);
         typeIds.forEach(id => currentSelected.add(id));
         return Array.from(currentSelected);
       } else {
-        // 移除该币种的所有币
+        // Remove all coins of this type
         return prev.filter(id => !typeIds.includes(id));
       }
     });

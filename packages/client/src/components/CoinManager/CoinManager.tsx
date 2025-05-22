@@ -28,7 +28,7 @@ import CoinTypesList from "./CoinTypesList";
 import BurnConfirmationDialog from "./BurnConfirmationDialog";
 import CoinBurnSelectionDialog from "./CoinBurnSelectionDialog";
 
-// 扩展CoinObject接口以支持批量销毁模式的额外属性
+// Extended CoinObject interface to support additional properties for batch burn mode
 interface ExtendedCoinObject extends CoinObject {
   symbol?: string;
   value?: number | null;
@@ -50,7 +50,7 @@ const CoinManager: React.FC = () => {
     batchBurn: false,
     singleOperation: false,
     fetchPrices: false,
-    networkSync: true // 默认为等待网络同步状态
+    networkSync: true // Default to waiting for network sync state
   });
 
   // State variables
@@ -173,17 +173,17 @@ const CoinManager: React.FC = () => {
     try {
       setLoadingState(prev => ({ ...prev, fetchCoins: true }));
 
-      // 记录当前网络信息
-      console.log("当前网络:", walletNetwork);
-      console.log("钱包地址:", currentAccount.address);
+      // Record current network information
+      console.log("Current network:", walletNetwork);
+      console.log("Wallet address:", currentAccount.address);
 
       // Get all coins for the account
       const { data: allCoins } = await suiClient.getAllCoins({
         owner: currentAccount.address,
       });
 
-      // 输出获取到的代币数量
-      console.log(`获取到 ${allCoins.length} 个代币对象`);
+      // Output the number of coins obtained
+      console.log(`Retrieved ${allCoins.length} coin objects`);
 
       // Group coins by type
       const coinsByType = new Map<string, any[]>();
@@ -205,7 +205,7 @@ const CoinManager: React.FC = () => {
               coinMetadata.set(coin.coinType, {
                 decimals: metadata.decimals,
                 symbol: symbol,
-                iconUrl: metadata.iconUrl || null  // 获取代币图标URL
+                iconUrl: metadata.iconUrl || null  // Get the coin icon URL
               });
             } else {
               // Default values if metadata not found
@@ -457,14 +457,14 @@ const CoinManager: React.FC = () => {
         if (zeroBalanceCoins.length === 0) return;
         totalCleanedCoins += zeroBalanceCoins.length;
 
-                  // Handle coins (both SUI and other types)
-          for (const zeroCoin of zeroBalanceCoins) {
-            tx.moveCall({
-              target: "0x2::coin::destroy_zero",
-              arguments: [tx.object(zeroCoin.id)],
-              typeArguments: [summary.type],
-            });
-          }
+        // Handle coins (both SUI and other types)
+        for (const zeroCoin of zeroBalanceCoins) {
+          tx.moveCall({
+            target: "0x2::coin::destroy_zero",
+            arguments: [tx.object(zeroCoin.id)],
+            typeArguments: [summary.type],
+          });
+        }
       });
 
       if (totalCleanedCoins === 0) {
@@ -476,7 +476,7 @@ const CoinManager: React.FC = () => {
       // Execute transaction
       await executeTransaction(
         tx,
-                  `${t("coinManager.batchCleanSuccess")}: ${totalCleanedCoins} ${t("coinManager.objects")}`,
+        `${t("coinManager.batchCleanSuccess")}: ${totalCleanedCoins} ${t("coinManager.objects")}`,
         'batchCleanZero'
       );
 
@@ -518,7 +518,7 @@ const CoinManager: React.FC = () => {
       // Create transaction
       const tx = new Transaction();
 
-      // 检查是否有足够的非零余额代币用于支付gas（仅针对SUI代币）
+      // Check if there are enough non-zero balance coins for gas (only for SUI coins)
       if (coinType === SUI_TYPE_ARG) {
         const nonZeroCoins = summary.objects.filter(coin =>
           parseInt(coin.balance, 10) > 0
@@ -531,7 +531,7 @@ const CoinManager: React.FC = () => {
         }
       }
       
-      // 处理所有代币类型（包括SUI和其他类型）
+      // Process all coin types (including SUI and other types)
       for (const zeroCoin of zeroBalanceCoins) {
         tx.moveCall({
           target: "0x2::coin::destroy_zero",
@@ -684,62 +684,62 @@ const CoinManager: React.FC = () => {
     });
   };
 
-  // 处理批量销毁代币（显示所有代币，默认选中低价值代币）
+  // Handle batch burning of coins (show all coins, default select low value coins)
   const handleBatchBurnLowValueCoins = async () => {
     if (!currentAccount) {
       toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.connectWallet"));
       return;
     }
 
-    // 调试信息：总共有多少SUI代币
+    // Debug info: how many SUI coins in total
     const suiSummary = coinTypeSummaries.find(s => s.type === SUI_TYPE_ARG);
     if (suiSummary) {
-      console.log(`总共有 ${suiSummary.objects.length} 个SUI代币对象`);
+      console.log(`Total SUI coin objects: ${suiSummary.objects.length}`);
     }
 
-    // 创建扩展后的代币对象列表，包含价格和其他必要信息
+    // Create extended coin object list with price and other necessary information
     const batchCoins: ExtendedCoinObject[] = [];
-    // 记录低价值代币的ID，用于默认选择
+    // Record low value coin IDs for default selection
     const lowValueCoinIds: string[] = [];
     
-    // 收集所有代币，并标记低价值代币
+    // Collect all coins and mark low value ones
     for (const summary of coinTypeSummaries) {
-      // 输出每个币种的信息
-      console.log(`处理币种: ${summary.symbol}, 数量: ${summary.objects.length}, 有价格数据: ${!!summary.price}`);
+      // Output info for each coin type
+      console.log(`Processing coin type: ${summary.symbol}, count: ${summary.objects.length}, has price data: ${!!summary.price}`);
       
-      // 处理每个代币对象
+      // Process each coin object
       for (const coin of summary.objects) {
-        // 忽略余额为0的代币
+        // Ignore zero balance coins
         if (Number(coin.balance) === 0) continue;
         
-        // 创建扩展代币对象
+        // Create extended coin object
         const extendedCoin: ExtendedCoinObject = {
           ...coin,
           symbol: summary.symbol,
           decimals: summary.decimals,
           price: summary.price,
-          type: summary.type // 确保type字段正确设置
+          type: summary.type // Ensure type field is correctly set
         };
         
-        // 如果有价格数据，计算价值
+        // If price data is available, calculate value
         if (summary.price) {
           const value = Number(coin.balance) / Math.pow(10, summary.decimals) * Number(summary.price);
-          // 特别为SUI代币添加更详细的日志
+          // Add more detailed logs specifically for SUI coins
           if (summary.type === SUI_TYPE_ARG) {
-            console.log(`SUI代币: ${coin.id}, 余额=${coin.balance}, 价值=$${value.toFixed(4)}`);
+            console.log(`SUI coin: ${coin.id}, balance=${coin.balance}, value=$${value.toFixed(4)}`);
           }
           
-          // 标记低价值代币（价值 < $0.1）
+          // Mark low value coins (value < $0.1)
           if (value < 0.1) {
             lowValueCoinIds.push(coin.id);
           }
         } else {
-          // 如果没有价格数据，也将其视为低价值代币并默认选中
-          console.log(`无价格数据代币: ${summary.symbol} (${coin.id}), 余额=${coin.balance}`);
+          // If no price data, treat as low value coin and select by default
+          console.log(`No price data coin: ${summary.symbol} (${coin.id}), balance=${coin.balance}`);
           lowValueCoinIds.push(coin.id);
         }
         
-        // 添加到批量代币列表
+        // Add to batch coin list
         batchCoins.push(extendedCoin);
       }
     }
@@ -749,31 +749,31 @@ const CoinManager: React.FC = () => {
       return;
     }
 
-    // 输出调试信息
-    console.log(`批量销毁 - 总共收集了 ${batchCoins.length} 个代币对象`);
-    console.log(`批量销毁 - 默认选中了 ${lowValueCoinIds.length} 个低价值代币`);
-    console.log(`批量销毁 - SUI代币数量: ${batchCoins.filter(c => c.type === SUI_TYPE_ARG || c.type?.includes("sui::SUI")).length}`);
+    // Output debug info
+    console.log(`Batch burn - Total coin objects collected: ${batchCoins.length}`);
+    console.log(`Batch burn - Default selected low value coins: ${lowValueCoinIds.length}`);
+    console.log(`Batch burn - SUI coin count: ${batchCoins.filter(c => c.type === SUI_TYPE_ARG || c.type?.includes("sui::SUI")).length}`);
 
-    // 更新状态
+    // Update state
     setAllCoinsForBurnDialog(batchCoins);
 
-    // 设置批量销毁对话框
+    // Set up batch burn dialog
     setBurnSelectionDialog({
       isOpen: true,
-      coinType: "batch-burn", // 使用特殊标识表示批量销毁模式
+      coinType: "batch-burn", // Use special identifier for batch burn mode
       symbol: t("coinManager.multipleCoins"),
-      price: null, // 不同币种混合，没有统一价格
-      decimals: 9, // 默认精度
+      price: null, // Mixed coin types, no unified price
+      decimals: 9, // Default precision
       onConfirm: (selectedCoinIds: string[]) => {
         handleBatchBurnConfirmed(selectedCoinIds);
       }
     });
 
-    // 在对话框初始化后设置默认选中的代币
+    // Set default selected coins after dialog initialization
     setTimeout(() => {
       const dialogElement = document.querySelector('.chakra-modal__content');
       if (dialogElement) {
-        // 创建自定义事件，传递默认选中的代币ID
+        // Create custom event to pass default selected coin IDs
         const event = new CustomEvent('updateCoins', { 
           bubbles: true,
           detail: { defaultSelectedIds: lowValueCoinIds }
@@ -783,7 +783,7 @@ const CoinManager: React.FC = () => {
     }, 100);
   };
   
-  // 处理批量销毁确认
+  // Handle batch burn confirmation
   const handleBatchBurnConfirmed = async (coinIds: string[]) => {
     if (!currentAccount) {
       toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.connectWallet"));
@@ -797,10 +797,10 @@ const CoinManager: React.FC = () => {
 
     setBurnSelectionDialog(prev => ({ ...prev, isOpen: false }));
 
-    // 创建消息文本，包括提示一些代币可能没有价格数据
+    // Create message text, including a note that some coins may not have price data
     const messageText = t("coinManager.confirmBurnMessage", { count: coinIds.length });
 
-    // 显示确认对话框
+    // Show confirmation dialog
     setBurnConfirmation({
       isOpen: true,
       title: t("coinManager.confirmBatchBurn"),
@@ -812,11 +812,11 @@ const CoinManager: React.FC = () => {
         try {
           setLoadingState(prev => ({ ...prev, batchBurn: true }));
 
-          // 创建交易
+          // Create transaction
           const tx = new Transaction();
           let burnCount = 0;
 
-          // 转移所有选中的代币到零地址 (0x0)
+          // Transfer all selected coins to zero address (0x0)
           for (const coinId of coinIds) {
             tx.transferObjects(
               [tx.object(coinId)],
@@ -831,14 +831,14 @@ const CoinManager: React.FC = () => {
             return;
           }
 
-          // 执行交易
+          // Execute transaction
           await executeTransaction(
             tx,
             `${t("coinManager.batchBurnSuccess")}: ${burnCount} ${t("coinManager.objects")}`,
             'batchBurn'
           );
 
-          // 刷新代币列表
+          // Refresh coin list
           fetchAllCoins();
         } catch (error) {
           console.error("Error batch burning coins:", error);
@@ -870,7 +870,7 @@ const CoinManager: React.FC = () => {
   // Reset selection when dialog closes
   const handleBurnDialogClose = () => {
     setBurnSelectionDialog(prev => ({ ...prev, isOpen: false }));
-    // 不要在这里重置selection，因为可能是取消操作
+    // Don't reset selection here, as it might be a cancel operation
   };
 
   // Handle burning a single coin
@@ -1009,19 +1009,18 @@ const CoinManager: React.FC = () => {
 
   // Load coins when account changes or network changes
   useEffect(() => {
-    // 先清空当前列表，防止显示旧网络数据
+    // Clear current list first to prevent showing old network data
     setCoinTypeSummaries([]);
     
-    // 添加一个小延迟确保网络完全同步
+    // Add a small delay to ensure the network is fully synchronized
     const timer = setTimeout(() => {
       if (currentAccount) {
-        console.log(`准备获取代币数据，当前网络: ${walletNetwork}`);
-        setLoadingState(prev => ({ ...prev, networkSync: false })); // 更新网络同步状态
-        fetchAllCoins();
+        console.log(`Preparing to fetch coin data, current network: ${walletNetwork}`);
+        setLoadingState(prev => ({ ...prev, networkSync: false })); // Update network sync state
       } else {
-        setLoadingState(prev => ({ ...prev, networkSync: false })); // 如果没有连接钱包，也更新状态
+        setLoadingState(prev => ({ ...prev, networkSync: false })); // Also update state if wallet not connected
       }
-    }, 500); // 500ms延迟等待网络同步完成
+    }, 500); // 500ms delay to wait for network sync to complete
     
     return () => clearTimeout(timer);
   }, [currentAccount, walletNetwork, fetchAllCoins]);
@@ -1037,7 +1036,7 @@ const CoinManager: React.FC = () => {
             {t("coinManager.description")}
           </Text>
           
-          {/* 添加手动刷新按钮 */}
+          {/* Add manual refresh button */}
           <Button
             size="sm"
             colorPalette="green"
@@ -1136,7 +1135,7 @@ const CoinManager: React.FC = () => {
         </Box>
       </Stack>
 
-      {/* 销毁确认对话框 */}
+      {/* Burn confirmation dialog */}
       <BurnConfirmationDialog
         isOpen={burnConfirmation.isOpen}
         title={burnConfirmation.title}
@@ -1146,7 +1145,7 @@ const CoinManager: React.FC = () => {
         isLoading={burnConfirmation.type === "single" ? loadingState.singleOperation : loadingState.batchBurn}
       />
 
-      {/* 销毁选择对话框 */}
+      {/* Burn selection dialog */}
       <CoinBurnSelectionDialog
         isOpen={burnSelectionDialog.isOpen}
         onClose={handleBurnDialogClose}
