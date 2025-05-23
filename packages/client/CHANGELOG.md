@@ -1,9 +1,13 @@
 # Changelog
 
 
-## [0.3.x] - 2025-05-22
+## [0.3.x] 
 
-### Added
+### Added - 2025-05-23
+- Coin Manager improvements:
+  - Implemented pagination for coin fetching to support wallets with large number of coins
+
+### Added - 2025-05-22
 - Bulk Transfer module improvements:
   - Added validation to prevent negative transfer amounts
   - Added real-time Sui address validation with visual feedback

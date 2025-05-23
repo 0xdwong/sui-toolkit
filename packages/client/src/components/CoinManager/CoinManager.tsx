@@ -15,7 +15,8 @@ import {
   useSuiClient,
   useSignAndExecuteTransaction,
 } from "@mysten/dapp-kit";
-import { Transaction } from "@mysten/sui/transactions";
+import { Transaction} from "@mysten/sui/transactions";
+import { CoinStruct } from "@mysten/sui/client";
 import toast from "react-hot-toast";
 import { formatCoinType } from "./utils";
 import { useWalletNetwork } from "../CustomConnectButton";
@@ -177,10 +178,25 @@ const CoinManager: React.FC = () => {
       console.log("Current network:", walletNetwork);
       console.log("Wallet address:", currentAccount.address);
 
-      // Get all coins for the account
-      const { data: allCoins } = await suiClient.getAllCoins({
-        owner: currentAccount.address,
-      });
+      // Get all coins for the account using pagination
+      let allCoins:CoinStruct[] = [];
+      let cursor = null;
+
+      while (true) {
+        const response = await suiClient.getAllCoins({
+          owner: currentAccount.address,
+          limit: 50, //default and max
+          cursor: cursor,
+        });
+
+        allCoins = [...allCoins, ...response.data];
+
+        if (response.hasNextPage) {
+          cursor = response.nextCursor;
+        } else {
+          break;
+        }
+      }
 
       // Output the number of coins obtained
       console.log(`Retrieved ${allCoins.length} coin objects`);
