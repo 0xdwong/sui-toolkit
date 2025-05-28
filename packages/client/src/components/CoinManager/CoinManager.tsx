@@ -28,6 +28,7 @@ import { CoinTypeSummary, LoadingState, CoinObject } from "./types";
 import CoinTypesList from "./CoinTypesList";
 import BurnConfirmationDialog from "./BurnConfirmationDialog";
 import CoinBurnSelectionDialog from "./CoinBurnSelectionDialog";
+import CoinOperationDialog from "./CoinOperationDialog";
 
 // Extended CoinObject interface to support additional properties for batch burn mode
 interface ExtendedCoinObject extends CoinObject {
@@ -84,6 +85,25 @@ const CoinManager: React.FC = () => {
     onConfirm: (selectedCoinIds: string[]) => {},
     price: null,
     decimals: 9,
+  });
+
+  // Add new state for operation dialog
+  const [operationDialog, setOperationDialog] = useState<{
+    isOpen: boolean;
+    coinType: string;
+    symbol: string;
+    onConfirm: (selectedCoinIds: string[]) => void;
+    operationType: "merge" | "clean";
+    decimals: number;
+    iconUrl?: string | null;
+  }>({
+    isOpen: false,
+    coinType: "",
+    symbol: "",
+    onConfirm: (selectedCoinIds: string[]) => {},
+    operationType: "merge",
+    decimals: 9,
+    iconUrl: null
   });
 
   // Helper for toggling coin selection
@@ -381,63 +401,105 @@ const CoinManager: React.FC = () => {
       return;
     }
 
-    const mergeableCoinTypes = coinTypeSummaries.filter(summary => summary.objectCount > 1);
+    const mergeableCoinTypes = coinTypeSummaries.filter(summary => {
+      // 对于 SUI 代币，需要至少有 3 个才显示在合并列表中
+      if (summary.type === SUI_TYPE_ARG) {
+        return summary.objectCount > 2;
+      }
+      // 其他代币至少需要 2 个
+      return summary.objectCount > 1;
+    });
     if (mergeableCoinTypes.length === 0) {
       toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.noMergeableCoins"));
       return;
     }
 
-    try {
-      setLoadingState(prev => ({ ...prev, batchMerge: true }));
+    // Collect all coins that can be merged
+    const allCoins: ExtendedCoinObject[] = [];
+    mergeableCoinTypes.forEach(summary => {
+      summary.objects.forEach(coin => {
+        allCoins.push({
+          ...coin,
+          symbol: summary.symbol,
+          iconUrl: summary.iconUrl
+        });
+      });
+    });
 
-      // Create a single transaction for all coin types
-      const tx = new Transaction();
+    // Show merge selection dialog
+    setOperationDialog({
+      isOpen: true,
+      coinType: "batch-operation",
+      symbol: t("coinManager.multipleCoins"),
+      decimals: 9,
+      operationType: "merge",
+      onConfirm: async (selectedCoinIds: string[]) => {
+        setOperationDialog(prev => ({ ...prev, isOpen: false }));
 
-      // Add merge operations for each coin type
-      mergeableCoinTypes.forEach(summary => {
-        const coinIds = summary.objects.map(coin => coin.id);
+        try {
+          setLoadingState(prev => ({ ...prev, batchMerge: true }));
 
-        // Special handling for SUI coins
-        if (summary.type === SUI_TYPE_ARG) {
-          // Skip SUI if only 2 objects (one needed for gas)
-          if (summary.objects.length <= 2) {
-            return;
+          // Create a single transaction for all coin types
+          const tx = new Transaction();
+          const coinsByType = new Map<string, string[]>();
+
+          // Group selected coins by type
+          selectedCoinIds.forEach(coinId => {
+            for (const summary of coinTypeSummaries) {
+              const coin = summary.objects.find(c => c.id === coinId);
+              if (coin) {
+                if (!coinsByType.has(summary.type)) {
+                  coinsByType.set(summary.type, []);
+                }
+                coinsByType.get(summary.type)?.push(coinId);
+                break;
+              }
+            }
+          });
+
+          // Process each coin type
+          for (const [type, coinIds] of coinsByType.entries()) {
+            const summary = coinTypeSummaries.find(s => s.type === type);
+            if (!summary) continue;
+
+            // For SUI coins, use the highest balance coin as primary
+            if (type === SUI_TYPE_ARG) {
+              const selectedCoins = summary.objects
+                .filter(coin => coinIds.includes(coin.id))
+                .sort((a, b) => Number(BigInt(b.balance) - BigInt(a.balance)));
+
+              if (selectedCoins.length < 2) continue;
+
+              const primaryCoin = selectedCoins[0].id;
+              const otherCoins = selectedCoins.slice(1).map(coin => coin.id);
+              tx.mergeCoins(primaryCoin, otherCoins);
+            } else {
+              if (coinIds.length < 2) continue;
+
+              // 使用选择的第一个代币作为合并目标
+              const primaryCoin = coinIds[0];
+              const otherCoins = coinIds.slice(1);
+              tx.mergeCoins(primaryCoin, otherCoins);
+            }
           }
 
-          // Sort coins by balance and keep highest balance for gas
-          const sortedCoins = [...summary.objects].sort((a, b) =>
-            Number(BigInt(b.balance) - BigInt(a.balance))
+          // Execute the transaction
+          await executeTransaction(
+            tx,
+            t("coinManager.batchMergeSuccess"),
+            'batchMerge'
           );
 
-          const primaryCoin = sortedCoins[0].id;
-          const otherCoins = sortedCoins.slice(1).map(coin => coin.id);
-
-          if (otherCoins.length > 0) {
-            tx.mergeCoins(primaryCoin, otherCoins);
-          }
-        } else {
-          // For non-SUI coins, proceed as normal
-          const primaryCoin = coinIds[0];
-          const otherCoins = coinIds.slice(1);
-          tx.mergeCoins(primaryCoin, otherCoins);
+          // Refresh coin list after transaction is complete
+          fetchAllCoins();
+        } catch (error) {
+          console.error("Error batch merging coins:", error);
+          toast.error(t("coinManager.error.operationFailed") + ": " + (error instanceof Error ? error.message : t("coinManager.error.unknownError")));
+        } finally {
+          setLoadingState(prev => ({ ...prev, batchMerge: false }));
         }
-      });
-
-      // Execute the transaction
-      await executeTransaction(
-        tx,
-        t("coinManager.batchMergeSuccess"),
-        'batchMerge'
-      );
-
-      // Refresh coin list after transaction is complete
-      fetchAllCoins();
-    } catch (error) {
-      console.error("Error batch merging coins:", error);
-      toast.error(t("coinManager.error.operationFailed") + ": " + (error instanceof Error ? error.message : t("coinManager.error.unknownError")));
-    } finally {
-      setLoadingState(prev => ({ ...prev, batchMerge: false }));
-    }
+      }
+    });
   };
 
   // Optimized batch clean zero balance coins function
@@ -456,120 +518,74 @@ const CoinManager: React.FC = () => {
       return;
     }
 
-    try {
-      setLoadingState(prev => ({ ...prev, batchCleanZero: true }));
-
-      // Create a single transaction for all zero-balance coins
-      const tx = new Transaction();
-      let totalCleanedCoins = 0;
-
-      // Add clean operations for each coin type
-      coinTypesWithZeroBalance.forEach(summary => {
-        // Filter zero balance coins
-        const zeroBalanceCoins = summary.objects.filter(coin =>
-          parseInt(coin.balance, 10) === 0
-        );
-
-        if (zeroBalanceCoins.length === 0) return;
-        totalCleanedCoins += zeroBalanceCoins.length;
-
-        // Handle coins (both SUI and other types)
-        for (const zeroCoin of zeroBalanceCoins) {
-          tx.moveCall({
-            target: "0x2::coin::destroy_zero",
-            arguments: [tx.object(zeroCoin.id)],
-            typeArguments: [summary.type],
-          });
-        }
-      });
-
-      if (totalCleanedCoins === 0) {
-        toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.noZeroCoins"));
-        setLoadingState(prev => ({ ...prev, batchCleanZero: false }));
-        return;
-      }
-
-      // Execute transaction
-      await executeTransaction(
-        tx,
-        `${t("coinManager.batchCleanSuccess")}: ${totalCleanedCoins} ${t("coinManager.objects")}`,
-        'batchCleanZero'
-      );
-
-      // Refresh coin list
-      fetchAllCoins();
-
-    } catch (error) {
-      console.error("Error batch cleaning zero-balance coins:", error);
-      toast.error(t("coinManager.error.operationFailed") + ": " + (error instanceof Error ? error.message : t("coinManager.error.unknownError")));
-    } finally {
-      setLoadingState(prev => ({ ...prev, batchCleanZero: false }));
-    }
-  };
-
-  // Optimized clean zero balance coins for single coin type
-  const handleCleanZeroCoins = async (coinType: string) => {
-    if (!currentAccount) {
-      toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.connectWallet"));
-      return;
-    }
-
-    const summary = coinTypeSummaries.find(s => s.type === coinType);
-    if (!summary) return;
-
-    try {
-      setLoadingState(prev => ({ ...prev, singleOperation: true }));
-
-      // Filter zero balance coins
-      const zeroBalanceCoins = summary.objects.filter(coin =>
-        parseInt(coin.balance, 10) === 0
-      );
-
-      if (zeroBalanceCoins.length === 0) {
-        toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.noZeroCoins"));
-        setLoadingState(prev => ({ ...prev, singleOperation: false }));
-        return;
-      }
-
-      // Create transaction
-      const tx = new Transaction();
-
-      // Check if there are enough non-zero balance coins for gas (only for SUI coins)
-      if (coinType === SUI_TYPE_ARG) {
-        const nonZeroCoins = summary.objects.filter(coin =>
-          parseInt(coin.balance, 10) > 0
-        );
-
-        if (nonZeroCoins.length === 0) {
-          toast.error(t("coinManager.error.operationFailed") + ": Need at least one coin with balance for gas");
-          setLoadingState(prev => ({ ...prev, singleOperation: false }));
-          return;
-        }
-      }
-      
-      // Process all coin types (including SUI and other types)
-      for (const zeroCoin of zeroBalanceCoins) {
-        tx.moveCall({
-          target: "0x2::coin::destroy_zero",
-          arguments: [tx.object(zeroCoin.id)],
-          typeArguments: [coinType],
+    // Collect all zero balance coins
+    const allCoins: ExtendedCoinObject[] = [];
+    coinTypesWithZeroBalance.forEach(summary => {
+      // 只收集余额为 0 的代币
+      const zeroBalanceCoins = summary.objects.filter(coin => parseInt(coin.balance, 10) === 0);
+      zeroBalanceCoins.forEach(coin => {
+        allCoins.push({
+          ...coin,
+          symbol: summary.symbol,
+          iconUrl: summary.iconUrl
         });
+      });
+    });
+
+    // Show clean selection dialog
+    setOperationDialog({
+      isOpen: true,
+      coinType: "batch-operation",
+      symbol: t("coinManager.multipleCoins"),
+      decimals: 9,
+      operationType: "clean",
+      onConfirm: async (selectedCoinIds: string[]) => {
+        setOperationDialog(prev => ({ ...prev, isOpen: false }));
+
+        try {
+          setLoadingState(prev => ({ ...prev, batchCleanZero: true }));
+
+          // Create a single transaction for all zero-balance coins
+          const tx = new Transaction();
+
+          // Process selected coins
+          for (const coinId of selectedCoinIds) {
+            // Find the coin type
+            let coinType = "";
+            for (const summary of coinTypeSummaries) {
+              const coin = summary.objects.find(c => c.id === coinId);
+              if (coin) {
+                coinType = summary.type;
+                break;
+              }
+            }
+
+            if (coinType) {
+              tx.moveCall({
+                target: "0x2::coin::destroy_zero",
+                arguments: [tx.object(coinId)],
+                typeArguments: [coinType],
+              });
+            }
+          }
+
+          // Execute transaction
+          await executeTransaction(
+            tx,
+            `${t("coinManager.batchCleanSuccess")}: ${selectedCoinIds.length} ${t("coinManager.objects")}`,
+            'batchCleanZero'
+          );
+
+          // Refresh coin list
+          fetchAllCoins();
+        } catch (error) {
+          console.error("Error batch cleaning zero-balance coins:", error);
+          toast.error(t("coinManager.error.operationFailed") + ": " + (error instanceof Error ? error.message : t("coinManager.error.unknownError")));
+        } finally {
+          setLoadingState(prev => ({ ...prev, batchCleanZero: false }));
+        }
       }
-
-      // Execute transaction
-      await executeTransaction(
-        tx,
-        `${t("coinManager.cleanSuccess")}: ${zeroBalanceCoins.length} ${t("coinManager.objects")}`,
-        'singleOperation'
-      );
-
-      // Refresh coin list
-      fetchAllCoins();
-    } catch (error) {
-      console.error("Error preparing clean transaction:", error);
-    } finally {
-      setLoadingState(prev => ({ ...prev, singleOperation: false }));
-    }
+    });
   };
 
   // Optimized merge function for single coin type
@@ -582,65 +598,130 @@ const CoinManager: React.FC = () => {
     const summary = coinTypeSummaries.find(s => s.type === coinType);
     if (!summary) return;
 
-    if (summary.objects.length < 2) {
+    if (summary.objects.length < 2 || (coinType === SUI_TYPE_ARG && summary.objects.length <= 2)) {
       toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.notEnoughCoins"));
       return;
     }
 
-    // Special handling for SUI coins with only 2 objects
-    if (coinType === SUI_TYPE_ARG && summary.objects.length === 2) {
-      toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.cannotMergeTwoSuiCoins"));
+    // 显示合并对话框
+    setOperationDialog({
+      isOpen: true,
+      coinType: coinType,
+      symbol: summary.symbol,
+      decimals: summary.decimals,
+      operationType: "merge",
+      iconUrl: summary.iconUrl,
+      onConfirm: async (selectedCoinIds: string[]) => {
+        setOperationDialog(prev => ({ ...prev, isOpen: false }));
+        try {
+          setLoadingState(prev => ({ ...prev, singleOperation: true }));
+          const tx = new Transaction();
+
+          if (coinType === SUI_TYPE_ARG) {
+            // Sort coins by balance and keep the highest balance one for potential gas payment
+            const sortedCoins = [...summary.objects]
+              .filter(coin => selectedCoinIds.includes(coin.id))
+              .sort((a, b) => Number(BigInt(b.balance) - BigInt(a.balance)));
+
+            if (sortedCoins.length < 2) {
+              toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.notEnoughCoins"));
+              return;
+            }
+
+            // 使用选择的代币中余额最高的作为合并目标
+            const primaryCoin = sortedCoins[0].id;
+            const otherCoins = sortedCoins.slice(1).map(coin => coin.id);
+            tx.mergeCoins(primaryCoin, otherCoins);
+          } else {
+            if (selectedCoinIds.length < 2) {
+              toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.notEnoughCoins"));
+              return;
+            }
+
+            // 使用选择的第一个代币作为合并目标
+            const primaryCoin = selectedCoinIds[0];
+            const otherCoins = selectedCoinIds.slice(1);
+            tx.mergeCoins(primaryCoin, otherCoins);
+          }
+
+          await executeTransaction(
+            tx,
+            t("coinManager.mergeSuccess"),
+            'singleOperation'
+          );
+
+          setSelectedCoins(new Set());
+          fetchAllCoins();
+        } catch (error) {
+          console.error("Error preparing merge transaction:", error);
+        } finally {
+          setLoadingState(prev => ({ ...prev, singleOperation: false }));
+        }
+      }
+    });
+  };
+
+  // Optimized clean zero balance coins for single coin type
+  const handleCleanZeroCoins = async (coinType: string) => {
+    if (!currentAccount) {
+      toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.connectWallet"));
       return;
     }
 
-    try {
-      setLoadingState(prev => ({ ...prev, singleOperation: true }));
+    const summary = coinTypeSummaries.find(s => s.type === coinType);
+    if (!summary) return;
 
-      // Auto select all coins of this type
-      const coinIds = summary.objects.map(coin => coin.id);
+    // Filter zero balance coins
+    const zeroBalanceCoins = summary.objects.filter(coin =>
+      parseInt(coin.balance, 10) === 0
+    );
 
-      // For SUI coins, ensure we keep one coin separate for gas
-      const tx = new Transaction();
-
-      if (coinType === SUI_TYPE_ARG) {
-        // Sort coins by balance and keep the highest balance one for potential gas payment
-        const sortedCoins = [...summary.objects].sort((a, b) =>
-          Number(BigInt(b.balance) - BigInt(a.balance))
-        );
-
-        const primaryCoin = sortedCoins[0].id;
-        // Use all other coins except the primary one
-        const otherCoins = sortedCoins.slice(1).map(coin => coin.id);
-
-        if (otherCoins.length > 0) {
-          tx.mergeCoins(primaryCoin, otherCoins);
-        } else {
-          toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.notEnoughCoins"));
-          setLoadingState(prev => ({ ...prev, singleOperation: false }));
-          return;
-        }
-      } else {
-        // For non-SUI coins, proceed as normal
-        const primaryCoin = coinIds[0];
-        const otherCoins = coinIds.slice(1);
-        tx.mergeCoins(primaryCoin, otherCoins);
-      }
-
-      // Execute transaction
-      await executeTransaction(
-        tx,
-        t("coinManager.mergeSuccess"),
-        'singleOperation'
-      );
-
-      // Reset selection and refresh coin list
-      setSelectedCoins(new Set());
-      fetchAllCoins();
-    } catch (error) {
-      console.error("Error preparing merge transaction:", error);
-    } finally {
-      setLoadingState(prev => ({ ...prev, singleOperation: false }));
+    if (zeroBalanceCoins.length === 0) {
+      toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.noZeroCoins"));
+      return;
     }
+
+    // Show clean dialog with only zero balance coins
+    setOperationDialog({
+      isOpen: true,
+      coinType: coinType,
+      symbol: summary.symbol,
+      decimals: summary.decimals,
+      operationType: "clean",
+      iconUrl: summary.iconUrl,
+      onConfirm: async (selectedCoinIds: string[]) => {
+        setOperationDialog(prev => ({ ...prev, isOpen: false }));
+        try {
+          setLoadingState(prev => ({ ...prev, singleOperation: true }));
+          const tx = new Transaction();
+
+          // Process selected coins
+          for (const coinId of selectedCoinIds) {
+            // Double check that we only process zero balance coins
+            const coin = zeroBalanceCoins.find(c => c.id === coinId);
+            if (coin) {
+              tx.moveCall({
+                target: "0x2::coin::destroy_zero",
+                arguments: [tx.object(coinId)],
+                typeArguments: [coinType],
+              });
+            }
+          }
+
+          await executeTransaction(
+            tx,
+            `${t("coinManager.cleanSuccess")}: ${selectedCoinIds.length} ${t("coinManager.objects")}`,
+            'singleOperation'
+          );
+
+          fetchAllCoins();
+        } catch (error) {
+          console.error("Error preparing clean transaction:", error);
+        } finally {
+          setLoadingState(prev => ({ ...prev, singleOperation: false }));
+        }
+      }
+    });
   };
 
   // Handle burn selected coins for a specific coin type
@@ -1176,6 +1257,30 @@ const CoinManager: React.FC = () => {
           : coinTypeSummaries.find(s => s.type === burnSelectionDialog.coinType)?.price || null}
         decimals={burnSelectionDialog.decimals}
         isLoading={burnSelectionDialog.coinType === "batch-burn" ? loadingState.batchBurn : loadingState.singleOperation}
+      />
+
+      {/* Operation dialog */}
+      <CoinOperationDialog
+        isOpen={operationDialog.isOpen}
+        onClose={() => setOperationDialog(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={operationDialog.onConfirm}
+        coins={operationDialog.coinType === "batch-operation" 
+          ? coinTypeSummaries.flatMap(summary => 
+              summary.objects.map(coin => ({
+                ...coin,
+                symbol: summary.symbol,
+                iconUrl: summary.iconUrl
+              }))
+            )
+          : coinTypeSummaries.find(s => s.type === operationDialog.coinType)?.objects || []}
+        coinType={operationDialog.coinType}
+        symbol={operationDialog.symbol}
+        decimals={operationDialog.decimals}
+        isLoading={operationDialog.operationType === "merge" 
+          ? loadingState.batchMerge 
+          : loadingState.batchCleanZero}
+        operationType={operationDialog.operationType}
+        iconUrl={operationDialog.iconUrl}
       />
     </Container>
   );

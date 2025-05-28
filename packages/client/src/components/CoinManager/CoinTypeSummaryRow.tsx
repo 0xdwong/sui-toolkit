@@ -1,6 +1,7 @@
 import React from "react";
 import { Badge, Button, Flex, Box, Text } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
+import { SUI_TYPE_ARG } from "@mysten/sui/utils";
 import { CoinTypeSummary } from "./types";
 import { CoinTypeDisplay } from "./DisplayComponents";
 import { formatBalance } from "./utils";
@@ -126,7 +127,7 @@ const CoinTypeSummaryRow: React.FC<CoinTypeSummaryRowProps> = ({
             size="sm"
             colorPalette="blue"
             variant="solid"
-            disabled={isLoading || objectCount < 2}
+            disabled={isLoading || objectCount < 2 || (type === SUI_TYPE_ARG && objectCount <= 2)}
             onClick={(e) => {
               e.stopPropagation();
               onMerge(type);

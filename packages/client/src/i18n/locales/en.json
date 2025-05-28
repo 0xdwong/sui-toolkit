@@ -116,7 +116,13 @@
       "noLowValueCoins": "No low value coins found",
       "cannotMergeTwoSuiCoins": "Cannot merge when there are only 2 SUI coins (one is needed for gas)",
       "noMergeableCoins": "No mergeable coins found"
-    }
+    },
+    "mergeCoinsTitle": "Merge {{symbol}} Coins",
+    "cleanCoinsTitle": "Clean {{symbol}} Zero Balance Coins",
+    "cleanCoinsDescription": "Select zero balance coin objects to clean.",
+    "zero": "Zero",
+    "mergeCoins": "Merge Coins",
+    "cleanCoins": "Clean Zero Balance Coins"
   },
   "bulkTransfer": {
     "title": "Bulk Transfer Tool",

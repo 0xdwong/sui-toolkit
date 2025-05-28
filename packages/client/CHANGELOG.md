@@ -3,6 +3,10 @@
 
 ## [0.3.x] 
 
+### Added - 2025-05-28
+- Coin Manager improvements:
+  - Added two-step confirmation for merge and clean operation
+
 ### Added - 2025-05-23
 - Coin Manager improvements:
   - Implemented pagination for coin fetching to support wallets with large number of coins

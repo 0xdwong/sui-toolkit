@@ -65,7 +65,7 @@
     "burn": "销毁",
     "batchMerge": "一键合并",
     "batchClean": "一键清零",
-    "batchBurn": "批量销毁",
+    "batchBurn": "一键销毁",
     "batchBurnCoinsTitle": "批量销毁代币",
     "multipleCoins": "多个代币",
     "batchBurnCoinsDescription": "选择要批量销毁的代币对象。价值低于 $0.1 的代币已被自动选中。",
@@ -116,7 +116,13 @@
       "noLowValueCoins": "没有低价值代币",
       "batchMergeFailed": "批量合并操作失败",
       "batchCleanFailed": "批量清理操作失败"
-    }
+    },
+    "mergeCoinsTitle": "合并 {{symbol}} 代币",
+    "cleanCoinsTitle": "清理 {{symbol}} 零余额代币",
+    "cleanCoinsDescription": "选择要清理的零余额代币对象。",
+    "zero": "零值",
+    "mergeCoins": "合并代币",
+    "cleanCoins": "清理零余额代币"
   },
   "bulkTransfer": {
     "title": "批量转账",
