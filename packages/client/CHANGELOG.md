@@ -1,9 +1,9 @@
 # Changelog
 
 
-## [0.3.x] 
+## [0.3.1] 
 
-### Added - 2025-05-28
+### Added - 2025-05-29
 - Coin Manager improvements:
   - Added two-step confirmation for merge and clean operation
 
