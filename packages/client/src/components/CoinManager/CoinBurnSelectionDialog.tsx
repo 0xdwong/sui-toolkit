@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Button,
   Dialog,
@@ -161,18 +161,21 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
       let autoSelected: string[] = [];
       
       if (isBatchMode) {
-        // In batch mode, also only select low value coins
+        // In batch mode, also only select low value coins and zero balance coins
         autoSelected = (coins as ExtendedCoinObject[])
           .filter(coin => {
+            // Include zero balance coins
+            if (Number(coin.balance) === 0) return true;
+            
             // Check if the coin has price data
             const coinPrice = coin.price || null;
             // If it has price, check if value is less than $0.1
             if (coinPrice) {
               const coinDecimals = coin.decimals || decimals;
               const value = Number(coin.balance) / Math.pow(10, coinDecimals) * Number(coinPrice);
-              return value < 0.1 && Number(coin.balance) > 0;
+              return value < 0.1;
             } else {
-              // No price data, select all coins, no longer check balance
+              // No price data, select all coins
               return true;
             }
           })
@@ -183,15 +186,18 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
         console.log("Batch burn mode - Original coins count:", coins.length);
         console.log("SUI coins info:", coins.filter(c => (c.type || "").includes("sui::SUI")).length);
       } else if (price) {
-        // Select low value coins (value < $0.1)
+        // Select low value coins (value < $0.1) and zero balance coins
         autoSelected = coins
           .filter(coin => {
+            // Include zero balance coins
+            if (Number(coin.balance) === 0) return true;
+            
             const value = Number(coin.balance) / Math.pow(10, decimals) * Number(price);
-            return value < 0.1 && Number(coin.balance) > 0;
+            return value < 0.1;
           })
           .map(coin => coin.id);
       } else {
-        // If no price data, select all coins, no need to check balance
+        // If no price data, select all coins including zero balance ones
         autoSelected = coins.map(coin => coin.id);
       }
       
@@ -243,56 +249,224 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
     onConfirm(selectedCoinIds);
   };
 
+  // Helper to calculate total available coins for burn
+  const calculateBurnableCoins = useCallback((coins: CoinObject[], type: string): string[] => {
+    // For SUI, we need to keep at least 3 coins
+    if (type === "0x2::sui::SUI") {
+      const nonZeroCoins = coins.filter(c => Number(c.balance) > 0);
+      return nonZeroCoins.length > 3 ? nonZeroCoins.slice(0, nonZeroCoins.length - 3).map(c => c.id) : [];
+    }
+    // For other coins, all non-zero balance coins can be burned
+    return coins.filter(c => Number(c.balance) > 0).map(c => c.id);
+  }, []);
+
+  // Helper function to check if a coin is burnable (zero balance or low value)
+  const isBurnableCoin = useCallback((coin: ExtendedCoinObject, type: string): boolean => {
+    // Always include zero balance coins first
+    if (Number(coin.balance) === 0) {
+      console.log(`Coin ${coin.id} is burnable (zero balance)`);
+      return true;
+    }
+
+    // For SUI coins, ensure we keep at least 1 non-zero balance coin
+    if (type === "0x2::sui::SUI") {
+      const suiCoins = coinsByType[type]?.coins || [];
+      const nonZeroSuiCoins = suiCoins
+        .filter((c: ExtendedCoinObject) => Number(c.balance) > 0)
+        .sort((a, b) => Number(BigInt(b.balance) - BigInt(a.balance))); // Sort by balance desc
+
+      // Keep the highest balance coin
+      const isHighestBalance = nonZeroSuiCoins[0]?.id === coin.id;
+      if (isHighestBalance) {
+        console.log(`Cannot burn SUI coin ${coin.id} (highest balance, must keep)`);
+        return false;
+      }
+
+      // For other SUI coins, check value if price available
+      if (coin.price) {
+        const value = Number(coin.balance) / Math.pow(10, coin.decimals || decimals) * Number(coin.price);
+        const isLowValue = value < 0.1;
+        console.log(`SUI coin ${coin.id} value: $${value}, isLowValue: ${isLowValue}`);
+        return isLowValue;
+      }
+
+      // If no price data available for SUI, allow burning
+      console.log(`SUI coin ${coin.id} is burnable (no price data)`);
+      return true;
+    }
+
+    // For non-SUI coins with price data, check value
+    if (coin.price) {
+      const value = Number(coin.balance) / Math.pow(10, coin.decimals || decimals) * Number(coin.price);
+      const isLowValue = value < 0.1;
+      console.log(`Coin ${coin.id} value: $${value}, isLowValue: ${isLowValue}`);
+      return isLowValue;
+    }
+
+    // If no price data available and non-zero balance, include the coin
+    console.log(`Coin ${coin.id} is burnable (no price data)`);
+    return true;
+  }, [coinsByType, decimals]);
+
+  // Calculate total selectable coins
+  const getTotalSelectableCoins = useCallback(() => {
+    if (isBatchMode) {
+      let totalBurnable = 0;
+      Object.entries(coinsByType).forEach(([type, data]) => {
+        data.coins.forEach((coin: ExtendedCoinObject) => {
+          if (isBurnableCoin(coin, type)) {
+            totalBurnable++;
+          }
+        });
+      });
+      return totalBurnable;
+    } else {
+      // For single coin type mode
+      let totalSelectable = 0;
+      coins.forEach(coin => {
+        // Include zero balance coins
+        if (Number(coin.balance) === 0) {
+          totalSelectable++;
+          return;
+        }
+
+        // Check value if price is available
+        if (price) {
+          const value = Number(coin.balance) / Math.pow(10, decimals) * Number(price);
+          if (value < 0.1) {
+            totalSelectable++;
+          }
+        } else {
+          // If no price data available, include all coins
+          totalSelectable++;
+        }
+      });
+      return totalSelectable;
+    }
+  }, [isBatchMode, coinsByType, coins, price, decimals, isBurnableCoin]);
+
+  // Add debug logs for checkbox state
+  const totalSelectable = getTotalSelectableCoins();
+  const isAllSelected = selectedCoinIds.length > 0 && selectedCoinIds.length === totalSelectable;
+  const isIndeterminate = selectedCoinIds.length > 0 && selectedCoinIds.length < totalSelectable;
+  
+  console.log("Checkbox state:", {
+    selectedCount: selectedCoinIds.length,
+    totalSelectable,
+    isAllSelected,
+    isIndeterminate
+  });
+
   // Toggle selection of all coins
   const toggleSelectAll = (checked: boolean) => {
-    if (checked) {
-      // Select all
-      if (isBatchMode) {
-        // In batch mode, need to get all coin IDs from the groups
+    try {
+      if (checked) {
         const allIds: string[] = [];
-        Object.values(coinsByType).forEach(typeData => {
-          typeData.coins.forEach((coin: CoinObject) => {
-            allIds.push(coin.id);
+        
+        if (isBatchMode) {
+          // For batch mode, select all burnable coins
+          Object.entries(coinsByType).forEach(([type, data]) => {
+            data.coins.forEach((coin: ExtendedCoinObject) => {
+              // Check if coin is burnable based on our criteria
+              if (isBurnableCoin(coin, type)) {
+                allIds.push(coin.id);
+                console.log(`Selected coin ${coin.id} for burning`);
+              } else {
+                console.log(`Skipped coin ${coin.id} - not burnable`);
+              }
+            });
           });
-        });
+          console.log(`Total coins selected for burning: ${allIds.length}`);
+        } else {
+          // For single coin type, select all burnable coins
+          coins.forEach(coin => {
+            // Include zero balance coins
+            if (Number(coin.balance) === 0) {
+              allIds.push(coin.id);
+              console.log(`Selected zero balance coin ${coin.id}`);
+              return;
+            }
+
+            // Check value if price is available
+            if (price) {
+              const value = Number(coin.balance) / Math.pow(10, decimals) * Number(price);
+              if (value < 0.1) {
+                allIds.push(coin.id);
+                console.log(`Selected low value coin ${coin.id}, value: $${value}`);
+                return;
+              }
+            } else {
+              // If no price data available, include all coins
+              allIds.push(coin.id);
+              console.log(`Selected coin ${coin.id} (no price data)`);
+            }
+          });
+        }
+        
         setSelectedCoinIds(allIds);
       } else {
-        // Single coin type mode, use coins directly
-        setSelectedCoinIds(coins.map(coin => coin.id));
+        setSelectedCoinIds([]);
       }
-    } else {
-      // Deselect all
+    } catch (error) {
+      console.error("Error in toggleSelectAll:", error);
       setSelectedCoinIds([]);
     }
   };
-  
+
   // Toggle selection of all coins of a specific type
-  const toggleCoinTypeSelection = (typeCoins: CoinObject[], checked: boolean) => {
-    const typeIds = typeCoins.map(coin => coin.id);
-    
-    setSelectedCoinIds(prev => {
-      if (checked) {
-        // Add all coins of this type
-        const currentSelected = new Set(prev);
-        typeIds.forEach(id => currentSelected.add(id));
-        return Array.from(currentSelected);
-      } else {
-        // Remove all coins of this type
-        return prev.filter(id => !typeIds.includes(id));
-      }
-    });
+  const toggleCoinTypeSelection = (typeCoins: CoinObject[], type: string, checked: boolean) => {
+    try {
+      const validIds = calculateBurnableCoins(typeCoins, type);
+      
+      setSelectedCoinIds(prev => {
+        if (checked) {
+          const currentSelected = new Set(prev);
+          validIds.forEach(id => currentSelected.add(id));
+          return Array.from(currentSelected);
+        } else {
+          return prev.filter(id => !validIds.includes(id));
+        }
+      });
+    } catch (error) {
+      console.error("Error in toggleCoinTypeSelection:", error);
+    }
   };
 
-  const toggleCoinSelection = (coinId: string, checked: boolean) => {
-    setSelectedCoinIds(prev => {
-      if (checked) {
-        // Add to selection if not already included
-        return prev.includes(coinId) ? prev : [...prev, coinId];
-      } else {
-        // Remove from selection
-        return prev.filter(id => id !== coinId);
-      }
-    });
+  // Toggle single coin selection with type safety
+  const toggleCoinSelection = (coinId: string, type: string, checked: boolean) => {
+    try {
+      setSelectedCoinIds(prev => {
+        const newSelection = new Set(prev);
+        
+        if (checked) {
+          // Find the coin we're trying to select
+          const coin = Object.values(coinsByType)
+            .flatMap(group => group.coins)
+            .find(c => c.id === coinId);
+
+          if (!coin) {
+            console.warn(`Coin ${coinId} not found`);
+            return prev;
+          }
+
+          // Check if this is a burnable coin
+          if (isBurnableCoin(coin, type)) {
+            newSelection.add(coinId);
+            console.log(`Added coin ${coinId} to selection`);
+          } else {
+            console.warn(`Coin ${coinId} is not burnable`);
+            return prev;
+          }
+        } else {
+          newSelection.delete(coinId);
+          console.log(`Removed coin ${coinId} from selection`);
+        }
+        
+        return Array.from(newSelection);
+      });
+    } catch (error) {
+      console.error("Error in toggleCoinSelection:", error);
+    }
   };
 
   const totalValueSelected = !isBatchMode && price 
@@ -336,7 +510,7 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
               checked={allSelected}
               indeterminate={someSelected}
               onCheckedChange={(e: CheckedChangeEvent) => 
-                toggleCoinTypeSelection(typeCoins, !!e.checked)}
+                toggleCoinTypeSelection(typeCoins, type, !!e.checked)}
             >
               <Checkbox.HiddenInput />
               <Checkbox.Control />
@@ -423,7 +597,7 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
                 <Checkbox.Root 
                   checked={isSelected}
                   onCheckedChange={(e: CheckedChangeEvent) => 
-                    toggleCoinSelection(coin.id, !!e.checked)}
+                    toggleCoinSelection(coin.id, type, !!e.checked)}
                 >
                   <Checkbox.HiddenInput />
                   <Checkbox.Control />
@@ -470,8 +644,8 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
         
         <Flex justifyContent="space-between" alignItems="center" mb={3}>
           <Checkbox.Root 
-            checked={selectedCoinIds.length === totalCoinsCount && totalCoinsCount > 0}
-            indeterminate={selectedCoinIds.length > 0 && selectedCoinIds.length < totalCoinsCount}
+            checked={isAllSelected}
+            indeterminate={isIndeterminate}
             onCheckedChange={(e: CheckedChangeEvent) => toggleSelectAll(!!e.checked)}
           >
             <Checkbox.HiddenInput />
@@ -525,8 +699,8 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
                 
                     <Flex justifyContent="space-between" alignItems="center" mb={3}>
                       <Checkbox.Root 
-                        checked={selectedCoinIds.length === coins.length && coins.length > 0}
-                        indeterminate={selectedCoinIds.length > 0 && selectedCoinIds.length < coins.length}
+                        checked={isAllSelected}
+                        indeterminate={isIndeterminate}
                         onCheckedChange={(e: CheckedChangeEvent) => toggleSelectAll(!!e.checked)}
                       >
                         <Checkbox.HiddenInput />
@@ -534,7 +708,7 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
                         <Checkbox.Label>{t("coinManager.selectAll")}</Checkbox.Label>
                       </Checkbox.Root>
                       <Text fontSize="sm">
-                        {t("coinManager.selected")}: {selectedCoinIds.length} / {coins.length}
+                        {t("coinManager.selected")}: {selectedCoinIds.length} / {totalSelectable}
                       </Text>
                     </Flex>
                     
@@ -572,7 +746,7 @@ const CoinBurnSelectionDialog: React.FC<CoinBurnSelectionDialogProps> = ({
                               >
                                 <Checkbox.Root 
                                   checked={isSelected}
-                                  onCheckedChange={(e: CheckedChangeEvent) => toggleCoinSelection(coin.id, !!e.checked)}
+                                  onCheckedChange={(e: CheckedChangeEvent) => toggleCoinSelection(coin.id, coinType, !!e.checked)}
                                 >
                                   <Checkbox.HiddenInput />
                                   <Checkbox.Control />

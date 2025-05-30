@@ -18,7 +18,7 @@ import {
 import { Transaction} from "@mysten/sui/transactions";
 import { CoinStruct } from "@mysten/sui/client";
 import toast from "react-hot-toast";
-import { formatCoinType } from "./utils";
+import { formatCoinType, formatBalance } from "./utils";
 import { useWalletNetwork } from "../CustomConnectButton";
 import { getPriceDirectAPI, calculateValue } from "../../utils/priceUtils";
 import { USDC_COIN_TYPE, SUI_TYPE_ARG, WUSDC_COIN_TYPE, USDC_COIN_DECIMALS } from "../../utils/constants";
@@ -362,6 +362,8 @@ const CoinManager: React.FC = () => {
   ) => {
     try {
       setLoadingState(prev => ({ ...prev, [operationType]: true }));
+      
+      console.log("Executing transaction:", JSON.stringify(tx, null, 2));
 
       return new Promise((resolve, reject) => {
         signAndExecute(
@@ -370,6 +372,7 @@ const CoinManager: React.FC = () => {
           },
           {
             onSuccess: (result) => {
+              console.log("Transaction succeeded:", JSON.stringify(result, null, 2));
               toast.success(successMessage);
               // Add a delay before resolving to allow blockchain state to update
               setTimeout(() => {
@@ -378,6 +381,8 @@ const CoinManager: React.FC = () => {
             },
             onError: (error) => {
               const errorMsg = error instanceof Error ? error.message : t("coinManager.error.unknownError");
+              console.error("Transaction failed:", errorMsg);
+              console.error("Full error:", error);
               toast.error(t("coinManager.error.operationFailed") + ": " + errorMsg);
               reject({ success: false, error });
             }
@@ -385,7 +390,7 @@ const CoinManager: React.FC = () => {
         );
       });
     } catch (error) {
-      console.error("Transaction error:", error);
+      console.error("Transaction preparation error:", error);
       const errorMsg = error instanceof Error ? error.message : t("coinManager.error.unknownError");
       toast.error(t("coinManager.error.operationFailed") + ": " + errorMsg);
       throw error;
@@ -401,30 +406,37 @@ const CoinManager: React.FC = () => {
       return;
     }
 
+    // Modified merge logic with special handling for SUI type
     const mergeableCoinTypes = coinTypeSummaries.filter(summary => {
-      // 对于 SUI 代币，需要至少有 3 个才显示在合并列表中
+      // For SUI type, need at least 3 objects to merge (1 for gas, at least 2 for merging)
       if (summary.type === SUI_TYPE_ARG) {
-        return summary.objectCount > 2;
+        return summary.objectCount >= 3;
       }
-      // 其他代币至少需要 2 个
-      return summary.objectCount > 1;
+      // For other coin types, need at least 2 objects to merge
+      return summary.objectCount >= 2;
     });
+    
     if (mergeableCoinTypes.length === 0) {
       toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.noMergeableCoins"));
       return;
     }
 
-    // Collect all coins that can be merged
+    // Collect all mergeable coins
     const allCoins: ExtendedCoinObject[] = [];
     mergeableCoinTypes.forEach(summary => {
+      // For all coin types, include all objects
       summary.objects.forEach(coin => {
         allCoins.push({
           ...coin,
           symbol: summary.symbol,
-          iconUrl: summary.iconUrl
+          iconUrl: summary.iconUrl,
+          type: summary.type // Ensure the type field is correctly set
         });
       });
     });
+    
+    console.log(`Total coins added to allCoins: ${allCoins.length}`);
+    console.log(`SUI coins in allCoins: ${allCoins.filter(coin => coin.type === SUI_TYPE_ARG).length}`);
 
     // Show merge selection dialog
     setOperationDialog({
@@ -439,7 +451,7 @@ const CoinManager: React.FC = () => {
         try {
           setLoadingState(prev => ({ ...prev, batchMerge: true }));
 
-          // Create a single transaction for all coin types
+          // Create a transaction
           const tx = new Transaction();
           const coinsByType = new Map<string, string[]>();
 
@@ -462,35 +474,61 @@ const CoinManager: React.FC = () => {
             const summary = coinTypeSummaries.find(s => s.type === type);
             if (!summary) continue;
 
-            // For SUI coins, use the highest balance coin as primary
+            // Special handling for SUI coins
             if (type === SUI_TYPE_ARG) {
-              const selectedCoins = summary.objects
-                .filter(coin => coinIds.includes(coin.id))
+              // Get all SUI coins
+              const allSuiCoins = summary.objects;
+              
+              // Skip if not enough coins selected
+              if (coinIds.length < 2) {
+                console.log(`Not enough SUI coins selected for type ${type}: ${coinIds.length}`);
+                continue;
+              }
+              
+              // Find the highest balance SUI coin to use as gas (not participating in merge)
+              const sortedAllCoins = [...allSuiCoins]
                 .sort((a, b) => Number(BigInt(b.balance) - BigInt(a.balance)));
-
-              if (selectedCoins.length < 2) continue;
-
-              const primaryCoin = selectedCoins[0].id;
-              const otherCoins = selectedCoins.slice(1).map(coin => coin.id);
+              
+              // Get the highest balance SUI as gas object
+              const gasCoinId = sortedAllCoins[0].id;
+              console.log(`Using highest balance SUI as gas (not for merging): ${gasCoinId}`);
+              
+              // Filter out gas object from selected coins
+              const mergeCandidates = coinIds.filter(id => id !== gasCoinId);
+              console.log(`Selected SUI coins after filtering gas coin: ${mergeCandidates.length}`);
+              
+              // Ensure there are enough coins to merge
+              if (mergeCandidates.length < 2) {
+                console.log(`Not enough SUI coins to merge for type ${type} after filtering gas coin`);
+                continue;
+              }
+              
+              // Select first non-gas coin as merge target
+              const primaryCoin = mergeCandidates[0];
+              // Remaining coins to be merged
+              const otherCoins = mergeCandidates.slice(1);
+              
+              console.log(`Batch merging ${otherCoins.length} SUI coins into primary ${primaryCoin} (gas coin ${gasCoinId} not involved)`);
               tx.mergeCoins(primaryCoin, otherCoins);
             } else {
+              // For non-SUI coins, need at least 2 coins to merge
               if (coinIds.length < 2) continue;
 
-              // 使用选择的第一个代币作为合并目标
+              // Use first selected coin as merge target
               const primaryCoin = coinIds[0];
               const otherCoins = coinIds.slice(1);
               tx.mergeCoins(primaryCoin, otherCoins);
             }
           }
 
-          // Execute the transaction
+          // Execute transaction
           await executeTransaction(
             tx,
             t("coinManager.batchMergeSuccess"),
             'batchMerge'
           );
 
-          // Refresh coin list after transaction is complete
+          // Refresh coin list
           fetchAllCoins();
         } catch (error) {
           console.error("Error batch merging coins:", error);
@@ -521,7 +559,7 @@ const CoinManager: React.FC = () => {
     // Collect all zero balance coins
     const allCoins: ExtendedCoinObject[] = [];
     coinTypesWithZeroBalance.forEach(summary => {
-      // 只收集余额为 0 的代币
+      // Collect only zero balance coins
       const zeroBalanceCoins = summary.objects.filter(coin => parseInt(coin.balance, 10) === 0);
       zeroBalanceCoins.forEach(coin => {
         allCoins.push({
@@ -598,12 +636,14 @@ const CoinManager: React.FC = () => {
     const summary = coinTypeSummaries.find(s => s.type === coinType);
     if (!summary) return;
 
-    if (summary.objects.length < 2 || (coinType === SUI_TYPE_ARG && summary.objects.length <= 2)) {
+    // SUI type requires at least 3 objects to merge (1 for gas, at least 2 for merging)
+    // Other types require at least 2 objects to merge
+    if (summary.objects.length < 2 || (coinType === SUI_TYPE_ARG && summary.objects.length < 3)) {
       toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.notEnoughCoins"));
       return;
     }
 
-    // 显示合并对话框
+    // Show merge dialog
     setOperationDialog({
       isOpen: true,
       coinType: coinType,
@@ -617,28 +657,59 @@ const CoinManager: React.FC = () => {
           setLoadingState(prev => ({ ...prev, singleOperation: true }));
           const tx = new Transaction();
 
+          console.log(`Starting merge for ${coinType} with ${selectedCoinIds.length} selected coins`);
+          
           if (coinType === SUI_TYPE_ARG) {
-            // Sort coins by balance and keep the highest balance one for potential gas payment
-            const sortedCoins = [...summary.objects]
-              .filter(coin => selectedCoinIds.includes(coin.id))
-              .sort((a, b) => Number(BigInt(b.balance) - BigInt(a.balance)));
-
-            if (sortedCoins.length < 2) {
+            // Get all SUI coins
+            const allSuiCoins = summary.objects;
+            console.log(`Total SUI coins: ${allSuiCoins.length}`);
+            
+            // Check if enough coins are selected
+            if (selectedCoinIds.length < 2) {
+              console.log(`Not enough SUI coins selected: ${selectedCoinIds.length}`);
               toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.notEnoughCoins"));
               return;
             }
-
-            // 使用选择的代币中余额最高的作为合并目标
-            const primaryCoin = sortedCoins[0].id;
-            const otherCoins = sortedCoins.slice(1).map(coin => coin.id);
+            
+            // Sort all SUI coins by balance to find the highest for gas
+            const sortedAllCoins = [...allSuiCoins]
+              .sort((a, b) => Number(BigInt(b.balance) - BigInt(a.balance)));
+            
+            console.log("SUI coins sorted by balance:");
+            sortedAllCoins.forEach((coin, index) => {
+              console.log(`Coin #${index + 1}: ID=${coin.id}, Balance=${formatBalance(coin.balance, summary.decimals)}`);
+            });
+            
+            // Get highest balance SUI as gas (not participating in merge)
+            const gasCoinId = sortedAllCoins[0].id;
+            console.log(`Using highest balance SUI as gas (not for merging): ${gasCoinId}`);
+            
+            // Filter out gas coin from selected coins
+            const mergeCandidates = selectedCoinIds.filter(id => id !== gasCoinId);
+            console.log(`Selected coins after filtering gas coin: ${mergeCandidates.length}`);
+            
+            // Verify we still have enough coins to merge
+            if (mergeCandidates.length < 2) {
+              console.log("Not enough coins to merge after filtering gas coin");
+              toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.notEnoughCoins"));
+              return;
+            }
+            
+            // Select first non-gas coin as merge target
+            const primaryCoin = mergeCandidates[0];
+            // Remaining coins to be merged
+            const otherCoins = mergeCandidates.slice(1);
+            
+            console.log(`Merging ${otherCoins.length} SUI coins into primary ${primaryCoin} (gas coin ${gasCoinId} not involved)`);
             tx.mergeCoins(primaryCoin, otherCoins);
           } else {
+            // Logic for non-SUI merge remains unchanged
             if (selectedCoinIds.length < 2) {
               toast.error(t("coinManager.error.title") + ": " + t("coinManager.error.notEnoughCoins"));
               return;
             }
 
-            // 使用选择的第一个代币作为合并目标
+            // Use the first selected coin as merge target
             const primaryCoin = selectedCoinIds[0];
             const otherCoins = selectedCoinIds.slice(1);
             tx.mergeCoins(primaryCoin, otherCoins);
@@ -654,6 +725,7 @@ const CoinManager: React.FC = () => {
           fetchAllCoins();
         } catch (error) {
           console.error("Error preparing merge transaction:", error);
+          toast.error(t("coinManager.error.operationFailed") + ": " + (error instanceof Error ? error.message : t("coinManager.error.unknownError")));
         } finally {
           setLoadingState(prev => ({ ...prev, singleOperation: false }));
         }
@@ -806,9 +878,6 @@ const CoinManager: React.FC = () => {
       
       // Process each coin object
       for (const coin of summary.objects) {
-        // Ignore zero balance coins
-        if (Number(coin.balance) === 0) continue;
-        
         // Create extended coin object
         const extendedCoin: ExtendedCoinObject = {
           ...coin,
@@ -817,6 +886,15 @@ const CoinManager: React.FC = () => {
           price: summary.price,
           type: summary.type // Ensure type field is correctly set
         };
+        
+        // Add to batch coin list
+        batchCoins.push(extendedCoin);
+        
+        // If coin has zero balance, mark it for default selection
+        if (Number(coin.balance) === 0) {
+          lowValueCoinIds.push(coin.id);
+          continue;
+        }
         
         // If price data is available, calculate value
         if (summary.price) {
@@ -835,9 +913,6 @@ const CoinManager: React.FC = () => {
           console.log(`No price data coin: ${summary.symbol} (${coin.id}), balance=${coin.balance}`);
           lowValueCoinIds.push(coin.id);
         }
-        
-        // Add to batch coin list
-        batchCoins.push(extendedCoin);
       }
     }
     

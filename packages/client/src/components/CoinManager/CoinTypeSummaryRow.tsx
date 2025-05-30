@@ -127,7 +127,7 @@ const CoinTypeSummaryRow: React.FC<CoinTypeSummaryRowProps> = ({
             size="sm"
             colorPalette="blue"
             variant="solid"
-            disabled={isLoading || objectCount < 2 || (type === SUI_TYPE_ARG && objectCount <= 2)}
+            disabled={isLoading || objectCount < 2 || (type === SUI_TYPE_ARG && objectCount < 3)}
             onClick={(e) => {
               e.stopPropagation();
               onMerge(type);

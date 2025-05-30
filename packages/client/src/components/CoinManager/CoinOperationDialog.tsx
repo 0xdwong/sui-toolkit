@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Button,
   Dialog,
@@ -37,6 +37,9 @@ interface CheckedChangeEvent {
 interface ExtendedCoinObject extends CoinObject {
   symbol?: string;
   iconUrl?: string | null;
+  price?: string | null;  // Add price field
+  value?: number | null;  // Add value field
+  decimals?: number;      // Add decimals field
 }
 
 // Coin type group data structure for batch mode
@@ -66,6 +69,50 @@ const CoinOperationDialog: React.FC<CoinOperationDialogProps> = ({
   // Check if it's batch mode (multiple coin types)
   const isBatchMode = coinType === "batch-operation";
 
+  // Helper function to calculate total available coins based on operation type
+  const calculateTotalCoins = useCallback((coins: CoinObject[], type: string): string[] => {
+    if (operationType === "merge") {
+      // For merge operation, handle SUI coins specially
+      if (type === "0x2::sui::SUI") {
+        // For SUI, we need at least 3 coins to merge - including zero balance coins
+        if (coins.length >= 3) {
+          // Only return other coins, excluding the highest balance one (which will be used for gas)
+          // Sort coins by balance (descending) to identify the highest balance coin
+          const sortedCoins = [...coins].sort((a, b) => 
+            Number(BigInt(b.balance) - BigInt(a.balance))
+          );
+          
+          // Return all coins except the highest balance one
+          return sortedCoins.slice(1).map(c => c.id);
+        } else {
+          return [];
+        }
+      }
+      // For other coins, need at least 2 coins to merge
+      if (coins.length >= 2) {
+        return coins.map(c => c.id);
+      } else {
+        return [];
+      }
+    } else if (operationType === "clean") {
+      // For clean operation, only select zero balance coins
+      const zeroCoins = coins.filter(c => Number(c.balance) === 0);
+      return zeroCoins.map(c => c.id);
+    }
+    return [];
+  }, [operationType]);
+
+  // Find the highest balance SUI coin ID (to be used as gas and disabled from selection)
+  const getHighestBalanceSuiCoinId = useCallback((coins: CoinObject[], type: string): string | null => {
+    if (type === "0x2::sui::SUI" && coins.length > 0) {
+      const sortedCoins = [...coins].sort((a, b) => 
+        Number(BigInt(b.balance) - BigInt(a.balance))
+      );
+      return sortedCoins[0].id;
+    }
+    return null;
+  }, []);
+
   // Group coins by type
   const coinsByType = React.useMemo(() => {
     if (!isBatchMode) {
@@ -79,48 +126,78 @@ const CoinOperationDialog: React.FC<CoinOperationDialogProps> = ({
     // For batch mode, group by coin type
     const byType: Record<string, CoinTypeGroupData> = {};
     
-    // Filter zero balance coins first (if it's a clean operation)
-    const filteredCoins = operationType === "clean" 
-      ? (coins as ExtendedCoinObject[]).filter(coin => parseInt(coin.balance, 10) === 0)
-      : coins as ExtendedCoinObject[];
-
     // Process each coin and group by type
-    filteredCoins.forEach((coin: ExtendedCoinObject) => {
+    (coins as ExtendedCoinObject[]).forEach((coin: ExtendedCoinObject) => {
+      // Ensure type field exists
       const type = coin.type || "";
       
-      if (!byType[type]) {
-        byType[type] = {
-          symbol: coin.symbol || type.split("::").pop() || "Unknown",
+      // Standardize SUI token type identification
+      let normalizedType = type;
+      // Exact match for 0x2::sui::SUI or contains sui::SUI
+      if (type === "0x2::sui::SUI" || type.includes("sui::SUI")) {
+        normalizedType = "0x2::sui::SUI";
+      }
+      
+      if (!byType[normalizedType]) {
+        // Get coin type info
+        const coinSymbol = coin.symbol || normalizedType.split("::").pop() || "Unknown";
+        
+        // Special handling for SUI tokens
+        const iconUrl = normalizedType === "0x2::sui::SUI" 
+          ? "https://images.chaintoolkit.xyz/sui-logo.svg" 
+          : coin.iconUrl || null;
+        
+        byType[normalizedType] = {
+          symbol: coinSymbol,
           coins: [],
           decimals: coin.decimals || decimals,
-          iconUrl: coin.iconUrl
+          iconUrl: iconUrl
         };
       }
       
-      byType[type].coins.push({...coin});
+      // Add each coin object to the corresponding type array
+      byType[normalizedType].coins.push({...coin});
     });
-
-    // Filter out coin types that don't need merging or have no zero balance coins
-    if (operationType === "merge") {
-      Object.keys(byType).forEach(type => {
-        const typeData = byType[type];
-        // For SUI, need more than 2 coins; for others, need more than 1 coin
-        const minCoins = type === "0x2::sui::SUI" ? 3 : 2;
-        if (typeData.coins.length < minCoins) {
-          delete byType[type];
-        }
-      });
-    } else if (operationType === "clean") {
+    
+    // Modify this part: For merge operation, don't filter out coin types that don't meet criteria
+    // Only filter in clean operation
+    if (operationType === "clean") {
       // For clean operation, remove types without zero balance coins
       Object.keys(byType).forEach(type => {
-        if (byType[type].coins.length === 0) {
+        const zeroBalanceCoins = byType[type].coins.filter(c => parseInt(c.balance, 10) === 0);
+        if (zeroBalanceCoins.length === 0) {
+          delete byType[type];
+        } else {
+          // Only keep zero balance coins
+          byType[type].coins = zeroBalanceCoins;
+        }
+      });
+    } else if (operationType === "merge") {
+      // For merge operation, only check if there are enough coins to merge, but don't filter the coin list
+      // This ensures all SUI objects are displayed
+      Object.keys(byType).forEach(type => {
+        // For SUI, need at least 3 coins to merge
+        // For other coin types, need at least 2 coins to merge
+        const minCoins = type === "0x2::sui::SUI" ? 3 : 2;
+        if (byType[type].coins.length < minCoins) {
           delete byType[type];
         }
       });
     }
     
-    // Sort coins
+    // Sort coins, ensure SUI is always at the top
     const ordered: typeof byType = {};
+    
+    // If there are SUI tokens, ensure they are processed first
+    if (byType["0x2::sui::SUI"]) {
+      ordered["0x2::sui::SUI"] = {
+        ...byType["0x2::sui::SUI"],
+        coins: [...byType["0x2::sui::SUI"].coins]
+      };
+      delete byType["0x2::sui::SUI"];
+    }
+    
+    // Add remaining coin types
     Object.keys(byType).sort().forEach(key => {
       ordered[key] = {
         ...byType[key],
@@ -135,110 +212,254 @@ const CoinOperationDialog: React.FC<CoinOperationDialogProps> = ({
   useEffect(() => {
     if (isOpen && coins.length > 0) {
       if (operationType === "clean") {
-        // For clean operation, select all zero balance coins
+        // 清理操作：选择所有零余额币
         const zeroBalanceCoins = coins.filter(coin => parseInt(coin.balance, 10) === 0);
         setSelectedCoinIds(zeroBalanceCoins.map(coin => coin.id));
       } else if (operationType === "merge") {
-        // For merge operation, select all coins
-        setSelectedCoinIds(coins.map(coin => coin.id));
-      }
-    }
-  }, [isOpen, coins, operationType]);
-
-  const handleConfirm = () => {
-    onConfirm(selectedCoinIds);
-  };
-
-  // Toggle selection of all coins
-  const toggleSelectAll = (checked: boolean) => {
-    if (checked) {
-      // Select all coins based on operation type
-      const allIds: string[] = [];
-      if (isBatchMode) {
-        Object.values(coinsByType).forEach(typeData => {
-          typeData.coins.forEach((coin: CoinObject) => {
-            if (operationType === "clean") {
-              // For clean, only select zero balance coins
-              if (parseInt(coin.balance, 10) === 0) {
-                allIds.push(coin.id);
+        if (isBatchMode) {
+          // 批量合并模式
+          const allIds: string[] = [];
+          
+          Object.entries(coinsByType).forEach(([type, data]) => {
+            if (type === "0x2::sui::SUI") {
+              // 对于 SUI 类型，排除余额最高的对象
+              if (data.coins.length >= 3) {
+                // 按余额排序
+                const sortedCoins = [...data.coins].sort((a, b) => 
+                  Number(BigInt(b.balance) - BigInt(a.balance))
+                );
+                
+                // 排除最高余额的 SUI，选择其余所有 SUI
+                const selectableSuiIds = sortedCoins.slice(1).map(c => c.id);
+                selectableSuiIds.forEach(id => allIds.push(id));
               }
             } else {
-              // For merge, select all coins
-              allIds.push(coin.id);
+              // 对于非 SUI 类型，选择所有币
+              if (data.coins.length >= 2) {
+                data.coins.forEach((coin: CoinObject) => allIds.push(coin.id));
+              }
             }
           });
-        });
-      } else {
-        coins.forEach(coin => {
-          if (operationType === "clean") {
-            // For clean, only select zero balance coins
-            if (parseInt(coin.balance, 10) === 0) {
-              allIds.push(coin.id);
+          
+          console.log(`Auto-selected ${allIds.length} coins for batch merge`);
+          setSelectedCoinIds(allIds);
+        } else {
+          // 单类型合并模式
+          if (coinType === "0x2::sui::SUI") {
+            // 对于 SUI 类型，排除余额最高的对象
+            if (coins.length >= 3) {
+              // 按余额排序
+              const sortedCoins = [...coins].sort((a, b) => 
+                Number(BigInt(b.balance) - BigInt(a.balance))
+              );
+              
+              // 排除最高余额的 SUI，选择其余所有 SUI
+              const selectableSuiIds = sortedCoins.slice(1).map(c => c.id);
+              setSelectedCoinIds(selectableSuiIds);
+            } else {
+              setSelectedCoinIds([]);
             }
           } else {
-            // For merge, select all coins
-            allIds.push(coin.id);
+            // 对于非 SUI 类型，选择所有币
+            if (coins.length >= 2) {
+              setSelectedCoinIds(coins.map(c => c.id));
+            } else {
+              setSelectedCoinIds([]);
+            }
           }
-        });
+        }
       }
-      setSelectedCoinIds(allIds);
     } else {
-      // Deselect all coins
+      setSelectedCoinIds([]);
+    }
+  }, [isOpen, coins, operationType, isBatchMode, coinsByType, coinType]);
+
+  const handleConfirm = () => {
+    // For SUI merging, ensure we're not including the highest balance SUI in the selected list
+    if (operationType === "merge") {
+      // Filter out highest balance SUI coins for each SUI type in batch mode
+      const filteredSelectedCoinIds = selectedCoinIds.filter(id => {
+        // Check if this is a SUI coin
+        for (const [type, data] of Object.entries(coinsByType)) {
+          if (type === "0x2::sui::SUI") {
+            // Skip if this is the highest balance SUI coin
+            if (id === highestBalanceSuiIds[type]) {
+              return false;
+            }
+          }
+        }
+        return true;
+      });
+      
+      onConfirm(filteredSelectedCoinIds);
+    } else {
+      onConfirm(selectedCoinIds);
+    }
+  };
+
+  // Helper function to check if a coin is burnable (zero balance or low value)
+  const isBurnableCoin = useCallback((coin: ExtendedCoinObject, type: string): boolean => {
+    // Always include zero balance coins
+    if (Number(coin.balance) === 0) {
+      return true;
+    }
+
+    // For SUI coins, ensure we keep at least 1 non-zero balance coin
+    if (type === "0x2::sui::SUI") {
+      const suiCoins = coinsByType[type]?.coins || [];
+      const nonZeroSuiCoins = suiCoins
+        .filter((c: ExtendedCoinObject) => Number(c.balance) > 0)
+        .sort((a, b) => Number(BigInt(b.balance) - BigInt(a.balance))); // Sort by balance desc
+
+      // Keep the highest balance coin
+      const isHighestBalance = nonZeroSuiCoins[0]?.id === coin.id;
+      if (isHighestBalance) {
+        return false;
+      }
+
+      // For other SUI coins with price, check value
+      if (coin.price) {
+        const value = Number(coin.balance) / Math.pow(10, coin.decimals || decimals) * Number(coin.price);
+        const isLowValue = value < 0.1;
+        return isLowValue;
+      }
+    }
+
+    // Check for low value if price is available
+    if (coin.price) {
+      const value = Number(coin.balance) / Math.pow(10, coin.decimals || decimals) * Number(coin.price);
+      const isLowValue = value < 0.1;
+      return isLowValue;
+    }
+
+    // If no price data available and non-zero balance, include the coin
+    return true;
+  }, [coinsByType, decimals]);
+
+  // Calculate total selectable coins
+  const getTotalSelectableCoins = useCallback(() => {
+    if (isBatchMode) {
+      let total = 0;
+      Object.entries(coinsByType).forEach(([type, data]) => {
+        const validIds = calculateTotalCoins(data.coins, type);
+        total += validIds.length;
+      });
+      return total;
+    }
+    return calculateTotalCoins(coins, coinType).length;
+  }, [isBatchMode, coinsByType, coins, coinType, calculateTotalCoins]);
+
+  // Calculate checkbox state
+  const totalSelectable = getTotalSelectableCoins();
+  const isAllSelected = selectedCoinIds.length > 0 && selectedCoinIds.length === totalSelectable;
+  const isIndeterminate = selectedCoinIds.length > 0 && selectedCoinIds.length < totalSelectable;
+  
+  // Toggle selection of all coins
+  const toggleSelectAll = (checked: boolean) => {
+    try {
+      if (checked) {
+        const allIds: string[] = [];
+        
+        if (isBatchMode) {
+          Object.entries(coinsByType).forEach(([type, data]) => {
+            const validIds = calculateTotalCoins(data.coins, type);
+            validIds.forEach(id => allIds.push(id));
+          });
+        } else {
+          const validIds = calculateTotalCoins(coins, coinType);
+          validIds.forEach(id => allIds.push(id));
+        }
+        
+        setSelectedCoinIds(allIds);
+      } else {
+        setSelectedCoinIds([]);
+      }
+    } catch (error) {
+      console.error("Error in toggleSelectAll:", error);
       setSelectedCoinIds([]);
     }
   };
   
   // Toggle selection of all coins of a specific type
-  const toggleCoinTypeSelection = (typeCoins: CoinObject[], checked: boolean) => {
-    const typeIds = typeCoins.map(coin => coin.id);
-    
-    setSelectedCoinIds(prev => {
-      if (checked) {
-        const currentSelected = new Set(prev);
-        if (operationType === "merge") {
-          // For merge, exclude the first coin
-          typeIds.slice(1).forEach(id => currentSelected.add(id));
+  const toggleCoinTypeSelection = (typeCoins: CoinObject[], type: string, checked: boolean) => {
+    try {
+      const validIds = calculateTotalCoins(typeCoins, type);
+      
+      setSelectedCoinIds(prev => {
+        if (checked) {
+          const currentSelected = new Set(prev);
+          validIds.forEach(id => currentSelected.add(id));
+          return Array.from(currentSelected);
         } else {
-          // For clean, only select zero balance coins
-          typeCoins.forEach(coin => {
-            if (parseInt(coin.balance, 10) === 0) {
-              currentSelected.add(coin.id);
-            }
-          });
+          return prev.filter(id => !validIds.includes(id));
         }
-        return Array.from(currentSelected);
-      } else {
-        return prev.filter(id => !typeIds.includes(id));
-      }
-    });
-  };
-
-  const toggleCoinSelection = (coinId: string, checked: boolean) => {
-    setSelectedCoinIds(prev => {
-      if (checked) {
-        return prev.includes(coinId) ? prev : [...prev, coinId];
-      } else {
-        return prev.filter(id => id !== coinId);
-      }
-    });
-  };
-
-  // Render coin type group in batch mode
-  const renderCoinTypeGroup = (type: string, data: CoinTypeGroupData) => {
-    const { symbol, coins: typeCoins, decimals, iconUrl } = data;
-    
-    // Filter coins based on operation type
-    const filteredCoins = operationType === "clean"
-      ? typeCoins.filter(coin => parseInt(coin.balance, 10) === 0)
-      : typeCoins;
-    
-    if (!Array.isArray(filteredCoins) || filteredCoins.length === 0) {
-      return null;
+      });
+    } catch (error) {
+      console.error("Error in toggleCoinTypeSelection:", error);
     }
+  };
+
+  // Identify the highest balance SUI coin ID for each coin type
+  const highestBalanceSuiIds = React.useMemo(() => {
+    const result: Record<string, string | null> = {};
+    Object.entries(coinsByType).forEach(([type, data]) => {
+      if (type === "0x2::sui::SUI") {
+        result[type] = getHighestBalanceSuiCoinId(data.coins, type);
+      }
+    });
+    return result;
+  }, [coinsByType, getHighestBalanceSuiCoinId]);
+
+  const toggleCoinSelection = (coinId: string, type: string, checked: boolean) => {
+    try {
+      // Don't allow selection of the highest balance SUI coin
+      if (type === "0x2::sui::SUI" && coinId === highestBalanceSuiIds[type]) {
+        return;
+      }
+      
+      setSelectedCoinIds(prev => {
+        const newSelection = new Set(prev);
+        
+        if (checked) {
+          // Verify if this coin can be selected
+          const typeCoins = coinsByType[type]?.coins || [];
+          const validIds = calculateTotalCoins(typeCoins, type);
+          
+          if (validIds.includes(coinId)) {
+            newSelection.add(coinId);
+          } else {
+            return prev;
+          }
+        } else {
+          newSelection.delete(coinId);
+        }
+        
+        return Array.from(newSelection);
+      });
+    } catch (error) {
+      console.error("Error in toggleCoinSelection:", error);
+    }
+  };
+
+  // Render a coin type group for batch mode
+  const renderCoinTypeGroup = (type: string, data: CoinTypeGroupData) => {
+    const { symbol, coins: typeCoins, decimals } = data;
     
-    const selectedInType = filteredCoins.filter((coin: CoinObject) => selectedCoinIds.includes(coin.id));
-    const allSelected = selectedInType.length === filteredCoins.length && filteredCoins.length > 0;
-    const someSelected = selectedInType.length > 0 && selectedInType.length < filteredCoins.length;
+    // 修改这部分：在合并模式下，显示所有币，而不是经过过滤的可用币
+    const availableCoins = operationType === "clean" 
+      ? typeCoins.filter(c => parseInt(c.balance, 10) === 0)
+      : typeCoins; // 合并模式显示所有币
+    
+    const selectedInType = selectedCoinIds.filter(id => 
+      availableCoins.some(c => c.id === id)
+    );
+    
+    if (availableCoins.length === 0) return null;
+    
+    const isTypeSelected = selectedInType.length === availableCoins.length && availableCoins.length > 0;
+    const isTypeIndeterminate = selectedInType.length > 0 && selectedInType.length < availableCoins.length;
+    
+    const iconUrl = data.iconUrl || null;
     
     return (
       <Box key={type} w="100%" borderWidth="1px" borderRadius="md" mb={3}>
@@ -251,10 +472,10 @@ const CoinOperationDialog: React.FC<CoinOperationDialogProps> = ({
         >
           <Flex alignItems="center">
             <Checkbox.Root 
-              checked={allSelected}
-              indeterminate={someSelected}
+              checked={isTypeSelected}
+              indeterminate={isTypeIndeterminate}
               onCheckedChange={(e: CheckedChangeEvent) => 
-                toggleCoinTypeSelection(filteredCoins, !!e.checked)}
+                toggleCoinTypeSelection(typeCoins, type, !!e.checked)}
             >
               <Checkbox.HiddenInput />
               <Checkbox.Control />
@@ -288,13 +509,13 @@ const CoinOperationDialog: React.FC<CoinOperationDialogProps> = ({
                   ) : (
                     <Box boxSize="20px" bg="gray.200" borderRadius="full" mr={2} />
                   )}
-                  <Text fontWeight="bold">{symbol} ({filteredCoins.length})</Text>
+                  <Text fontWeight="bold">{symbol} ({availableCoins.length})</Text>
                 </Flex>
               </Checkbox.Label>
             </Checkbox.Root>
           </Flex>
           <Text fontSize="sm">
-            {selectedInType.length} / {filteredCoins.length} {t("coinManager.selected")}
+            {selectedInType.length} / {availableCoins.length} {t("coinManager.selected")}
           </Text>
         </Flex>
         
@@ -312,9 +533,11 @@ const CoinOperationDialog: React.FC<CoinOperationDialogProps> = ({
         </Flex>
         
         <Box>
-          {filteredCoins.map((coin: CoinObject, index: number) => {
+          {availableCoins.map((coin: CoinObject, index: number) => {
             const isSelected = selectedCoinIds.includes(coin.id);
             const isZeroBalance = parseInt(coin.balance, 10) === 0;
+            // Check if this is the highest balance SUI coin (which should be disabled)
+            const isHighestBalanceSui = type === "0x2::sui::SUI" && coin.id === highestBalanceSuiIds[type];
             
             return (
               <Flex 
@@ -323,22 +546,35 @@ const CoinOperationDialog: React.FC<CoinOperationDialogProps> = ({
                 px={3}
                 justifyContent="space-between" 
                 alignItems="center"
-                bg={isSelected ? "blue.50" : undefined}
-                _hover={{ bg: "gray.50" }}
+                bg={isSelected ? "blue.50" : isHighestBalanceSui ? "yellow.50" : undefined}
+                _hover={{ bg: isHighestBalanceSui ? "yellow.50" : "gray.50" }}
                 borderTopWidth={index > 0 ? "1px" : 0}
                 borderColor="gray.200"
               >
                 <Checkbox.Root 
                   checked={isSelected}
+                  disabled={isHighestBalanceSui}
                   onCheckedChange={(e: CheckedChangeEvent) => 
-                    toggleCoinSelection(coin.id, !!e.checked)}
+                    toggleCoinSelection(coin.id, type, !!e.checked)}
                 >
                   <Checkbox.HiddenInput />
                   <Checkbox.Control />
                 </Checkbox.Root>
                 
-                <Text fontFamily="mono" fontSize="xs" flex="1 1 auto" pl={2} title={coin.id}>
+                <Text 
+                  fontFamily="mono" 
+                  fontSize="xs" 
+                  flex="1 1 auto" 
+                  pl={2} 
+                  title={coin.id}
+                  color={isHighestBalanceSui ? "orange.500" : undefined}
+                >
                   {formatCoinId(coin.id)}
+                  {isHighestBalanceSui && (
+                    <Badge ml={2} colorPalette="orange" size="sm">
+                      {t("coinManager.gasReserved")}
+                    </Badge>
+                  )}
                 </Text>
                 
                 <Text textAlign="right" flex="0 0 100px" fontSize="sm">
@@ -386,14 +622,19 @@ const CoinOperationDialog: React.FC<CoinOperationDialogProps> = ({
                     : t("coinManager.cleanCoinsDescription")}
                 </Text>
                 
+                {/* Add special note for SUI merge */}
+                {operationType === "merge" && (coinType === "0x2::sui::SUI" || coinType === "batch-operation") && (
+                  <Box p={3} bg="blue.50" color="blue.800" borderRadius="md" mb={4}>
+                    <Text fontSize="sm">
+                      {t("coinManager.suiMergeNote")}
+                    </Text>
+                  </Box>
+                )}
+                
                 <Flex justifyContent="space-between" alignItems="center" mb={3}>
                   <Checkbox.Root 
-                    checked={selectedCoinIds.length === (operationType === "clean" 
-                      ? coins.filter(coin => parseInt(coin.balance, 10) === 0).length 
-                      : coins.length) && coins.length > 0}
-                    indeterminate={selectedCoinIds.length > 0 && selectedCoinIds.length < (operationType === "clean" 
-                      ? coins.filter(coin => parseInt(coin.balance, 10) === 0).length 
-                      : coins.length)}
+                    checked={isAllSelected}
+                    indeterminate={isIndeterminate}
                     onCheckedChange={(e: CheckedChangeEvent) => toggleSelectAll(!!e.checked)}
                   >
                     <Checkbox.HiddenInput />
@@ -401,9 +642,7 @@ const CoinOperationDialog: React.FC<CoinOperationDialogProps> = ({
                     <Checkbox.Label>{t("coinManager.selectAll")}</Checkbox.Label>
                   </Checkbox.Root>
                   <Text fontSize="sm">
-                    {t("coinManager.selected")}: {selectedCoinIds.length} / {operationType === "clean" 
-                      ? coins.filter(coin => parseInt(coin.balance, 10) === 0).length 
-                      : coins.length}
+                    {t("coinManager.selected")}: {selectedCoinIds.length} / {totalSelectable}
                   </Text>
                 </Flex>
                 
@@ -434,6 +673,8 @@ const CoinOperationDialog: React.FC<CoinOperationDialogProps> = ({
                         ).map((coin, index) => {
                           const isSelected = selectedCoinIds.includes(coin.id);
                           const isZeroBalance = parseInt(coin.balance, 10) === 0;
+                          // Check if this is the highest balance SUI coin (which should be disabled)
+                          const isHighestBalanceSui = coinType === "0x2::sui::SUI" && coin.id === getHighestBalanceSuiCoinId(coins, coinType);
                           
                           return (
                             <Flex 
@@ -441,19 +682,32 @@ const CoinOperationDialog: React.FC<CoinOperationDialogProps> = ({
                               p={3} 
                               justifyContent="space-between" 
                               alignItems="center"
-                              bg={isSelected ? "blue.50" : undefined}
-                              _hover={{ bg: "gray.50" }}
+                              bg={isSelected ? "blue.50" : isHighestBalanceSui ? "yellow.50" : undefined}
+                              _hover={{ bg: isHighestBalanceSui ? "yellow.50" : "gray.50" }}
                             >
                               <Checkbox.Root 
                                 checked={isSelected}
-                                onCheckedChange={(e: CheckedChangeEvent) => toggleCoinSelection(coin.id, !!e.checked)}
+                                disabled={isHighestBalanceSui}
+                                onCheckedChange={(e: CheckedChangeEvent) => toggleCoinSelection(coin.id, coinType, !!e.checked)}
                               >
                                 <Checkbox.HiddenInput />
                                 <Checkbox.Control />
                               </Checkbox.Root>
                               
-                              <Text fontFamily="mono" fontSize="sm" flex="1 1 auto" pl={2} title={coin.id}>
+                              <Text 
+                                fontFamily="mono" 
+                                fontSize="sm" 
+                                flex="1 1 auto" 
+                                pl={2} 
+                                title={coin.id}
+                                color={isHighestBalanceSui ? "orange.500" : undefined}
+                              >
                                 {formatCoinId(coin.id)}
+                                {isHighestBalanceSui && (
+                                  <Badge ml={2} colorPalette="orange" size="sm">
+                                    {t("coinManager.gasReserved")}
+                                  </Badge>
+                                )}
                               </Text>
                               
                               <Text textAlign="right" flex="0 0 100px">
